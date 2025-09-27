@@ -1,0 +1,9 @@
+# .gitignore file
+
+# General exclusions
+__pycache__/
+*.pyc
+
+# Local environment file containing secrets/tokens
+# **This is the critical line to prevent committing your token!**
+.env
