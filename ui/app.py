@@ -4,17 +4,18 @@ import pandas as pd
 import json
 from datetime import datetime
 import os
+from PIL import Image
 
 # Configuration - Use environment variable with fallback
 API_GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://localhost:8000")
 
-st.set_page_config(page_title="MusicBrainz Explorer", page_icon="🎵", layout="wide")
+st.set_page_config(page_title="Orchestr8r: Continuous Delivery of your Perfect Playlist", page_icon="🎵", layout="wide")
 
 # Initialize session state
 if 'username' not in st.session_state:
     st.session_state.username = "guest"
 
-st.title("🎵 MusicBrainz Explorer with Enhanced AI Recommendations")
+st.title("🎵 Orchestr8r: Continuous Delivery of your Perfect Playlist <br>Music Recommendation System using Microservices Architecture")
 st.markdown("Discover music with smart recommendations that understand artists, genres, and moods")
 
 # Debug info in sidebar
@@ -110,7 +111,7 @@ with st.sidebar:
             st.error(f"Error: {e}")
 
 # Main navigation
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🏠 Home", "🎤 Search Artists", "💿 Search Albums", "🎯 Recommendations", "💾 Saved Data", "🔧 Status"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🏠 Home", "🎤 Search Artists", "💿 Search Albums", "🎯 Recommendations", "💾 Saved Data", "🔧 Status for Nerds"])
 
 with tab1:
     st.header("🏠 Enhanced Music Discovery")
@@ -765,4 +766,4 @@ docker-compose up
 
 # Footer
 st.markdown("---")
-st.markdown("Built with ❤️ using Enhanced AI Recommendations | Version 2.0")
+st.markdown("🔧 Built with Streamlit, FastAPI, Claude.ai for building Enhanced AI Recommendations | Version 2.0")

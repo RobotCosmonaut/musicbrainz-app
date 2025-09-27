@@ -54,3 +54,6 @@ Thumbs.db
 # Documentation
 README.md
 docs/
+
+# Don't ignore static images - remove this line if it exists
+# ui/static/

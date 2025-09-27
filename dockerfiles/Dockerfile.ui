@@ -11,12 +11,19 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire project
+# Copy the entire project (includes ui/static/images/)
 COPY . .
 
 # Set Python path
 ENV PYTHONPATH=/app
 
+# Ensure .streamlit directory exists and config is accessible
+RUN mkdir -p /root/.streamlit
+COPY ui/.streamlit/config.toml /root/.streamlit/config.toml
+
+# Create static directory if it doesn't exist and ensure permissions
+RUN mkdir -p /app/ui/static/images && chmod -R 755 /app/ui/static
+
 EXPOSE 8501
 
-CMD ["streamlit", "run", "ui/app.py", "--server.address", "0.0.0.0"]
+CMD ["streamlit", "run", "ui/app.py", "--server.address", "0.0.0.0", "--server.port", "8501"]
