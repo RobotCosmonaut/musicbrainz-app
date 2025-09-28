@@ -35,14 +35,29 @@ def create_score_distribution_chart(recommendations):
     
     scores = [rec['score'] for rec in recommendations]
     
+    # Create bins manually for better control
+    bins = list(range(0, 101, 10))  # [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    bin_labels = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80-89', '90-100']
+    
+    # Count scores in each bin
+    bin_counts = []
+    for i in range(len(bins) - 1):
+        count = sum(1 for score in scores if bins[i] <= score < bins[i + 1])
+        bin_counts.append(count)
+    
+    # Handle the last bin (90-100) to include 100
+    bin_counts[-1] = sum(1 for score in scores if 90 <= score <= 100)
+    
+    # Create bar chart instead of histogram for better control
     fig = go.Figure(data=[
-        go.Histogram(
-            x=scores,
-            nbinsx=10,
+        go.Bar(
+            x=bin_labels,
+            y=bin_counts,
             marker_color='#6366F1',
             opacity=0.75,
-            text=[f"Count: {len([s for s in scores if i*10 <= s < (i+1)*10])}" for i in range(10)],
-            textposition='auto'
+            text=[f"Count: {count}" for count in bin_counts],
+            textposition='auto',
+            hovertemplate='<b>Score Range: %{x}</b><br>Number of Songs: %{y}<extra></extra>'
         )
     ])
     
@@ -52,10 +67,12 @@ def create_score_distribution_chart(recommendations):
         yaxis_title="Number of Songs",
         height=350,
         plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)'
+        paper_bgcolor='rgba(0,0,0,0)',
+        xaxis=dict(tickangle=45)
     )
     
     return fig
+
 
 def create_artist_diversity_donut(recommendations):
     """Create a donut chart showing artist diversity"""
@@ -422,12 +439,23 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🏠 Home", "🎤 Search Artists"
 
 with tab1:
     st.header("🏠 Enhanced Music Discovery with Visual Analytics")
+
+    st.markdown("""
+    ### Smart Song Recommendations
+    Try these examples to see the enhanced algorithm:
+    - **"old school rap"** - Should find classic hip-hop artists
+    - **"relaxing jazz piano"** - Should prioritize jazz pianists  
+    - **"energetic rock songs"** - Should find upbeat rock bands
+    - **"hazy vaporwave"** - Should find hazy, ethereal slowed-down music with distorted samples
+    - **"acoustic folk ballads"** - Should find folk artists with acoustic style
+    """)
+
     
-    # Search interface (keep existing)
+    # Search interface
     col1, col2 = st.columns([3, 1])
     with col1:
         query = st.text_input("🔍 What kind of music are you looking for?", 
-                            placeholder="e.g., old school rap, relaxing jazz piano, energetic rock songs")
+                            placeholder="e.g., old school rap, relaxing jazz piano, energetic rock songs, hazy vaporwave")
     with col2:
         st.write("")
         st.write("")
@@ -436,8 +464,11 @@ with tab1:
     if search_button and query:
         with st.spinner("Analyzing your query and finding perfect matches..."):
             try:
-                # Your existing API call code here...
+                # API call
                 params = {"query": query, "limit": 10}
+                if username != "guest":
+                    params["username"] = username
+                
                 response = requests.get(f"{API_GATEWAY_URL}/api/recommendations/query", 
                                       params=params, timeout=30)
                 
@@ -460,9 +491,142 @@ with tab1:
                         st.success(f"🎉 Found {len(recommendations)} smart recommendations!")
                         
                         # Create tabbed interface for results
-                        result_tabs = st.tabs(["📊 Visual Overview", "🎵 Song List", "📈 Analytics", "🧠 Algorithm Insights"])
+                        result_tabs = st.tabs(["🎵 Song List", "📊 Visual Overview", "📈 Analytics", "🧠 Algorithm Insights"])
                         
-                        with result_tabs[0]:  # Visual Overview
+
+                        
+                        with result_tabs[0]:  # Song List - FIXED VERSION
+                            st.subheader("🎵 Your Song Recommendations")
+                            
+                            # Show query analysis if available
+                            if query_analysis:
+                                with st.expander("🧠 How the algorithm analyzed your query"):
+                                    col1, col2, col3 = st.columns(3)
+                                    with col1:
+                                        if query_analysis.get('detected_genre'):
+                                            st.write("**🎭 Detected Genre:**")
+                                            st.write(f"{query_analysis['detected_genre']}")
+                                    with col2:
+                                        if query_analysis.get('unique_artists'):
+                                            st.write("**🎤 Artist Diversity:**")
+                                            st.write(f"{query_analysis.get('diversity_ratio', 'N/A')}")
+                                    with col3:
+                                        if query_analysis.get('processing_time'):
+                                            st.write("**⚡ Processing Time:**")
+                                            st.write(f"{query_analysis['processing_time']}")
+                            
+                            # Display recommendations with enhanced info
+                            for i, rec in enumerate(recommendations, 1):
+                                with st.container():
+                                    # Create a colored border based on score
+                                    score = rec['score']
+                                    if score >= 80:
+                                        border_color = "#22C55E"  # Green for high scores
+                                        score_emoji = "🔥"
+                                    elif score >= 60:
+                                        border_color = "#6366F1"  # Blue for medium scores
+                                        score_emoji = "⭐"
+                                    elif score >= 40:
+                                        border_color = "#F59E0B"  # Yellow for fair scores
+                                        score_emoji = "👍"
+                                    else:
+                                        border_color = "#EF4444"  # Red for low scores
+                                        score_emoji = "💡"
+                                    
+                                    st.markdown(f"""
+                                    <div style="
+                                        border-left: 5px solid {border_color}; 
+                                        padding: 1rem; 
+                                        margin: 1rem 0; 
+                                        background-color: rgba(99, 102, 241, 0.05);
+                                        border-radius: 0 8px 8px 0;
+                                    ">
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                    
+                                    col1, col2, col3, col4, col5 = st.columns([0.5, 2.5, 1.5, 1, 1])
+                                    
+                                    with col1:
+                                        st.markdown(f"**#{i}**")
+                                        st.markdown(f"{score_emoji}")
+                                    
+                                    with col2:
+                                        st.markdown(f"**🎵 {rec['track_title']}**")
+                                        st.markdown(f"*by {rec['artist_name']}*")
+                                        
+                                        # Show recommendation type
+                                        rec_type = rec.get('recommendation_type', 'unknown').replace('_', ' ').title()
+                                        st.caption(f"Strategy: {rec_type}")
+                                    
+                                    with col3:
+                                        st.markdown(f"**Score: {rec['score']}/100**")
+                                        # Progress bar for score
+                                        st.progress(rec['score']/100)
+                                    
+                                    with col4:
+                                        # MusicBrainz ID info
+                                        st.caption(f"Track ID:")
+                                        st.caption(f"`{rec['track_id'][:8]}...`")
+                                        
+                                        if 'search_method' in rec:
+                                            st.caption(f"Method: {rec['search_method'][:15]}...")
+                                    
+                                    with col5:
+                                        # Action buttons
+                                        like_button = st.button("👍 Like", key=f"like_{rec['track_id']}", 
+                                                               help="Like this song", use_container_width=True)
+                                        
+                                        if like_button:
+                                            # Add to listening history
+                                            try:
+                                                requests.post(
+                                                    f"{API_GATEWAY_URL}/api/users/{username}/listening-history",
+                                                    params={
+                                                        "track_id": rec['track_id'],
+                                                        "artist_id": rec['artist_id'],
+                                                        "interaction_type": "liked"
+                                                    },
+                                                    timeout=10
+                                                )
+                                                st.success("Liked! ❤️")
+                                            except Exception as e:
+                                                st.error(f"Could not save like: {e}")
+                                        
+                                        save_button = st.button("💾 Save", key=f"save_{rec['track_id']}", 
+                                                               help="Save for later", use_container_width=True)
+                                        
+                                        if save_button:
+                                            try:
+                                                requests.post(
+                                                    f"{API_GATEWAY_URL}/api/users/{username}/listening-history",
+                                                    params={
+                                                        "track_id": rec['track_id'],
+                                                        "artist_id": rec['artist_id'],
+                                                        "interaction_type": "saved"
+                                                    },
+                                                    timeout=10
+                                                )
+                                                st.success("Saved! 💾")
+                                            except Exception as e:
+                                                st.error(f"Could not save: {e}")
+                                    
+                                    st.divider()
+                            
+                            # Summary at the bottom
+                            st.markdown("---")
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                avg_score = np.mean([rec['score'] for rec in recommendations])
+                                st.metric("Average Score", f"{avg_score:.1f}/100")
+                            with col2:
+                                unique_artists = len(set([rec['artist_name'] for rec in recommendations]))
+                                st.metric("Unique Artists", unique_artists)
+                            with col3:
+                                high_quality = len([rec for rec in recommendations if rec['score'] >= 80])
+                                st.metric("High Quality (80+)", high_quality)
+                        
+
+                        with result_tabs[1]:  # Visual Overview
                             col1, col2 = st.columns(2)
                             
                             with col1:
@@ -486,13 +650,7 @@ with tab1:
                                 quality_gauge = create_search_quality_gauge(recommendations, query_analysis)
                                 if quality_gauge:
                                     st.plotly_chart(quality_gauge, use_container_width=True)
-                        
-                        with result_tabs[1]:  # Song List
-                            # Your existing song list display code
-                            for i, rec in enumerate(recommendations, 1):
-                                # ... existing song display code ...
-                                pass
-                        
+
                         with result_tabs[2]:  # Analytics
                             if len(st.session_state.search_analytics) > 1:
                                 col1, col2 = st.columns(2)
@@ -551,24 +709,63 @@ with tab1:
                                 processing_time = query_analysis.get('processing_time', 'N/A')
                                 st.write(f"**Processing Time:** {processing_time}")
                                 st.write(f"**Algorithm Version:** {data.get('algorithm_version', 'N/A')}")
-            
+                                
+                                # Strategy breakdown
+                                strategies_used = list(set([rec.get('recommendation_type', 'unknown') for rec in recommendations]))
+                                st.write(f"**Strategies Used:** {len(strategies_used)}")
+                                for strategy in strategies_used:
+                                    st.write(f"• {strategy.replace('_', ' ').title()}")
+                    
+                    else:
+                        st.warning("No recommendations found. The enhanced algorithm might need more specific search terms.")
+                        st.info("Try queries like: 'jazz saxophone', 'rock guitar', 'electronic dance', 'country ballads'")
+                
+                else:
+                    st.error(f"Recommendation service error: {response.status_code}")
+                    if response.status_code == 504:
+                        st.info("The service timed out. Try a simpler query or check your connection.")
+                    elif response.status_code == 503:
+                        st.info("The recommendation service is temporarily unavailable. Please try again later.")
+                    else:
+                        st.text(f"Response: {response.text}")
+                        
+            except requests.exceptions.Timeout:
+                st.error("⏰ Request timed out. The MusicBrainz API might be slow. Try again!")
+            except requests.exceptions.ConnectionError:
+                st.error(f"🔌 Connection error. Cannot reach API Gateway at {API_GATEWAY_URL}")
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected error: {e}")
     
     # Add session management
     if st.session_state.recommendation_history:
         st.markdown("---")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("📊 View Complete Session Analytics"):
+            if st.button("📊 View Session Overview"):
                 # Show comprehensive session view
-                pass
+                st.subheader("📈 Session Overview")
+                
+                total_searches = len(st.session_state.search_analytics)
+                total_songs = len(st.session_state.recommendation_history)
+                
+                if total_searches > 0:
+                    st.write(f"**Total Searches:** {total_searches}")
+                    st.write(f"**Total Songs Found:** {total_songs}")
+                    
+                    # Show search history
+                    st.subheader("🔍 Your Search History")
+                    for i, search in enumerate(st.session_state.search_analytics[-5:], 1):  # Show last 5
+                        with st.expander(f"Search {i}: '{search['query']}' ({len(search['recommendations'])} results)"):
+                            for rec in search['recommendations'][:3]:  # Show top 3 from each search
+                                st.write(f"• **{rec['track_title']}** by *{rec['artist_name']}* (Score: {rec['score']})")
+        
         with col2:
             if st.button("🗑️ Clear Session Data"):
                 st.session_state.search_analytics = []
                 st.session_state.recommendation_history = []
                 st.success("Session data cleared!")
                 st.rerun()
+    
 
 with tab2:
     st.header("🎤 Search Artists")
