@@ -9,46 +9,55 @@ from PIL import Image
 # Configuration - Use environment variable with fallback
 API_GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://localhost:8000")
 
-st.set_page_config(page_title="Orchestr8r: Continuous Delivery of your Perfect Playlist", page_icon="🎵", layout="wide")
+# Set page configuration
+st.set_page_config(page_title="Orchestr8r: Continuous Delivery of your Perfect Playlist", page_icon="ui/static/images/orchestr8r_8.ico", layout="wide", initial_sidebar_state="collapsed")
 
 # Initialize session state
 if 'username' not in st.session_state:
     st.session_state.username = "guest"
 
-st.title("🎵 Orchestr8r: Continuous Delivery of your Perfect Playlist <br>Music Recommendation System using Microservices Architecture")
-st.markdown("Discover music with smart recommendations that understand artists, genres, and moods")
+# Function to load images safely
+def load_image(image_path):
+    """Load image with error handling"""
+    try:
+        if os.path.exists(image_path):
+            return Image.open(image_path)
+        else:
+            st.warning(f"Image not found: {image_path}")
+            return None
+    except Exception as e:
+        st.error(f"Error loading image: {e}")
+        return None
 
-# Debug info in sidebar
-with st.sidebar:
-    st.header("🔧 Debug Info")
-    st.write(f"🔗 API Gateway: {API_GATEWAY_URL}")
+# Define image paths relative to the ui directory
+def get_image_path(filename):
+    """Get the correct image path whether running locally or in Docker"""
+    # Try different possible paths
+    possible_paths = [
+        f"ui/static/images/{filename}",  # From project root
+        f"static/images/{filename}",     # From ui directory
+        f"./static/images/{filename}",   # Relative from current
+        filename  # Direct filename if in same directory
+    ]
     
-    # Test API connection and version
-    try:
-        response = requests.get(f"{API_GATEWAY_URL}/health", timeout=5)
-        if response.status_code == 200:
-            st.success("✅ API Connected")
-        else:
-            st.error("❌ API Connection Failed")
-    except Exception as e:
-        st.error(f"❌ API Error: {e}")
+    for path in possible_paths:
+        if os.path.exists(path):
+            return path
     
-    # Test recommendation service specifically
-    try:
-        # Test if we're hitting the enhanced recommendation service
-        response = requests.get(f"{API_GATEWAY_URL}/api/recommendations/query", 
-                              params={"query": "test", "limit": 1}, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            if "query_analyzed" in data:
-                st.success("✅ Enhanced Algorithm Active")
-                st.json(data.get("query_analyzed", {}))
-            else:
-                st.warning("⚠️ Old Algorithm Running")
-        else:
-            st.error("❌ Recommendation Service Down")
-    except Exception as e:
-        st.error(f"❌ Rec Service Error: {str(e)[:100]}")
+    # If no file found, return the most likely path for error reporting
+    return f"ui/static/images/{filename}"
+
+# Load and display header image/logo
+logo_path = get_image_path("orchestr8r_logo.png")
+logo_image = load_image(logo_path)
+if logo_image:
+        st.image(logo_image, caption=None, use_column_width=True)
+
+st.title("Orchestr8r: Continuous Delivery of your Perfect Playlist \nMusic Recommendation System using Microservices Architecture")
+
+       
+
+st.markdown("Discover music with smart recommendations that understand artists, genres, and moods")
 
 # User Profile Setup in Sidebar
 with st.sidebar:
@@ -110,21 +119,31 @@ with st.sidebar:
         except Exception as e:
             st.error(f"Error: {e}")
 
+# Apply CSS for coloring the active tab title
+st.markdown("""
+<style>
+.stTabs [aria-selected="true"] {
+    color: white !important;
+    background-color: #6366F1 !important; /* Dark Blue background */
+    border-radius: 15px 15px 0px 0px; /* Applies rounding to top corners only */
+    overflow: hidden !important; /* Ensures the rounded corners are visible */
+    padding-top: 20px; /* Adjust top padding */
+    padding-bottom: 20px; /* Adjust bottom padding */
+    padding-left: 15px; /* Adjust left padding */
+    padding-right: 15px; /* Adjust right padding */
+        
+}
+.stTabs [data-baseweb="tab-list"] {
+    gap: 1px; /* Adjust gap between tabs */
+}
+</style>
+""", unsafe_allow_html=True)
+
 # Main navigation
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🏠 Home", "🎤 Search Artists", "💿 Search Albums", "🎯 Recommendations", "💾 Saved Data", "🔧 Status for Nerds"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🏠 Home", "🎤 Search Artists", "💿 Search Albums", "🎯 Recommendations", "💾 Saved Data", "🔧 Info for Nerds"])
 
 with tab1:
     st.header("🏠 Enhanced Music Discovery")
-    
-    # Add explanation of improvements
-    st.info("""
-    🎯 **New Enhanced Algorithm**: 
-    - **Artist Focus**: 30% weight on matching artists
-    - **Genre Intelligence**: 25% weight on musical genres  
-    - **Mood Detection**: Understands "upbeat", "relaxing", "aggressive", etc.
-    - **Smart Search**: Multiple search strategies per query
-    - **Title Balance**: Only 25% weight (down from 90%+)
-    """)
     
     st.markdown("""
     ### Smart Song Recommendations
@@ -240,60 +259,11 @@ with tab1:
             except Exception as e:
                 st.error(f"Unexpected error: {e}")
     
-    # Test queries section
-    st.markdown("---")
-    st.subheader("🧪 Test the Enhanced Algorithm")
-    
-    test_queries = [
-        "old school rap",
-        "relaxing jazz piano", 
-        "energetic rock songs",
-        "acoustic folk ballads",
-        "electronic dance music",
-        "heavy metal guitar"
-    ]
-    
-    cols = st.columns(3)
-    for i, test_query in enumerate(test_queries):
-        col = cols[i % 3]
-        with col:
-            if st.button(f"Test: '{test_query}'", key=f"test_{i}"):
-                st.session_state['test_query'] = test_query
-                st.rerun()
-    
-    # Execute test query if selected
-    if 'test_query' in st.session_state:
-        query = st.session_state['test_query']
-        del st.session_state['test_query']  # Clear it
-        st.write(f"**Testing query: '{query}'**")
-        
-        try:
-            params = {"query": query, "limit": 5}
-            if username != "guest":
-                params["username"] = username
-            
-            response = requests.get(f"{API_GATEWAY_URL}/api/recommendations/query", 
-                                  params=params, timeout=20)
-            
-            if response.status_code == 200:
-                data = response.json()
-                recommendations = data.get("recommendations", [])
-                
-                if recommendations:
-                    for i, rec in enumerate(recommendations[:3], 1):  # Show top 3
-                        st.write(f"{i}. **{rec['track_title']}** by *{rec['artist_name']}* (Score: {rec['score']})")
-                else:
-                    st.write("No results found")
-            else:
-                st.write(f"Error: {response.status_code}")
-        except Exception as e:
-            st.write(f"Error: {e}")
-
 
 with tab2:
     st.header("🎤 Search Artists")
     
-    query = st.text_input("Enter artist name:", placeholder="e.g., The Beatles")
+    query = st.text_input("Enter artist name:", placeholder="e.g., Radiohead")
     limit = st.slider("Number of results:", 1, 50, 10)
     
     if st.button("Search Artists") and query:
@@ -359,9 +329,9 @@ with tab3:
     
     col1, col2 = st.columns(2)
     with col1:
-        artist_name = st.text_input("Artist name:", placeholder="e.g., The Beatles")
+        artist_name = st.text_input("Artist name:", placeholder="e.g., Radiohead")
     with col2:
-        album_title = st.text_input("Album title:", placeholder="e.g., Abbey Road")
+        album_title = st.text_input("Album title:", placeholder="e.g., Pablo Honey")
     
     limit = st.slider("Number of results:", 1, 50, 10, key="album_limit")
     
@@ -553,7 +523,7 @@ with tab4:
         st.subheader("🎤 Discover Similar Artists")
         
         artist_name = st.text_input("Enter an artist name:", 
-                                  placeholder="e.g., Radiohead, Taylor Swift, Miles Davis")
+                                  placeholder="e.g., Kendrick Lamar, Chappell Roan, Miles Davis")
         rec_limit = st.slider("Number of recommendations:", 5, 20, 10, key="similar_rec_limit")
         
         if st.button("🎵 Find Similar Music", type="primary") and artist_name:
@@ -706,8 +676,19 @@ with tab5:
             # Here you could add code to fetch and display user's listening history
 
 with tab6:
-    st.header("🔧 Service Status & Algorithm Verification")
+    st.header("🔧 Service Status & Algorithm Information & Verification")
     
+    # Add explanation of algorithm improvements
+    st.info("""
+    🎯 **Enhanced Algorithm**: 
+    - **Artist Focus**: 30% weight on matching artists
+    - **Genre Intelligence**: 25% weight on musical genres  
+    - **Mood Detection**: Understands "upbeat", "relaxing", "aggressive", etc.
+    - **Smart Search**: Multiple search strategies per query
+    - **Title Balance**: Only 25% weight (down from 90%+)
+    """)
+    
+
     # Check if enhanced algorithm is running
     st.subheader("🧠 Algorithm Status")
     
@@ -718,7 +699,7 @@ with tab6:
             data = response.json()
             if "query_analyzed" in data:
                 st.success("✅ **Enhanced Algorithm Active**")
-                st.json(data.get("query_analyzed", {}))
+                #st.json(data.get("query_analyzed", {}))
                 
                 # Show version info
                 health_response = requests.get(f"{API_GATEWAY_URL}/health", timeout=5)
@@ -766,4 +747,4 @@ docker-compose up
 
 # Footer
 st.markdown("---")
-st.markdown("🔧 Built with Streamlit, FastAPI, Claude.ai for building Enhanced AI Recommendations | Version 2.0")
+st.markdown("🔧 Built with Streamlit, FastAPI, and Claude.ai for building Enhanced AI Recommendations | Version 0.2 beta")
