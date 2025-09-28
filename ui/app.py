@@ -151,6 +151,7 @@ with tab1:
     - **"old school rap"** - Should find classic hip-hop artists
     - **"relaxing jazz piano"** - Should prioritize jazz pianists  
     - **"energetic rock songs"** - Should find upbeat rock bands
+    - **"hazy vaporwave"** - Should find hazy, ethereal slowed-down music with distorted samples
     - **"acoustic folk ballads"** - Should find folk artists with acoustic style
     """)
     
