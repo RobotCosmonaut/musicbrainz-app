@@ -97,8 +97,9 @@ def get_artist(artist_id: str, db: Session = Depends(get_db)):
 def list_artists(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """List artists from local database"""
     try:
-        artists = db.query(Artist).offset(skip).limit(limit).all()
-        return {"artists": [{"id": a.id, "name": a.name, "country": a.country} for a in artists]}
+        # Order by created_at DESC to get most recent first
+        artists = db.query(Artist).order_by(Artist.created_at.desc()).offset(skip).limit(limit).all()
+        return {"artists": [{"id": a.id, "name": a.name, "country": a.country, "created_at": str(a.created_at)} for a in artists]}
     except Exception as e:
         logger.error(f"Error in list_artists: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

@@ -11,6 +11,7 @@ from plotly.subplots import make_subplots
 from collections import Counter, defaultdict
 import numpy as np
 import pandas as pd
+from sqlalchemy import create_engine, text
 
 # Configuration - Use environment variable with fallback
 API_GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://localhost:8000")
@@ -309,6 +310,747 @@ def create_genre_detection_radar(query_analysis):
     
     return fig
 
+def fetch_artist_countries(recommendations, api_gateway_url):
+    """
+    Fetch country information for artists in recommendations
+    
+    Args:
+        recommendations: List of recommendation dicts with artist_id
+        api_gateway_url: Base URL for API gateway
+    
+    Returns:
+        Dict mapping artist_id to country code
+    """
+    artist_countries = {}
+    
+    for rec in recommendations:
+        artist_id = rec.get('artist_id')
+        if artist_id and artist_id not in artist_countries:
+            try:
+                # Fetch artist details from your API
+                response = requests.get(
+                    f"{api_gateway_url}/api/artists/{artist_id}",
+                    timeout=5
+                )
+                if response.status_code == 200:
+                    artist_data = response.json()
+                    country = artist_data.get('country')
+                    if country:
+                        artist_countries[artist_id] = country
+            except Exception as e:
+                print(f"Error fetching artist {artist_id}: {e}")
+                continue
+    
+    return artist_countries
+
+def create_artist_origin_map(recommendations, api_gateway_url):
+    """
+    Create an interactive world map showing artist countries of origin
+    
+    Args:
+        recommendations: List of recommendation dicts
+        api_gateway_url: Base URL for API gateway
+        
+    Returns:
+        Plotly figure object or None
+    """
+    if not recommendations:
+        return None
+    
+    # Fetch country data for all artists
+    import streamlit as st
+    with st.spinner("Fetching artist country data..."):
+        artist_countries = fetch_artist_countries(recommendations, api_gateway_url)
+    
+    if not artist_countries:
+        return None
+    
+    # Map artist IDs to countries in recommendations
+    countries_list = []
+    for rec in recommendations:
+        artist_id = rec.get('artist_id')
+        if artist_id in artist_countries:
+            country = artist_countries[artist_id]
+            if country:  # Only add if country is not None or empty
+                countries_list.append({
+                    'country': country,
+                    'artist_name': rec['artist_name'],
+                    'track_title': rec['track_title']
+                })
+    
+    if not countries_list:
+        return None
+    
+    # Debug output
+    st.write(f"📍 Found {len(countries_list)} tracks with country information from {len(set(c['country'] for c in countries_list))} countries")
+    
+    # Count artists per country
+    country_counts = Counter([item['country'] for item in countries_list])
+    
+    # Convert ISO country codes to full names for better display
+    country_name_mapping = {
+        'US': 'United States',
+        'GB': 'United Kingdom',
+        'CA': 'Canada',
+        'AU': 'Australia',
+        'DE': 'Germany',
+        'FR': 'France',
+        'IT': 'Italy',
+        'ES': 'Spain',
+        'JP': 'Japan',
+        'KR': 'South Korea',
+        'BR': 'Brazil',
+        'MX': 'Mexico',
+        'AR': 'Argentina',
+        'SE': 'Sweden',
+        'NO': 'Norway',
+        'FI': 'Finland',
+        'NL': 'Netherlands',
+        'BE': 'Belgium',
+        'CH': 'Switzerland',
+        'AT': 'Austria',
+        'IE': 'Ireland',
+        'NZ': 'New Zealand',
+        'ZA': 'South Africa',
+        'IN': 'India',
+        'CN': 'China',
+        'RU': 'Russia',
+        'PL': 'Poland',
+        'CZ': 'Czech Republic',
+        'DK': 'Denmark',
+        'PT': 'Portugal',
+        'GR': 'Greece',
+        'TR': 'Turkey',
+        'IS': 'Iceland',
+        'JM': 'Jamaica',
+        'CU': 'Cuba',
+        'CL': 'Chile',
+        'CO': 'Colombia',
+        'PE': 'Peru',
+        'VE': 'Venezuela',
+        'EG': 'Egypt',
+        'NG': 'Nigeria',
+        'KE': 'Kenya',
+        'IL': 'Israel',
+        'AE': 'United Arab Emirates',
+        'SG': 'Singapore',
+        'TH': 'Thailand',
+        'MY': 'Malaysia',
+        'PH': 'Philippines',
+        'ID': 'Indonesia',
+        'VN': 'Vietnam',
+        'HK': 'Hong Kong',
+        'TW': 'Taiwan'
+    }
+    
+    # Prepare data for choropleth
+    map_data = []
+    for country_code, count in country_counts.items():
+        country_name = country_name_mapping.get(country_code, country_code)
+        
+        # Get artist names from this country
+        artists_from_country = [
+            item['artist_name'] 
+            for item in countries_list 
+            if item['country'] == country_code
+        ]
+        unique_artists = list(set(artists_from_country))
+        
+        map_data.append({
+            'country_code': country_code,
+            'country_name': country_name,
+            'artist_count': count,
+            'artists': ', '.join(unique_artists[:5])  # Show up to 5 artists
+        })
+    
+    df = pd.DataFrame(map_data)
+    
+    # Debug: Show what countries we have
+    print(f"Countries found: {df['country_code'].tolist()}")
+    print(f"Artist counts: {df['artist_count'].tolist()}")
+    
+    # Convert 2-letter ISO codes to 3-letter ISO codes for Plotly
+    iso2_to_iso3 = {
+        'US': 'USA', 'GB': 'GBR', 'CA': 'CAN', 'AU': 'AUS', 'DE': 'DEU',
+        'FR': 'FRA', 'IT': 'ITA', 'ES': 'ESP', 'JP': 'JPN', 'KR': 'KOR',
+        'BR': 'BRA', 'MX': 'MEX', 'AR': 'ARG', 'SE': 'SWE', 'NO': 'NOR',
+        'FI': 'FIN', 'NL': 'NLD', 'BE': 'BEL', 'CH': 'CHE', 'AT': 'AUT',
+        'IE': 'IRL', 'NZ': 'NZL', 'ZA': 'ZAF', 'IN': 'IND', 'CN': 'CHN',
+        'RU': 'RUS', 'PL': 'POL', 'CZ': 'CZE', 'DK': 'DNK', 'PT': 'PRT',
+        'GR': 'GRC', 'TR': 'TUR', 'IS': 'ISL', 'JM': 'JAM', 'CU': 'CUB',
+        'CL': 'CHL', 'CO': 'COL', 'PE': 'PER', 'VE': 'VEN', 'EG': 'EGY',
+        'NG': 'NGA', 'KE': 'KEN', 'IL': 'ISR', 'AE': 'ARE', 'SG': 'SGP',
+        'TH': 'THA', 'MY': 'MYS', 'PH': 'PHL', 'ID': 'IDN', 'VN': 'VNM',
+        'HK': 'HKG', 'TW': 'TWN', 'UA': 'UKR', 'RO': 'ROU', 'HU': 'HUN',
+        'HR': 'HRV', 'SK': 'SVK', 'SI': 'SVN', 'BG': 'BGR', 'LT': 'LTU',
+        'LV': 'LVA', 'EE': 'EST', 'RS': 'SRB', 'BA': 'BIH', 'MK': 'MKD',
+        'AL': 'ALB', 'MA': 'MAR', 'TN': 'TUN', 'DZ': 'DZA', 'LY': 'LBY',
+        'SA': 'SAU', 'IQ': 'IRQ', 'IR': 'IRN', 'AF': 'AFG', 'PK': 'PAK',
+        'BD': 'BGD', 'LK': 'LKA', 'NP': 'NPL', 'MM': 'MMR', 'KH': 'KHM',
+        'LA': 'LAO', 'MN': 'MNG', 'KZ': 'KAZ', 'UZ': 'UZB', 'TM': 'TKM',
+        'KG': 'KGZ', 'TJ': 'TJK', 'GE': 'GEO', 'AM': 'ARM', 'AZ': 'AZE'
+    }
+    
+    # Convert country codes to ISO-3
+    df['country_code_iso3'] = df['country_code'].map(lambda x: iso2_to_iso3.get(x, x))
+    
+    # Create choropleth map with ISO-3 codes
+    fig = go.Figure(data=go.Choropleth(
+        locations=df['country_code_iso3'],  # Use ISO-3 codes
+        z=df['artist_count'],
+        locationmode='ISO-3',
+        text=df['country_name'],
+        colorscale=[
+            [0, '#E0E7FF'],      # Very light indigo
+            [0.2, '#C7D2FE'],    # Light indigo
+            [0.4, '#A5B4FC'],    # Medium light indigo
+            [0.6, '#818CF8'],    # Medium indigo
+            [0.8, '#6366F1'],    # Indigo (your primary color)
+            [1.0, '#4F46E5']     # Dark indigo
+        ],
+        colorbar=dict(
+            title="Number of<br>Artists",
+            tickmode='linear',
+            tick0=0,
+            dtick=1 if max(df['artist_count']) < 10 else None,
+            len=0.7,
+            thickness=15
+        ),
+        hovertemplate='<b>%{text}</b><br>' +
+                      'Artists: %{z}<br>' +
+                      '<extra></extra>',
+        marker_line_color='white',
+        marker_line_width=0.5,
+        showscale=True
+    ))
+    
+    fig.update_layout(
+        title={
+            'text': '🌍 Artist Countries of Origin',
+            'x': 0.5,
+            'xanchor': 'center',
+            'font': {'size': 20, 'color': '#262730'}
+        },
+        geo=dict(
+            showframe=False,
+            showcoastlines=True,
+            coastlinecolor='#64748B',
+            projection_type='natural earth',
+            bgcolor='rgba(0,0,0,0)',
+            landcolor='#F1F5F9',
+            oceancolor='#E0F2FE',
+            showland=True,
+            showcountries=True,
+            countrycolor='white'
+        ),
+        height=500,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=0, r=0, t=50, b=0)
+    )
+    
+    return fig
+
+def create_simple_country_visualization(recommendations, api_gateway_url):
+    """
+    Simpler country visualization as a fallback or alternative
+    Shows countries as a sunburst or treemap
+    """
+    if not recommendations:
+        return None
+    
+    artist_countries = fetch_artist_countries(recommendations, api_gateway_url)
+    
+    if not artist_countries:
+        return None
+    
+    # Build data structure
+    country_artists = {}
+    for rec in recommendations:
+        artist_id = rec.get('artist_id')
+        if artist_id in artist_countries:
+            country = artist_countries[artist_id]
+            if country:
+                if country not in country_artists:
+                    country_artists[country] = []
+                country_artists[country].append(rec['artist_name'])
+    
+    if not country_artists:
+        return None
+    
+    # Country name mapping
+    country_names = {
+        'US': 'United States', 'GB': 'United Kingdom', 'CA': 'Canada',
+        'AU': 'Australia', 'DE': 'Germany', 'FR': 'France', 'IT': 'Italy',
+        'ES': 'Spain', 'JP': 'Japan', 'KR': 'South Korea', 'BR': 'Brazil',
+        'MX': 'Mexico', 'SE': 'Sweden', 'NO': 'Norway', 'FI': 'Finland',
+        'NL': 'Netherlands', 'BE': 'Belgium', 'CH': 'Switzerland', 'AT': 'Austria'
+    }
+    
+    # Prepare sunburst data
+    labels = ['All Countries']
+    parents = ['']
+    values = [0]
+    colors = ['#6366F1']
+    
+    for country_code, artists in country_artists.items():
+        country_name = country_names.get(country_code, country_code)
+        unique_artists = list(set(artists))
+        
+        labels.append(country_name)
+        parents.append('All Countries')
+        values.append(len(artists))
+        colors.append('#8B5CF6')
+        
+        # Add individual artists
+        for artist in unique_artists[:3]:  # Limit to top 3 artists per country
+            labels.append(artist)
+            parents.append(country_name)
+            values.append(artists.count(artist))
+            colors.append('#A5B4FC')
+    
+    fig = go.Figure(go.Sunburst(
+        labels=labels,
+        parents=parents,
+        values=values,
+        marker=dict(colors=colors),
+        branchvalues="total",
+        hovertemplate='<b>%{label}</b><br>Tracks: %{value}<extra></extra>'
+    ))
+    
+    fig.update_layout(
+        title='🌍 Artist Distribution by Country',
+        height=500,
+        paper_bgcolor='rgba(0,0,0,0)'
+    )
+    
+    return fig
+
+def create_country_bar_chart(recommendations, api_gateway_url):
+    """
+    Create a horizontal bar chart showing top countries by artist count
+    Companion chart to the world map
+    """
+    if not recommendations:
+        return None
+    
+    # Fetch country data
+    artist_countries = fetch_artist_countries(recommendations, api_gateway_url)
+    
+    if not artist_countries:
+        return None
+    
+    # Count countries
+    countries_list = []
+    for rec in recommendations:
+        artist_id = rec.get('artist_id')
+        if artist_id in artist_countries:
+            countries_list.append(artist_countries[artist_id])
+    
+    if not countries_list:
+        return None
+    
+    country_counts = Counter(countries_list)
+    
+    # Get top 10 countries
+    top_countries = dict(country_counts.most_common(10))
+    
+    # Country name mapping
+    country_name_mapping = {
+        'US': '🇺🇸 United States',
+        'GB': '🇬🇧 United Kingdom',
+        'CA': '🇨🇦 Canada',
+        'AU': '🇦🇺 Australia',
+        'DE': '🇩🇪 Germany',
+        'FR': '🇫🇷 France',
+        'IT': '🇮🇹 Italy',
+        'ES': '🇪🇸 Spain',
+        'JP': '🇯🇵 Japan',
+        'KR': '🇰🇷 South Korea',
+        'BR': '🇧🇷 Brazil',
+        'MX': '🇲🇽 Mexico',
+        'SE': '🇸🇪 Sweden',
+        'NO': '🇳🇴 Norway',
+    }
+    
+    countries_display = [country_name_mapping.get(code, code) for code in top_countries.keys()]
+    
+    fig = go.Figure(data=[
+        go.Bar(
+            y=countries_display,
+            x=list(top_countries.values()),
+            orientation='h',
+            marker_color='#6366F1',
+            text=list(top_countries.values()),
+            textposition='auto',
+            hovertemplate='<b>%{y}</b><br>Artists: %{x}<extra></extra>'
+        )
+    ])
+    
+    fig.update_layout(
+        title="🎤 Top Countries by Artist Count",
+        xaxis_title="Number of Artists",
+        yaxis_title="",
+        height=400,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        yaxis={'categoryorder': 'total ascending'},
+        margin=dict(l=150, r=20, t=50, b=50)
+    )
+    
+    return fig
+
+
+def add_database_viewer_tab():
+    """Add this to your Streamlit app for web-based database viewing"""
+    
+    st.header("🗄️ Database Explorer")
+    
+    # Database connection - determine if running in Docker or locally
+    # If API_GATEWAY_URL contains 'api-gateway', we're in Docker
+    API_GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://localhost:8000")
+    
+    if 'api-gateway' in API_GATEWAY_URL:
+        # Running inside Docker - use Docker service name
+        DATABASE_URL = "postgresql://user:password@postgres:5432/musicbrainz"
+    else:
+        # Running locally - use localhost
+        DATABASE_URL = "postgresql://user:password@localhost:5432/musicbrainz"
+    
+    # Or simply use the environment variable directly
+    DATABASE_URL = os.getenv("DATABASE_URL", DATABASE_URL)
+    
+    try:
+        # Table selection
+        table = st.selectbox("Select table to view:", 
+                           ["artists", "albums", "tracks", "user_profiles", "recommendations"])
+        
+        # Limit selection
+        limit = st.slider("Number of records to show:", 1, 100, 20)
+        
+        if st.button("Query Database"):
+            with st.spinner("Querying database..."):
+                # Use pandas to read from database
+                query = f"SELECT * FROM {table} LIMIT {limit}"
+                df = pd.read_sql(query, DATABASE_URL)
+                
+                if not df.empty:
+                    st.success(f"Found {len(df)} records")
+                    st.dataframe(df, use_container_width=True)
+                    
+                    # Show basic stats
+                    st.subheader("📊 Table Statistics")
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        total_query = f"SELECT COUNT(*) as count FROM {table}"
+                        total_df = pd.read_sql(total_query, DATABASE_URL)
+                        st.metric("Total Records", total_df['count'][0])
+                    
+                    with col2:
+                        st.metric("Columns", len(df.columns))
+                    
+                    with col3:
+                        st.metric("Showing", len(df))
+                    
+                    # Show column info
+                    st.subheader("🏗️ Table Structure")
+                    structure_query = f"""
+                        SELECT column_name, data_type, is_nullable
+                        FROM information_schema.columns
+                        WHERE table_name = '{table}'
+                        ORDER BY ordinal_position
+                    """
+                    structure_df = pd.read_sql(structure_query, DATABASE_URL)
+                    st.dataframe(structure_df, use_container_width=True)
+                else:
+                    st.warning("No data found in table")
+        
+        # Custom SQL query section
+        st.subheader("📝 Custom SQL Query")
+        custom_query = st.text_area("Enter your SQL query: *Note: SQL commands such as SELECT * FROM artists WHERE country = 'US' LIMIT 10 are supported. Commands like DROP, DELETE, UPDATE are not allowed for safety.*", 
+                                   placeholder="SELECT * FROM artists WHERE country = 'US' LIMIT 10")
+        
+        if st.button("Execute Query") and custom_query:
+            try:
+                custom_df = pd.read_sql(custom_query, DATABASE_URL)
+                st.success(f"Query executed successfully! {len(custom_df)} rows returned.")
+                st.dataframe(custom_df, use_container_width=True)
+            except Exception as e:
+                st.error(f"Query error: {e}")
+    
+    except Exception as e:
+        st.error(f"Database connection error: {e}")
+
+
+def fetch_artist_timeline_data(recommendations, api_gateway_url):
+    """
+    Fetch begin_date and end_date for artists from the database
+    
+    Args:
+        recommendations: List of recommendation dicts with artist_id
+        api_gateway_url: Base URL for API gateway
+    
+    Returns:
+        Dict mapping artist_id to timeline data
+    """
+    artist_timeline = {}
+    
+    for rec in recommendations:
+        artist_id = rec.get('artist_id')
+        if artist_id and artist_id not in artist_timeline:
+            try:
+                response = requests.get(
+                    f"{api_gateway_url}/api/artists/{artist_id}",
+                    timeout=5
+                )
+                if response.status_code == 200:
+                    artist_data = response.json()
+                    begin_date = artist_data.get('begin_date', '')
+                    end_date = artist_data.get('end_date', '')
+                    
+                    # Extract year from date strings (format: YYYY-MM-DD or YYYY)
+                    begin_year = None
+                    end_year = None
+                    
+                    if begin_date:
+                        try:
+                            begin_year = int(begin_date.split('-')[0]) if begin_date else None
+                        except (ValueError, IndexError):
+                            pass
+                    
+                    if end_date:
+                        try:
+                            end_year = int(end_date.split('-')[0]) if end_date else None
+                        except (ValueError, IndexError):
+                            pass
+                    
+                    artist_timeline[artist_id] = {
+                        'begin_year': begin_year,
+                        'end_year': end_year,
+                        'begin_date': begin_date,
+                        'end_date': end_date
+                    }
+            except Exception as e:
+                print(f"Error fetching artist {artist_id}: {e}")
+                continue
+    
+    return artist_timeline
+
+def classify_musical_era(begin_year, end_year=None):
+    """
+    Classify an artist into a musical era based on their active period
+    
+    Args:
+        begin_year: Year artist started (int)
+        end_year: Year artist ended (int or None for still active)
+    
+    Returns:
+        String representing the musical era
+    """
+    if not begin_year:
+        return 'Unknown Era'
+    
+    # Determine the primary active period (use begin_year or midpoint)
+    if end_year and end_year > begin_year:
+        primary_year = begin_year + (end_year - begin_year) // 2
+    else:
+        primary_year = begin_year
+    
+    # Musical era classifications
+    if primary_year < 1920:
+        return '🎻 Classical Era (pre-1920)'
+    elif 1920 <= primary_year < 1950:
+        return '🎺 Jazz Age & Swing (1920-1949)'
+    elif 1950 <= primary_year < 1960:
+        return '🎸 Birth of Rock & Roll (1950s)'
+    elif 1960 <= primary_year < 1970:
+        return '🎵 Golden Age of Rock (1960s)'
+    elif 1970 <= primary_year < 1980:
+        return '🎤 Disco & Punk Era (1970s)'
+    elif 1980 <= primary_year < 1990:
+        return '🎹 New Wave & MTV Era (1980s)'
+    elif 1990 <= primary_year < 2000:
+        return '💿 Grunge & Hip-Hop Rise (1990s)'
+    elif 2000 <= primary_year < 2010:
+        return '💻 Digital Revolution (2000s)'
+    elif 2010 <= primary_year < 2020:
+        return '📱 Streaming Era (2010s)'
+    else:
+        return '🌐 Contemporary Era (2020s+)'
+
+def create_decade_distribution_chart(recommendations, api_gateway_url):
+    """
+    Create a bar chart showing distribution of artists by decade they started
+    
+    Args:
+        recommendations: List of recommendation dicts
+        api_gateway_url: Base URL for API gateway
+        
+    Returns:
+        Plotly figure object or None
+    """
+    if not recommendations:
+        return None
+    
+    # Fetch timeline data
+    import streamlit as st
+    with st.spinner("Fetching artist timeline data..."):
+        artist_timeline = fetch_artist_timeline_data(recommendations, api_gateway_url)
+    
+    if not artist_timeline:
+        return None
+    
+    # Extract decades from begin years
+    decades = []
+    artist_decade_map = {}
+    
+    for rec in recommendations:
+        artist_id = rec.get('artist_id')
+        if artist_id in artist_timeline:
+            begin_year = artist_timeline[artist_id]['begin_year']
+            if begin_year:
+                decade = (begin_year // 10) * 10
+                decade_label = f"{decade}s"
+                decades.append(decade_label)
+                artist_decade_map[rec['artist_name']] = decade_label
+    
+    if not decades:
+        return None
+    
+    # Count by decade
+    decade_counts = Counter(decades)
+    
+    # Sort decades chronologically
+    sorted_decades = sorted(decade_counts.items(), key=lambda x: int(x[0][:-1]))
+    
+    decades_labels = [d[0] for d in sorted_decades]
+    decades_values = [d[1] for d in sorted_decades]
+    
+    # Create bar chart
+    fig = go.Figure(data=[
+        go.Bar(
+            x=decades_labels,
+            y=decades_values,
+            marker_color='#6366F1',
+            text=decades_values,
+            textposition='auto',
+            hovertemplate='<b>%{x}</b><br>Artists: %{y}<extra></extra>',
+            marker=dict(
+                line=dict(color='white', width=1)
+            )
+        )
+    ])
+    
+    fig.update_layout(
+        title={
+            'text': '📅 Artists by Starting Decade',
+            'x': 0.5,
+            'xanchor': 'center',
+            'font': {'size': 18, 'color': '#262730'}
+        },
+        xaxis_title="Decade",
+        yaxis_title="Number of Artists",
+        height=400,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        xaxis=dict(
+            tickangle=45,
+            gridcolor='rgba(200,200,200,0.2)'
+        ),
+        yaxis=dict(
+            gridcolor='rgba(200,200,200,0.2)'
+        ),
+        margin=dict(l=50, r=20, t=70, b=50)
+    )
+    
+    return fig
+
+
+def create_artist_timeline_gantt(recommendations, api_gateway_url, max_artists=15):
+    """
+    Create a Gantt chart showing artist active periods
+    
+    Args:
+        recommendations: List of recommendation dicts
+        api_gateway_url: Base URL for API gateway
+        max_artists: Maximum number of artists to display
+        
+    Returns:
+        Plotly figure object or None
+    """
+    if not recommendations:
+        return None
+    
+    # Fetch timeline data
+    import streamlit as st
+    with st.spinner("Building artist timeline..."):
+        artist_timeline = fetch_artist_timeline_data(recommendations, api_gateway_url)
+    
+    if not artist_timeline:
+        return None
+    
+    # Prepare data for Gantt chart
+    gantt_data = []
+    
+    for rec in recommendations[:max_artists]:  # Limit to avoid clutter
+        artist_id = rec.get('artist_id')
+        if artist_id in artist_timeline:
+            timeline = artist_timeline[artist_id]
+            begin_year = timeline['begin_year']
+            end_year = timeline['end_year']
+            
+            if begin_year:
+                # If no end year, assume still active (use current year)
+                if not end_year:
+                    end_year = datetime.now().year
+                
+                gantt_data.append({
+                    'Artist': rec['artist_name'],
+                    'Start': begin_year,
+                    'Finish': end_year,
+                    'Era': classify_musical_era(begin_year, end_year)
+                })
+    
+    if not gantt_data:
+        return None
+    
+    # Sort by start year
+    gantt_data.sort(key=lambda x: x['Start'])
+    
+    df = pd.DataFrame(gantt_data)
+    
+    # Create timeline chart
+    fig = px.timeline(
+        df,
+        x_start='Start',
+        x_end='Finish',
+        y='Artist',
+        color='Era',
+        title='⏰ Artist Active Periods Timeline',
+        labels={'Start': 'Begin Year', 'Finish': 'End Year'},
+        color_discrete_sequence=['#6366F1', '#8B5CF6', '#EC4899', '#F97316', 
+                                '#EAB308', '#22C55E', '#06B6D4', '#3B82F6']
+    )
+    
+    fig.update_layout(
+        height=max(400, len(gantt_data) * 30),
+        xaxis_title="Year",
+        yaxis_title="",
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        showlegend=True,
+        legend=dict(
+            orientation="v",
+            yanchor="top",
+            y=1,
+            xanchor="left",
+            x=1.01
+        )
+    )
+    
+    return fig
+
 
 
 # Function to load images safely
@@ -491,7 +1233,7 @@ with tab1:
                         st.success(f"🎉 Found {len(recommendations)} smart recommendations!")
                         
                         # Create tabbed interface for results
-                        result_tabs = st.tabs(["🎵 Song List", "📊 Visual Overview", "📈 Analytics", "🧠 Algorithm Insights"])
+                        result_tabs = st.tabs(["🎵 Song List", "📊 Visual Overview", "📈 Session Analytics", "🧠 Algorithm Insights"])
                         
 
                         
@@ -630,6 +1372,19 @@ with tab1:
                             col1, col2 = st.columns(2)
                             
                             with col1:
+                                
+                                # Artist diversity
+                                diversity_chart = create_artist_diversity_donut(recommendations)
+                                if diversity_chart:
+                                    st.plotly_chart(diversity_chart, use_container_width=True)
+
+                                # Decade distribution
+                                decade_chart = create_decade_distribution_chart(recommendations, API_GATEWAY_URL)
+                                if decade_chart:
+                                    st.plotly_chart(decade_chart, use_container_width=True)
+                                else:
+                                    st.info("⏳ Timeline data not available for these artists")
+                                
                                 # Score distribution
                                 score_chart = create_score_distribution_chart(recommendations)
                                 if score_chart:
@@ -641,15 +1396,68 @@ with tab1:
                                     st.plotly_chart(strategy_chart, use_container_width=True)
                             
                             with col2:
-                                # Artist diversity
-                                diversity_chart = create_artist_diversity_donut(recommendations)
-                                if diversity_chart:
-                                    st.plotly_chart(diversity_chart, use_container_width=True)
                                 
+                                # Artist origin map
+                                country_map = create_artist_origin_map(recommendations, API_GATEWAY_URL)
+                                if country_map:
+                                    st.plotly_chart(country_map, use_container_width=True)
+        
+                                    # Show detailed country breakdown
+                                    with st.expander("📊 View Country Details"):
+                                        artist_countries = fetch_artist_countries(recommendations, API_GATEWAY_URL)
+                                        country_data = []
+                                        for rec in recommendations:
+                                            artist_id = rec.get('artist_id')
+                                            if artist_id in artist_countries:
+                                                country_data.append({
+                                                    'Artist': rec['artist_name'],
+                                                    'Track': rec['track_title'],
+                                                    'Country': artist_countries[artist_id]
+                                                })
+            
+                                        if country_data:
+                                            country_df = pd.DataFrame(country_data)
+                                            st.dataframe(country_df, use_container_width=True)
+                                else:
+                                    st.info("🌍 Country information not available for these artists")
+                                
+                                # Show summary statistics
+                                artist_timeline = fetch_artist_timeline_data(recommendations, API_GATEWAY_URL)
+    
+                                if artist_timeline:
+                                    # Build artist-year mapping
+                                    artist_years = {}
+                                    for rec in recommendations:
+                                        artist_id = rec.get('artist_id')
+                                        if artist_id in artist_timeline and artist_timeline[artist_id]['begin_year']:
+                                            artist_name = rec['artist_name']
+                                            begin_year = artist_timeline[artist_id]['begin_year']
+                                            artist_years[artist_name] = begin_year
+        
+                                    if artist_years:
+                                        # Find oldest and newest artists
+                                        oldest_artist = min(artist_years.items(), key=lambda x: x[1])
+                                        newest_artist = max(artist_years.items(), key=lambda x: x[1])
+            
+                                        st.metric("Oldest Artist", 
+                                            f"{oldest_artist[1]}", 
+                                            delta=oldest_artist[0])
+                                        st.metric("Newest Artist", 
+                                            f"{newest_artist[1]}", 
+                                            delta=newest_artist[0])
+                                        st.metric("Year Range", 
+                                            f"{newest_artist[1] - oldest_artist[1]} years")
+            
+                                        # Count active vs ended
+                                        active = sum(1 for t in artist_timeline.values() if not t['end_year'])
+                                        ended = sum(1 for t in artist_timeline.values() if t['end_year'])
+                                        st.metric("Still Active", f"{active}/{active+ended}")
+
                                 # Quality gauge
                                 quality_gauge = create_search_quality_gauge(recommendations, query_analysis)
                                 if quality_gauge:
                                     st.plotly_chart(quality_gauge, use_container_width=True)
+
 
                         with result_tabs[2]:  # Analytics
                             if len(st.session_state.search_analytics) > 1:
@@ -685,7 +1493,7 @@ with tab1:
                                 with col4:
                                     st.metric("Avg Score", f"{avg_score:.1f}")
                             else:
-                                st.info("Search more to see analytics trends!")
+                                st.info("Search more to see this session's analytics trends!")
                         
                         with result_tabs[3]:  # Algorithm Insights
                             col1, col2 = st.columns(2)
@@ -1149,38 +1957,23 @@ with tab4:
 with tab5:
     st.header("💾 Saved Data")
     
-    data_tab1, data_tab2, data_tab3 = st.tabs(["Artists", "Albums", "My Activity"])
-    
-    with data_tab1:
-        st.subheader("Saved Artists")
-        try:
-            response = requests.get(f"{API_GATEWAY_URL}/api/artists", params={"limit": 100})
-            if response.status_code == 200:
-                data = response.json()
-                artists = data.get("artists", [])
+    st.subheader("Most Recent 100 Saved Artists")
+    try:
+        response = requests.get(f"{API_GATEWAY_URL}/api/artists", params={"limit": 100})
+        if response.status_code == 200:
+            data = response.json()
+            artists = data.get("artists", [])
                 
-                if artists:
-                    df = pd.DataFrame(artists)
-                    st.dataframe(df, use_container_width=True)
-                    st.info(f"Total saved artists: {len(artists)}")
-                else:
-                    st.info("No artists saved yet")
+            if artists:
+                df = pd.DataFrame(artists)
+                st.dataframe(df, use_container_width=True)
             else:
-                st.error("Could not load saved artists")
-        except Exception as e:
-            st.error(f"Error: {e}")
-    
-    with data_tab2:
-        st.subheader("Saved Albums")
-        st.info("Album listing feature coming soon...")
-    
-    with data_tab3:
-        st.subheader("My Listening Activity")
-        if username == "guest":
-            st.warning("Set a username to track your activity!")
+                st.info("No artists saved yet")
         else:
-            st.info("Activity tracking feature - shows your liked songs, saved tracks, and listening patterns")
-            # Here you could add code to fetch and display user's listening history
+            st.error("Could not load saved artists")
+    except Exception as e:
+        st.error(f"Error: {e}")
+    add_database_viewer_tab()
 
 with tab6:
     st.header("🔧 Service Status & Algorithm Information & Verification")
