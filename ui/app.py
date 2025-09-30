@@ -1578,66 +1578,249 @@ with tab1:
 with tab2:
     st.header("🎤 Search Artists")
     
-    query = st.text_input("Enter artist name:", placeholder="e.g., Radiohead")
-    limit = st.slider("Number of results:", 1, 50, 10)
+    # Initialize session state for artist details
+    if 'selected_artist_id' not in st.session_state:
+        st.session_state.selected_artist_id = None
     
-    if st.button("Search Artists") and query:
-        with st.spinner("Searching artists..."):
+    # Debug info (remove this after fixing)
+    with st.expander("🐛 Debug Info (click to expand)"):
+        st.write("Session State:")
+        st.write(f"selected_artist_id: {st.session_state.selected_artist_id}")
+        st.write(f"Type: {type(st.session_state.selected_artist_id)}")
+    
+    # Callback function to set artist ID
+    def set_artist_id(artist_id):
+        st.session_state.selected_artist_id = artist_id
+        st.write(f"DEBUG: Setting artist_id to {artist_id}")  # Debug output
+    
+    # Callback to clear artist ID
+    def clear_artist_id():
+        st.session_state.selected_artist_id = None
+    
+    # Check if we should display artist details
+    if st.session_state.selected_artist_id is not None and st.session_state.selected_artist_id != "":
+        artist_id = st.session_state.selected_artist_id
+        st.info(f"Displaying details for artist ID: {artist_id}")
+        
+        # Back button to return to search
+        if st.button("⬅️ Back to Search", on_click=clear_artist_id):
+            pass  # The callback handles the state change
+        
+        # Fetch and display artist details
+        with st.spinner("Loading artist details..."):
             try:
-                response = requests.get(f"{API_GATEWAY_URL}/api/artists/search", 
-                                      params={"query": query, "limit": limit})
+                response = requests.get(f"{API_GATEWAY_URL}/api/artists/{artist_id}", timeout=10)
                 
                 if response.status_code == 200:
-                    data = response.json()
-                    artists = data.get("artists", [])
+                    artist_data = response.json()
                     
-                    if artists:
-                        st.success(f"Found {len(artists)} artists")
-                        
-                        for artist in artists:
-                            with st.expander(f"🎤 {artist['name']} ({artist.get('country', 'Unknown')})"):
-                                col1, col2 = st.columns(2)
-                                with col1:
-                                    st.write(f"**Name:** {artist['name']}")
-                                    st.write(f"**Sort Name:** {artist.get('sort-name', 'N/A')}")
-                                    st.write(f"**Type:** {artist.get('type', 'N/A')}")
-                                with col2:
-                                    st.write(f"**Country:** {artist.get('country', 'N/A')}")
-                                    life_span = artist.get('life-span', {})
-                                    begin = life_span.get('begin', 'N/A')
-                                    end = life_span.get('end', 'Present')
-                                    st.write(f"**Active:** {begin} - {end}")
-                                    st.write(f"**MusicBrainz ID:** `{artist['id']}`")
+                    # Display artist details
+                    st.subheader(f"🎤 {artist_data['name']}")
+                    
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Country", artist_data.get('country', 'Unknown'))
+                    with col2:
+                        st.metric("Type", artist_data.get('type', 'Unknown'))
+                    with col3:
+                        if artist_data.get('begin_date'):
+                            st.metric("Active Since", artist_data['begin_date'][:4] if len(artist_data['begin_date']) >= 4 else artist_data['begin_date'])
+                    
+                    # Detailed information
+                    st.markdown("### 📋 Details")
+                    detail_col1, detail_col2 = st.columns(2)
+                    
+                    with detail_col1:
+                        st.write(f"**Full Name:** {artist_data['name']}")
+                        st.write(f"**Sort Name:** {artist_data.get('sort_name', 'N/A')}")
+                        st.write(f"**MusicBrainz ID:** `{artist_data['id']}`")
+                    
+                    with detail_col2:
+                        st.write(f"**Country:** {artist_data.get('country', 'N/A')}")
+                        st.write(f"**Begin Date:** {artist_data.get('begin_date', 'N/A')}")
+                        st.write(f"**End Date:** {artist_data.get('end_date', 'Present')}")
+                    
+                    st.markdown("---")
+                    
+                    # Get albums for this artist
+                    st.markdown("### 💿 Albums")
+                    with st.spinner("Loading albums..."):
+                        try:
+                            albums_response = requests.get(
+                                f"{API_GATEWAY_URL}/api/albums/search",
+                                params={"artist_name": artist_data['name'], "limit": 20},
+                                timeout=15
+                            )
+                            
+                            if albums_response.status_code == 200:
+                                albums_data = albums_response.json()
+                                albums = albums_data.get("albums", [])
                                 
-                                col1, col2 = st.columns(2)
-                                with col1:
-                                    if st.button(f"View Details", key=f"details_{artist['id']}"):
-                                        st.session_state.selected_artist_id = artist['id']
-                                with col2:
-                                    if st.button(f"🎵 Get Similar Songs", key=f"similar_{artist['id']}"):
-                                        # Get recommendations based on this artist
-                                        try:
-                                            rec_response = requests.get(f"{API_GATEWAY_URL}/api/recommendations/similar/{artist['name']}")
-                                            if rec_response.status_code == 200:
-                                                rec_data = rec_response.json()
-                                                similar_songs = rec_data.get("recommendations", [])
-                                                
-                                                if similar_songs:
-                                                    st.success(f"Found {len(similar_songs)} similar songs!")
-                                                    for song in similar_songs[:3]:  # Show top 3
-                                                        st.write(f"🎵 **{song['track_title']}** by *{song['artist_name']}*")
-                                                else:
-                                                    st.warning("No similar songs found")
-                                            else:
-                                                st.error("Recommendation service unavailable")
-                                        except Exception as e:
-                                            st.error(f"Error getting recommendations: {e}")
-                    else:
-                        st.warning("No artists found")
+                                if albums:
+                                    st.success(f"Found {len(albums)} albums")
+                                    
+                                    # Display albums in a nice grid
+                                    for album in albums:
+                                        with st.expander(f"💿 {album['title']} ({album.get('date', 'Unknown')[:4] if album.get('date') else 'Unknown'})"):
+                                            album_col1, album_col2 = st.columns(2)
+                                            with album_col1:
+                                                st.write(f"**Title:** {album['title']}")
+                                                st.write(f"**Release Date:** {album.get('date', 'N/A')}")
+                                            with album_col2:
+                                                st.write(f"**Status:** {album.get('status', 'N/A')}")
+                                                st.write(f"**Country:** {album.get('country', 'N/A')}")
+                                            
+                                            # Button to view album details
+                                            if st.button(f"View Album Details", key=f"album_details_{album['id']}"):
+                                                try:
+                                                    album_detail_response = requests.get(
+                                                        f"{API_GATEWAY_URL}/api/albums/{album['id']}",
+                                                        timeout=10
+                                                    )
+                                                    if album_detail_response.status_code == 200:
+                                                        album_detail = album_detail_response.json()
+                                                        tracks = album_detail.get('tracks', [])
+                                                        
+                                                        if tracks:
+                                                            st.write(f"**Tracks ({len(tracks)}):**")
+                                                            for track in tracks:
+                                                                duration = track.get('length', 0)
+                                                                if duration > 0:
+                                                                    minutes = duration // 60000
+                                                                    seconds = (duration % 60000) // 1000
+                                                                    duration_str = f"{minutes}:{seconds:02d}"
+                                                                else:
+                                                                    duration_str = "Unknown"
+                                                                
+                                                                st.write(f"{track['track_number']}. {track['title']} ({duration_str})")
+                                                        else:
+                                                            st.info("Track listing not available")
+                                                    else:
+                                                        st.error("Could not load album tracks")
+                                                except Exception as e:
+                                                    st.error(f"Error loading album: {e}")
+                                else:
+                                    st.info("No albums found for this artist")
+                            else:
+                                st.warning("Could not load albums")
+                        except Exception as e:
+                            st.error(f"Error loading albums: {e}")
+                    
+                    # Get similar songs/recommendations
+                    st.markdown("---")
+                    st.markdown("### 🎵 Similar Music")
+                    if st.button("Get Song Recommendations", key="get_similar_from_details"):
+                        with st.spinner("Finding similar songs..."):
+                            try:
+                                rec_response = requests.get(
+                                    f"{API_GATEWAY_URL}/api/recommendations/similar/{artist_data['name']}",
+                                    params={"limit": 10},
+                                    timeout=15
+                                )
+                                if rec_response.status_code == 200:
+                                    rec_data = rec_response.json()
+                                    similar_songs = rec_data.get("recommendations", [])
+                                    
+                                    if similar_songs:
+                                        st.success(f"Found {len(similar_songs)} similar songs!")
+                                        for i, song in enumerate(similar_songs, 1):
+                                            col1, col2, col3 = st.columns([0.5, 3, 1])
+                                            with col1:
+                                                st.write(f"**{i}.**")
+                                            with col2:
+                                                st.write(f"🎵 **{song['track_title']}** by *{song['artist_name']}*")
+                                            with col3:
+                                                st.write(f"Score: {song['score']}")
+                                    else:
+                                        st.warning("No similar songs found")
+                                else:
+                                    st.error("Recommendation service unavailable")
+                            except Exception as e:
+                                st.error(f"Error getting recommendations: {e}")
+                
                 else:
-                    st.error(f"Error: {response.status_code}")
+                    st.error(f"Could not load artist details (Status: {response.status_code})")
+                    if st.button("⬅️ Back to Search (error)", on_click=clear_artist_id):
+                        pass
+            
             except Exception as e:
-                st.error(f"Connection error: {e}")
+                st.error(f"Error loading artist: {e}")
+                if st.button("⬅️ Back to Search (exception)", on_click=clear_artist_id):
+                    pass
+    
+    else:
+        # Regular search interface
+        st.write("🔍 **Search for artists**")
+        
+        query = st.text_input("Enter artist name:", placeholder="e.g., Radiohead", key="artist_search_input")
+        limit = st.slider("Number of results:", 1, 50, 10, key="artist_search_limit")
+        
+        if st.button("Search Artists", key="search_artists_btn") and query:
+            with st.spinner("Searching artists..."):
+                try:
+                    response = requests.get(f"{API_GATEWAY_URL}/api/artists/search", 
+                                          params={"query": query, "limit": limit})
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        artists = data.get("artists", [])
+                        
+                        if artists:
+                            st.success(f"Found {len(artists)} artists")
+                            
+                            for idx, artist in enumerate(artists):
+                                with st.expander(f"🎤 {artist['name']} ({artist.get('country', 'Unknown')})"):
+                                    col1, col2 = st.columns(2)
+                                    with col1:
+                                        st.write(f"**Name:** {artist['name']}")
+                                        st.write(f"**Sort Name:** {artist.get('sort-name', 'N/A')}")
+                                        st.write(f"**Type:** {artist.get('type', 'N/A')}")
+                                    with col2:
+                                        st.write(f"**Country:** {artist.get('country', 'N/A')}")
+                                        life_span = artist.get('life-span', {})
+                                        begin = life_span.get('begin', 'N/A')
+                                        end = life_span.get('end', 'Present')
+                                        st.write(f"**Active:** {begin} - {end}")
+                                        st.write(f"**MusicBrainz ID:** `{artist['id']}`")
+                                    
+                                    col1, col2 = st.columns(2)
+                                    with col1:
+                                        # Use unique key with index
+                                        if st.button(f"View Details", 
+                                                   key=f"details_{artist['id']}_{idx}",
+                                                   on_click=set_artist_id,
+                                                   args=(artist['id'],)):
+                                            pass  # Callback handles it
+                                    
+                                    with col2:
+                                        if st.button(f"🎵 Get Similar Songs", key=f"similar_{artist['id']}_{idx}"):
+                                            # Get recommendations based on this artist
+                                            with st.spinner("Finding similar songs..."):
+                                                try:
+                                                    rec_response = requests.get(
+                                                        f"{API_GATEWAY_URL}/api/recommendations/similar/{artist['name']}",
+                                                        timeout=15
+                                                    )
+                                                    if rec_response.status_code == 200:
+                                                        rec_data = rec_response.json()
+                                                        similar_songs = rec_data.get("recommendations", [])
+                                                        
+                                                        if similar_songs:
+                                                            st.success(f"Found {len(similar_songs)} similar songs!")
+                                                            for song in similar_songs[:5]:  # Show top 5
+                                                                st.write(f"🎵 **{song['track_title']}** by *{song['artist_name']}* (Score: {song['score']})")
+                                                        else:
+                                                            st.warning("No similar songs found")
+                                                    else:
+                                                        st.error("Recommendation service unavailable")
+                                                except Exception as e:
+                                                    st.error(f"Error getting recommendations: {e}")
+                        else:
+                            st.warning("No artists found")
+                    else:
+                        st.error(f"Error: {response.status_code}")
+                except Exception as e:
+                    st.error(f"Connection error: {e}")
 
 with tab3:
     st.header("💿 Search Albums")
