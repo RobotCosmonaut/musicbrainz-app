@@ -731,7 +731,6 @@ def add_database_viewer_tab():
     st.header("🗄️ Database Explorer")
     
     # Database connection - determine if running in Docker or locally
-    # If API_GATEWAY_URL contains 'api-gateway', we're in Docker
     API_GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://localhost:8000")
     
     if 'api-gateway' in API_GATEWAY_URL:
@@ -747,19 +746,31 @@ def add_database_viewer_tab():
     try:
         # Table selection
         table = st.selectbox("Select table to view:", 
-                           ["artists", "albums", "tracks", "user_profiles", "recommendations"])
+                           ["artists", "albums", "tracks", "user_profiles", "recommendations", "listening_history"])
         
         # Limit selection
         limit = st.slider("Number of records to show:", 1, 100, 20)
         
         if st.button("Query Database"):
             with st.spinner("Querying database..."):
-                # Use pandas to read from database
-                query = f"SELECT * FROM {table} LIMIT {limit}"
+                # Map tables to their timestamp columns for ordering
+                timestamp_columns = {
+                    'artists': 'created_at',
+                    'albums': 'created_at',
+                    'tracks': 'created_at',
+                    'user_profiles': 'created_at',
+                    'recommendations': 'created_at',
+                    'listening_history': 'played_at'
+                }
+                
+                # Build query with proper ordering to show most recent first
+                order_by_column = timestamp_columns.get(table, 'created_at')
+                query = f"SELECT * FROM {table} ORDER BY {order_by_column} DESC LIMIT {limit}"
+                
                 df = pd.read_sql(query, DATABASE_URL)
                 
                 if not df.empty:
-                    st.success(f"Found {len(df)} records")
+                    st.success(f"Found {len(df)} records (showing most recent first)")
                     st.dataframe(df, use_container_width=True)
                     
                     # Show basic stats
@@ -792,19 +803,40 @@ def add_database_viewer_tab():
         
         # Custom SQL query section
         st.subheader("📝 Custom SQL Query")
-        custom_query = st.text_area("Enter your SQL query: *Note: SQL commands such as SELECT * FROM artists WHERE country = 'US' LIMIT 10 are supported. Commands like DROP, DELETE, UPDATE are not allowed for safety.*", 
-                                   placeholder="SELECT * FROM artists WHERE country = 'US' LIMIT 10")
+        st.info("💡 Tip: Use 'ORDER BY created_at DESC' to see most recent records first")
+        custom_query = st.text_area(
+            "Enter your SQL query:", 
+            placeholder="SELECT * FROM artists ORDER BY created_at DESC LIMIT 10",
+            help="SQL commands like SELECT are supported. Commands like DROP, DELETE, UPDATE are not allowed for safety."
+        )
         
         if st.button("Execute Query") and custom_query:
-            try:
-                custom_df = pd.read_sql(custom_query, DATABASE_URL)
-                st.success(f"Query executed successfully! {len(custom_df)} rows returned.")
-                st.dataframe(custom_df, use_container_width=True)
-            except Exception as e:
-                st.error(f"Query error: {e}")
+            # Basic safety check - prevent destructive operations
+            dangerous_keywords = ['DROP', 'DELETE', 'UPDATE', 'INSERT', 'ALTER', 'TRUNCATE', 'CREATE']
+            query_upper = custom_query.upper()
+            
+            if any(keyword in query_upper for keyword in dangerous_keywords):
+                st.error("❌ Destructive SQL commands (DROP, DELETE, UPDATE, etc.) are not allowed for safety.")
+            else:
+                try:
+                    custom_df = pd.read_sql(custom_query, DATABASE_URL)
+                    st.success(f"✅ Query executed successfully! {len(custom_df)} rows returned.")
+                    st.dataframe(custom_df, use_container_width=True)
+                    
+                    # Download button for results
+                    csv = custom_df.to_csv(index=False)
+                    st.download_button(
+                        label="📥 Download Results as CSV",
+                        data=csv,
+                        file_name=f"{table}_export.csv",
+                        mime="text/csv"
+                    )
+                except Exception as e:
+                    st.error(f"Query error: {e}")
     
     except Exception as e:
         st.error(f"Database connection error: {e}")
+        st.info("Make sure the database service is running and accessible.")
 
 
 def fetch_artist_timeline_data(recommendations, api_gateway_url):
