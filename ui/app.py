@@ -1891,94 +1891,23 @@ with tab2:
             with st.spinner("Searching artists..."):
                 try:
                     response = requests.get(f"{API_GATEWAY_URL}/api/artists/search", 
-                                      params={"query": query, "limit": limit})
-            
+                                          params={"query": query, "limit": limit})
+                    
                     if response.status_code == 200:
                         data = response.json()
                         artists = data.get("artists", [])
-                
-                        if artists:
-                            st.success(f"Found {len(artists)} artists")
-                    
-                            for idx, artist in enumerate(artists):
-                                artist_id = artist['id']
                         
-                                # Check if this artist has a preview stored
-                                has_preview = artist_id in st.session_state.artist_previews
+                        # Store search query and results
+                        st.session_state.last_artist_search = query
+                        st.session_state.last_artist_results = artists
+                        display_results = artists
                         
-                                with st.expander(f"🎤 {artist['name']} ({artist.get('country', 'Unknown')})", 
-                                                expanded=has_preview):
-                                    col1, col2 = st.columns(2)
-                                    with col1:
-                                        st.write(f"**Name:** {artist['name']}")
-                                        st.write(f"**Sort Name:** {artist.get('sort-name', 'N/A')}")
-                                        st.write(f"**Type:** {artist.get('type', 'N/A')}")
-                                    with col2:
-                                        st.write(f"**Country:** {artist.get('country', 'N/A')}")
-                                        life_span = artist.get('life-span', {})
-                                        begin = life_span.get('begin', 'N/A')
-                                        end = life_span.get('end', 'Present')
-                                        st.write(f"**Active:** {begin} - {end}")
-                                        st.write(f"**MusicBrainz ID:** `{artist['id']}`")
-                            
-                                    col1, col2 = st.columns(2)
-                                    with col1:
-                                        if st.button(f"View Details", key=f"details_{artist_id}", use_container_width=True):
-                                            st.session_state.selected_artist_id = artist_id
-                                            st.rerun()
-                            
-                                    with col2:
-                                        preview_button_text = "❌ Hide Preview" if has_preview else "🎵 Quick Preview"
-                                        if st.button(preview_button_text, key=f"similar_{artist_id}_{idx}", use_container_width=True):
-                                            if has_preview:
-                                                # Remove the preview
-                                                del st.session_state.artist_previews[artist_id]
-                                                st.rerun()
-                                            else:
-                                                # Fetch and store the preview
-                                                with st.spinner("Finding songs..."):
-                                                    try:
-                                                        rec_response = requests.get(
-                                                            f"{API_GATEWAY_URL}/api/recommendations/similar/{artist['name']}",
-                                                            timeout=30
-                                                        )
-                                                        if rec_response.status_code == 200:
-                                                            rec_data = rec_response.json()
-                                                            similar_songs = rec_data.get("recommendations", [])
-                                                    
-                                                            if similar_songs:
-                                                                # Store in session state
-                                                                st.session_state.artist_previews[artist_id] = similar_songs[:5]
-                                                                st.rerun()
-                                                            else:
-                                                                st.warning("No songs found")
-                                                        else:
-                                                            st.error("Service unavailable")
-                                                    except requests.exceptions.Timeout:
-                                                        st.error("⏱️ Request timed out. Try again in a moment.")
-                                                    except Exception as e:
-                                                        st.error(f"Error: {str(e)[:50]}")
-                            
-                                # Display preview if it exists - OUTSIDE the button handler
-                                if has_preview:
-                                    st.markdown("---")
-                                    st.markdown("### 🎵 Similar Songs Preview")
-                                    preview_songs = st.session_state.artist_previews[artist_id]
-                                
-                                    for song in preview_songs:
-                                        song_col1, song_col2, song_col3 = st.columns([3, 2, 1])
-                                        with song_col1:
-                                            st.write(f"🎵 **{song['track_title']}**")
-                                        with song_col2:
-                                            st.write(f"*{song['artist_name']}*")
-                                        with song_col3:
-                                            st.write(f"Score: {song['score']}")
-                        else:
-                            st.warning("No artists found")
                     else:
                         st.error(f"Error: {response.status_code}")
+                        display_results = None
                 except Exception as e:
                     st.error(f"Connection error: {e}")
+                    display_results = None
         
         # Display results (either from new search or restored from state)
         if display_results:
