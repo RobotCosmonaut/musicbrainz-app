@@ -1300,9 +1300,15 @@ with tab1:
                         
 
                         
-                        with result_tabs[0]:  # Song List - FIXED VERSION
+                        with result_tabs[0]:  # Song List - IMPROVED VERSION
                             st.subheader("🎵 Your Song Recommendations")
-                            
+    
+                            # Initialize session state for liked/saved songs if not exists
+                            if 'liked_songs' not in st.session_state:
+                                st.session_state.liked_songs = set()
+                            if 'saved_songs' not in st.session_state:
+                                st.session_state.saved_songs = set()
+    
                             # Show query analysis if available
                             if query_analysis:
                                 with st.expander("🧠 How the algorithm analyzed your query"):
@@ -1319,9 +1325,13 @@ with tab1:
                                         if query_analysis.get('processing_time'):
                                             st.write("**⚡ Processing Time:**")
                                             st.write(f"{query_analysis['processing_time']}")
-                            
+    
                             # Display recommendations with enhanced info
                             for i, rec in enumerate(recommendations, 1):
+                                track_id = rec['track_id']
+                                is_liked = track_id in st.session_state.liked_songs
+                                is_saved = track_id in st.session_state.saved_songs
+        
                                 with st.container():
                                     # Create a colored border based on score
                                     score = rec['score']
@@ -1337,7 +1347,7 @@ with tab1:
                                     else:
                                         border_color = "#EF4444"  # Red for low scores
                                         score_emoji = "💡"
-                                    
+            
                                     st.markdown(f"""
                                     <div style="
                                         border-left: 5px solid {border_color}; 
@@ -1348,43 +1358,76 @@ with tab1:
                                     ">
                                     </div>
                                     """, unsafe_allow_html=True)
-                                    
+            
                                     col1, col2, col3, col4, col5 = st.columns([0.5, 2.5, 1.5, 1, 1])
-                                    
+            
                                     with col1:
                                         st.markdown(f"**#{i}**")
                                         st.markdown(f"{score_emoji}")
-                                    
+            
                                     with col2:
                                         st.markdown(f"**🎵 {rec['track_title']}**")
                                         st.markdown(f"*by {rec['artist_name']}*")
-                                        
+                
                                         # Show recommendation type
                                         rec_type = rec.get('recommendation_type', 'unknown').replace('_', ' ').title()
                                         st.caption(f"Strategy: {rec_type}")
-                                    
+                
+                                        # Show if liked or saved
+                                        status_badges = []
+                                        if is_liked:
+                                            status_badges.append("❤️ Liked")
+                                        if is_saved:
+                                            status_badges.append("💾 Saved")
+                                        if status_badges:
+                                            st.caption(" | ".join(status_badges))
+            
                                     with col3:
                                         st.markdown(f"**Score: {rec['score']}/100**")
                                         # Progress bar for score
                                         st.progress(rec['score']/100)
-                                    
+            
                                     with col4:
                                         # MusicBrainz ID info
                                         st.caption(f"Track ID:")
                                         st.caption(f"`{rec['track_id'][:8]}...`")
-                                        
+                
                                         if 'search_method' in rec:
                                             st.caption(f"Method: {rec['search_method'][:15]}...")
-                                    
+            
                                     with col5:
-                                        # Action buttons
-                                        like_button = st.button("👍 Like", key=f"like_{rec['track_id']}", 
-                                                               help="Like this song", use_container_width=True)
-                                        
-                                        if like_button:
-                                            # Add to listening history
+                                        # Action buttons with dynamic labels
+                                        like_label = "❤️ Liked" if is_liked else "👍 Like"
+                                        like_type = "secondary" if is_liked else "primary"
+                
+                                        like_button = st.button(
+                                            like_label, 
+                                            key=f"like_{track_id}_{i}", 
+                                            help="Like this song", 
+                                            use_container_width=True,
+                                            type=like_type,
+                                            disabled=is_liked
+                                        )
+                
+                                        save_label = "✅ Saved" if is_saved else "💾 Save"
+                                        save_type = "secondary" if is_saved else "primary"
+                
+                                        save_button = st.button(
+                                            save_label, 
+                                            key=f"save_{track_id}_{i}", 
+                                            help="Save for later", 
+                                            use_container_width=True,
+                                            type=save_type,
+                                            disabled=is_saved
+                                        )
+            
+                                    st.divider()
+                                    
+                                    # Handle button clicks AFTER the layout to show feedback properly
+                                    if like_button and not is_liked:
+                                        with st.spinner("Saving like..."):
                                             try:
-                                                requests.post(
+                                                response = requests.post(
                                                     f"{API_GATEWAY_URL}/api/users/{username}/listening-history",
                                                     params={
                                                         "track_id": rec['track_id'],
@@ -1393,16 +1436,21 @@ with tab1:
                                                     },
                                                     timeout=10
                                                 )
-                                                st.success("Liked! ❤️")
+                                                if response.status_code == 200:
+                                                    st.session_state.liked_songs.add(track_id)
+                                                    st.success(f"✅ Liked '{rec['track_title']}'!")
+                                                    st.rerun()  # Refresh to show updated state
+                                                else:
+                                                    st.error(f"❌ Failed to save like (Status: {response.status_code})")
+                                            except requests.exceptions.Timeout:
+                                                st.error("⏱️ Request timed out. Please try again.")
                                             except Exception as e:
-                                                st.error(f"Could not save like: {e}")
-                                        
-                                        save_button = st.button("💾 Save", key=f"save_{rec['track_id']}", 
-                                                               help="Save for later", use_container_width=True)
-                                        
-                                        if save_button:
+                                                st.error(f"❌ Could not save like: {str(e)[:100]}")
+                                    
+                                    if save_button and not is_saved:
+                                        with st.spinner("Saving song..."):
                                             try:
-                                                requests.post(
+                                                response = requests.post(
                                                     f"{API_GATEWAY_URL}/api/users/{username}/listening-history",
                                                     params={
                                                         "track_id": rec['track_id'],
@@ -1411,15 +1459,20 @@ with tab1:
                                                     },
                                                     timeout=10
                                                 )
-                                                st.success("Saved! 💾")
+                                                if response.status_code == 200:
+                                                    st.session_state.saved_songs.add(track_id)
+                                                    st.success(f"✅ Saved '{rec['track_title']}'!")
+                                                    st.rerun()  # Refresh to show updated state
+                                                else:
+                                                    st.error(f"❌ Failed to save song (Status: {response.status_code})")
+                                            except requests.exceptions.Timeout:
+                                                st.error("⏱️ Request timed out. Please try again.")
                                             except Exception as e:
-                                                st.error(f"Could not save: {e}")
-                                    
-                                    st.divider()
+                                                st.error(f"❌ Could not save song: {str(e)[:100]}")
                             
                             # Summary at the bottom
                             st.markdown("---")
-                            col1, col2, col3 = st.columns(3)
+                            col1, col2, col3, col4 = st.columns(4)
                             with col1:
                                 avg_score = np.mean([rec['score'] for rec in recommendations])
                                 st.metric("Average Score", f"{avg_score:.1f}/100")
@@ -1429,6 +1482,9 @@ with tab1:
                             with col3:
                                 high_quality = len([rec for rec in recommendations if rec['score'] >= 80])
                                 st.metric("High Quality (80+)", high_quality)
+                            with col4:
+                                liked_count = len([rec for rec in recommendations if rec['track_id'] in st.session_state.liked_songs])
+                                st.metric("Liked This Search", liked_count)
                         
 
                         with result_tabs[1]:  # Visual Overview

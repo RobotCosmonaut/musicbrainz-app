@@ -14,6 +14,7 @@ from collections import defaultdict
 import random
 from sqlalchemy import create_engine, text
 from datetime import datetime
+import traceback
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -544,24 +545,31 @@ def add_history(
     interaction_type: str = "played", 
     db: Session = Depends(get_db)
 ):
-    """Add listening history entry"""
+    """Add listening history entry - FIXED VERSION with better error handling"""
     try:
+        # Import here to avoid circular imports
         from shared.models import ListeningHistory
         from datetime import datetime
         
-        # Get or create user profile
+        logger.info(f"Adding {interaction_type} history for user {username}: track={track_id}, artist={artist_id}")
+        
+        # Step 1: Get or create user profile
         profile = db.query(UserProfile).filter(UserProfile.username == username).first()
+        
         if not profile:
+            logger.info(f"Profile not found for {username}, creating new profile")
             profile = UserProfile(
                 username=username,
                 favorite_genres=json.dumps([]),
                 favorite_artists=json.dumps([])
             )
             db.add(profile)
-            db.commit()
-            db.refresh(profile)
+            db.flush()  # Flush to get the ID without committing
+            logger.info(f"Created profile with id={profile.id}")
+        else:
+            logger.info(f"Found existing profile with id={profile.id}")
         
-        # Add listening history entry
+        # Step 2: Create listening history entry
         history_entry = ListeningHistory(
             user_id=profile.id,
             track_id=track_id,
@@ -569,19 +577,41 @@ def add_history(
             interaction_type=interaction_type,
             played_at=datetime.utcnow()
         )
+        
         db.add(history_entry)
+        
+        # Step 3: Commit everything
         db.commit()
         
+        logger.info(f"Successfully added {interaction_type} history for {username}")
+        
+        # Step 4: Verify it was saved
+        verify_count = db.query(ListeningHistory).filter(
+            ListeningHistory.user_id == profile.id,
+            ListeningHistory.track_id == track_id,
+            ListeningHistory.interaction_type == interaction_type
+        ).count()
+        
+        logger.info(f"Verification: Found {verify_count} matching history entries")
+        
         return {
-            "message": "History added",
+            "message": "History added successfully",
             "username": username,
+            "user_id": profile.id,
             "track_id": track_id,
-            "interaction_type": interaction_type
+            "artist_id": artist_id,
+            "interaction_type": interaction_type,
+            "verification_count": verify_count
         }
+        
     except Exception as e:
         db.rollback()
-        logger.error(f"Error adding history for {username}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error adding history: {str(e)}")
+        logger.error(f"ERROR adding history for {username}: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error adding history: {str(e)}"
+        )
 
 
 if __name__ == "__main__":
