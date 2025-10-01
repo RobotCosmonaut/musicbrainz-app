@@ -5,11 +5,16 @@ While recommendation engines exist for major music services, they are generally 
 
 ## C4 Model System Context, Container, Component, and Code diagrams
 
-###Context Diagram: 
+### Context Diagram: 
 ![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/1%20-%20Context/Context_Diagram.png "Context Diagram")
 
-###Container Diagram: 
+### Container Diagram: 
 ![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/2%20-%20Container/Container_Diagram.png "Container Diagram")
+
+### Component Diagrams: 
+
+#### Streamlit UI Component Diagram
+![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_Streamlit.png "Streamlit UI Component Diagram")
 
 ## Installation
 TBD
