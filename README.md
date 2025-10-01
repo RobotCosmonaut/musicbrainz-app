@@ -5,7 +5,7 @@ While recommendation engines exist for major music services, they are generally 
 
 
 Inline-style: 
-![alt text]([https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/1%20-%20Context/Context_Diagram.png) "Context Diagram")
+![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/1%20-%20Context/Context_Diagram.png "Context Diagram")
 
 ## Installation
 TBD
