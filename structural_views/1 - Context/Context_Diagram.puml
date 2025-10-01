@@ -1,0 +1,29 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Context Diagram - Orchestr8r Music Recommendation System (Level 1)
+
+Person(user, "Music Listener", "A user looking to discover new music and build playlists")
+
+System_Boundary(orchestr8r, "Orchestr8r System") {
+    System(orchestr8r_app, "Orchestr8r", "Microservices-based music recommendation platform that provides smart song suggestions, artist search, and personalized playlists")
+}
+
+System_Ext(musicbrainz, "MusicBrainz API", "External open music encyclopedia providing artist, album, and track metadata")
+
+System_Ext(postgres, "PostgreSQL Database", "Relational database storing cached music data, user profiles, and listening history")
+
+Rel(user, orchestr8r_app, "Searches artists/albums, gets recommendations, manages profile", "HTTPS")
+Rel(orchestr8r_app, user, "Displays search results, recommendations, analytics visualizations", "HTTPS")
+
+Rel(orchestr8r_app, musicbrainz, "Fetches artist, album, and track data", "HTTPS/REST API (Rate limited: 1 req/sec)")
+Rel(musicbrainz, orchestr8r_app, "Returns music metadata (JSON)", "HTTPS")
+
+Rel(orchestr8r_app, postgres, "Reads/writes cached data, user profiles, listening history", "PostgreSQL Protocol")
+Rel(postgres, orchestr8r_app, "Returns query results", "PostgreSQL Protocol")
+
+SHOW_LEGEND()
+
+@enduml

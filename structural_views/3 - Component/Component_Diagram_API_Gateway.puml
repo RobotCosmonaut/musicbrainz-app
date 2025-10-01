@@ -1,0 +1,129 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - API Gateway Container (Level 3)
+
+Container_Ext(ui, "Streamlit UI", "Python, Streamlit", "Web interface making API requests")
+Container_Ext(artist_service, "Artist Service", "FastAPI", "Artist data management")
+Container_Ext(album_service, "Album Service", "FastAPI", "Album/track data management")
+Container_Ext(recommendation_service, "Recommendation Service", "FastAPI", "Recommendation generation")
+
+Container_Boundary(gateway, "API Gateway Container") {
+    
+    Component(fastapi_app, "FastAPI Application", "FastAPI", "Main application instance, ASGI server configuration, middleware setup")
+    
+    Component(config_manager, "Configuration Manager", "Python, os.getenv", "Manages environment variables for service URLs and configuration")
+    
+    Component(health_endpoint, "Health Check Endpoint", "FastAPI route", "GET /health - Returns gateway health status")
+    
+    ' Route Handler Components
+    Component(artist_routes, "Artist Route Handlers", "FastAPI routes", "GET /api/artists/search\nGET /api/artists/{artist_id}\nGET /api/artists")
+    
+    Component(album_routes, "Album Route Handlers", "FastAPI routes", "GET /api/albums/search\nGET /api/albums/{album_id}")
+    
+    Component(recommendation_routes, "Recommendation Route Handlers", "FastAPI routes", "GET /api/recommendations/query\nGET /api/recommendations/profile/{username}\nGET /api/recommendations/similar/{artist_name}")
+    
+    Component(profile_routes, "User Profile Route Handlers", "FastAPI routes", "POST /api/users/{username}/profile\nGET /api/users/{username}/profile\nPOST /api/users/{username}/listening-history")
+    
+    ' HTTP Client Components
+    Component(http_client, "HTTP Client Manager", "httpx.AsyncClient", "Manages async HTTP connections to backend services with connection pooling")
+    
+    Component(timeout_config, "Timeout Configuration", "httpx.Timeout", "Configures connection, read, write, and pool timeouts:\n- Default: 5/30/10/10 seconds\n- Extended: 10/60/10/10 for recommendations")
+    
+    ' Request Processing
+    Component(request_router, "Request Router", "Python", "Routes incoming requests to appropriate backend services based on endpoint")
+    
+    Component(request_proxy, "Request Proxy", "Python, httpx", "Forwards requests to backend services with proper parameters and headers")
+    
+    Component(response_aggregator, "Response Aggregator", "Python", "Aggregates and formats responses from backend services")
+    
+    ' Error Handling
+    Component(error_handler, "Error Handler", "FastAPI HTTPException", "Handles errors:\n- 400 Bad Request\n- 404 Not Found\n- 503 Service Unavailable\n- 504 Gateway Timeout")
+    
+    Component(logger, "Logger", "Python logging", "Logs requests, responses, errors, and service health")
+    
+    ' Data Models
+    Component(data_models, "Data Models", "Pydantic", "ProfileCreate model for request validation")
+    
+    ' Service Connectors
+    Component(artist_connector, "Artist Service Connector", "Python, httpx", "Connects to Artist Service endpoints")
+    
+    Component(album_connector, "Album Service Connector", "Python, httpx", "Connects to Album Service endpoints")
+    
+    Component(recommendation_connector, "Recommendation Service Connector", "Python, httpx", "Connects to Recommendation Service endpoints")
+}
+
+' External requests
+Rel(ui, fastapi_app, "HTTP/REST requests", "POST/GET:8000")
+
+' Application initialization
+Rel(fastapi_app, config_manager, "Loads configuration", "Startup")
+Rel(config_manager, fastapi_app, "Service URLs:\nARTIST_SERVICE_URL\nALBUM_SERVICE_URL\nRECOMMENDATION_SERVICE_URL", "Environment variables")
+
+' Route registration
+Rel(fastapi_app, health_endpoint, "Registers", "Decorator")
+Rel(fastapi_app, artist_routes, "Registers", "Decorator")
+Rel(fastapi_app, album_routes, "Registers", "Decorator")
+Rel(fastapi_app, recommendation_routes, "Registers", "Decorator")
+Rel(fastapi_app, profile_routes, "Registers", "Decorator")
+
+' Request flow from routes
+Rel(artist_routes, request_router, "Delegates request", "Function call")
+Rel(album_routes, request_router, "Delegates request", "Function call")
+Rel(recommendation_routes, request_router, "Delegates request", "Function call")
+Rel(profile_routes, request_router, "Delegates request", "Function call")
+
+' Router to connectors
+Rel(request_router, artist_connector, "Routes artist requests", "Conditional")
+Rel(request_router, album_connector, "Routes album requests", "Conditional")
+Rel(request_router, recommendation_connector, "Routes recommendation/profile requests", "Conditional")
+
+' Connectors use proxy and HTTP client
+Rel(artist_connector, request_proxy, "Forwards request", "Function call")
+Rel(album_connector, request_proxy, "Forwards request", "Function call")
+Rel(recommendation_connector, request_proxy, "Forwards request", "Function call")
+
+Rel(request_proxy, http_client, "Makes async HTTP call", "async with")
+Rel(http_client, timeout_config, "Uses timeout settings", "Configuration")
+
+' Proxy to backend services
+Rel(request_proxy, artist_service, "GET requests", "HTTP:8001")
+Rel(request_proxy, album_service, "GET requests", "HTTP:8002")
+Rel(request_proxy, recommendation_service, "GET/POST requests", "HTTP:8003")
+
+' Response flow
+Rel(artist_service, request_proxy, "JSON response", "HTTP")
+Rel(album_service, request_proxy, "JSON response", "HTTP")
+Rel(recommendation_service, request_proxy, "JSON response", "HTTP")
+
+Rel(request_proxy, response_aggregator, "Raw response", "Function call")
+Rel(response_aggregator, artist_routes, "Formatted response", "Return")
+Rel(response_aggregator, album_routes, "Formatted response", "Return")
+Rel(response_aggregator, recommendation_routes, "Formatted response", "Return")
+Rel(response_aggregator, profile_routes, "Formatted response", "Return")
+
+' Error handling
+Rel(request_proxy, error_handler, "Raises on error", "Exception")
+Rel(error_handler, logger, "Logs error", "Function call")
+Rel(error_handler, artist_routes, "HTTPException", "Raise")
+Rel(error_handler, album_routes, "HTTPException", "Raise")
+Rel(error_handler, recommendation_routes, "HTTPException", "Raise")
+Rel(error_handler, profile_routes, "HTTPException", "Raise")
+
+' Logging
+Rel(artist_routes, logger, "Logs requests/responses", "logger.info/error")
+Rel(album_routes, logger, "Logs requests/responses", "logger.info/error")
+Rel(recommendation_routes, logger, "Logs requests/responses", "logger.info/error")
+Rel(profile_routes, logger, "Logs requests/responses", "logger.info/error")
+
+' Data validation
+Rel(profile_routes, data_models, "Validates request body", "Pydantic validation")
+
+' Response to UI
+Rel(fastapi_app, ui, "JSON responses", "HTTP:8000")
+
+SHOW_LEGEND()
+
+@enduml

@@ -1,0 +1,118 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Streamlit UI Container (Level 3)
+
+Person(user, "Music Listener", "User interacting with web interface")
+
+Container_Ext(gateway, "API Gateway", "FastAPI", "Provides REST API endpoints")
+ContainerDb_Ext(postgres, "PostgreSQL", "Database", "Direct database access for viewer")
+
+Container_Boundary(ui, "Streamlit UI Container") {
+    
+    Component(main_app, "Main Application", "Python, Streamlit", "Entry point, page configuration, tab navigation, and session initialization")
+    
+    Component(session_manager, "Session State Manager", "Python, st.session_state", "Manages user session data: username, search history, recommendations, selected artists, liked/saved songs")
+    
+    ' Tab Components
+    Component(home_tab, "Home Tab Component", "Python, Streamlit", "Main search interface with smart recommendations and analytics display")
+    
+    Component(artist_tab, "Artist Search Tab", "Python, Streamlit", "Artist search interface with detail view and album loading")
+    
+    Component(album_tab, "Album Search Tab", "Python, Streamlit", "Album search by artist/title with track listings")
+    
+    Component(rec_tab, "Recommendations Tab", "Python, Streamlit", "Advanced recommendations: profile-based, query-based, similar artists, genre explorer")
+    
+    Component(data_tab, "Saved Data Tab", "Python, Streamlit, Pandas", "Database viewer showing saved artists and raw database access")
+    
+    Component(info_tab, "Info Tab", "Python, Streamlit", "Service health checks and algorithm verification")
+    
+    ' Visualization Components
+    Component(viz_engine, "Visualization Engine", "Python, Plotly", "Creates interactive charts and graphs")
+    
+    Component(score_charts, "Score Analytics", "Plotly, NumPy", "Score distribution histogram, quality gauge, session trends")
+    
+    Component(artist_charts, "Artist Analytics", "Plotly, Pandas", "Artist diversity donut, strategy breakdown, decade distribution")
+    
+    Component(geo_charts, "Geographic Visualizations", "Plotly", "World map (choropleth), country bar chart")
+    
+    Component(timeline_charts, "Timeline Visualizations", "Plotly, Pandas", "Artist timeline Gantt chart, decade distribution")
+    
+    ' API Communication
+    Component(api_client, "API Client", "Python, requests", "HTTP client for API Gateway communication with timeout handling")
+    
+    ' User Profile Components
+    Component(profile_manager, "Profile Manager", "Python, Streamlit (Sidebar)", "User profile setup: username, favorite genres, favorite artists")
+    
+    ' Interaction Handlers
+    Component(search_handler, "Search Handler", "Python", "Processes search queries, stores results in session state")
+    
+    Component(interaction_handler, "Interaction Handler", "Python, requests", "Handles like/save actions, updates listening history")
+    
+    ' Database Viewer
+    Component(db_viewer, "Database Explorer", "Python, SQLAlchemy, Pandas", "Direct SQL query interface for database inspection")
+    
+    ' Image Handler
+    Component(asset_loader, "Asset Loader", "Python, Pillow", "Loads and displays logo and static images")
+}
+
+' User interactions
+Rel(user, main_app, "Navigates interface, enters searches", "HTTPS:8501")
+
+' Main app orchestration
+Rel(main_app, session_manager, "Initializes and manages", "In-memory")
+Rel(main_app, profile_manager, "Displays in sidebar", "Streamlit API")
+Rel(main_app, home_tab, "Renders", "Streamlit API")
+Rel(main_app, artist_tab, "Renders", "Streamlit API")
+Rel(main_app, album_tab, "Renders", "Streamlit API")
+Rel(main_app, rec_tab, "Renders", "Streamlit API")
+Rel(main_app, data_tab, "Renders", "Streamlit API")
+Rel(main_app, info_tab, "Renders", "Streamlit API")
+Rel(main_app, asset_loader, "Loads images", "Function call")
+
+' Tab interactions with session
+Rel(home_tab, session_manager, "Reads/writes search history, recommendations", "In-memory")
+Rel(artist_tab, session_manager, "Reads/writes selected artist, search cache", "In-memory")
+Rel(album_tab, session_manager, "Uses", "In-memory")
+Rel(rec_tab, session_manager, "Stores liked/saved songs", "In-memory")
+
+' Search and interaction flows
+Rel(home_tab, search_handler, "Delegates search requests", "Function call")
+Rel(artist_tab, search_handler, "Delegates artist searches", "Function call")
+Rel(album_tab, search_handler, "Delegates album searches", "Function call")
+Rel(rec_tab, search_handler, "Delegates recommendation requests", "Function call")
+
+Rel(search_handler, api_client, "Makes HTTP requests", "Function call")
+Rel(home_tab, interaction_handler, "Handles like/save clicks", "Function call")
+Rel(rec_tab, interaction_handler, "Handles like/save clicks", "Function call")
+Rel(interaction_handler, api_client, "Posts interaction data", "Function call")
+
+' Profile management
+Rel(profile_manager, api_client, "Loads/saves profile", "HTTP/REST")
+Rel(profile_manager, session_manager, "Updates username", "In-memory")
+
+' Visualization flows
+Rel(home_tab, viz_engine, "Requests visualizations", "Function call")
+Rel(rec_tab, viz_engine, "Requests visualizations", "Function call")
+Rel(viz_engine, score_charts, "Generates score analytics", "Function call")
+Rel(viz_engine, artist_charts, "Generates artist analytics", "Function call")
+Rel(viz_engine, geo_charts, "Generates maps", "Function call")
+Rel(viz_engine, timeline_charts, "Generates timelines", "Function call")
+
+' API Gateway communication
+Rel(api_client, gateway, "GET/POST requests", "HTTP/REST:8000\n/api/artists/search\n/api/albums/search\n/api/recommendations/query\n/api/users/{username}/profile\n/api/users/{username}/listening-history")
+Rel(gateway, api_client, "JSON responses", "HTTP/REST")
+
+' Database viewer
+Rel(data_tab, db_viewer, "Executes queries", "Function call")
+Rel(db_viewer, postgres, "Direct SQL queries", "PostgreSQL:5432\nSELECT * FROM artists\nSELECT * FROM albums\nSELECT * FROM tracks\nSELECT * FROM user_profiles")
+
+' Geographic data fetching
+Rel(geo_charts, api_client, "Fetches artist countries", "HTTP/REST")
+Rel(timeline_charts, api_client, "Fetches artist timeline data", "HTTP/REST")
+
+SHOW_LEGEND()
+
+@enduml

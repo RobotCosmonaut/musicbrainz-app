@@ -1,0 +1,359 @@
+@startuml
+title Code Diagram (Level 4) - Get Album Endpoint Implementation
+
+' Styling
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor<<Controller>> LightBlue
+    BackgroundColor<<Service>> LightGreen
+    BackgroundColor<<Model>> LightYellow
+    BackgroundColor<<Database>> LightGray
+    BackgroundColor<<External>> LightCoral
+}
+
+package "album_service.py" {
+    
+    class "FastAPI App" <<Controller>> {
+        + app: FastAPI
+        --
+        + {static} @app.get("/albums/{album_id}")
+    }
+    
+    class get_album <<Controller>> {
+        **Endpoint Function**
+        --
+        + album_id: str
+        + db: Session = Depends(get_db)
+        --
+        **Returns**: Dict[str, Any]
+        **Raises**: HTTPException
+        --
+        **Implementation:**
+        1. Query database for album
+        2. If not found, fetch from MusicBrainz
+        3. Save album and artist
+        4. Fetch and save tracks
+        5. Return album with tracks
+        --
+        **Code Flow:**
+        album = db.query(Album).filter(...).first()
+        if not album:
+            release_data = musicbrainz.get_release(...)
+            # Process and save
+        tracks = db.query(Track).filter(...).all()
+        return formatted_response
+    }
+    
+    class musicbrainz <<Service>> {
+        - musicbrainz: MusicBrainzService
+        --
+        + get_release(album_id: str, include: str): Optional[Dict]
+        --
+        **MusicBrainz API Call**
+    }
+}
+
+package "shared.models" <<Model>> {
+    
+    class Album <<Model>> {
+        **SQLAlchemy ORM Model**
+        __tablename__ = 'albums'
+        --
+        + id: Column(String, primary_key=True)
+        + title: Column(String(255), nullable=False)
+        + artist_id: Column(String, ForeignKey('artists.id'))
+        + release_date: Column(String(20))
+        + status: Column(String(50))
+        + country: Column(String(10))
+        + created_at: Column(DateTime, default=datetime.utcnow)
+        --
+        + artist: relationship("Artist", back_populates="albums")
+        + tracks: relationship("Track", back_populates="album")
+        --
+        **Methods:**
+        + __init__(id, title, artist_id, release_date, status, country)
+        + __repr__(): str
+    }
+    
+    class Track <<Model>> {
+        **SQLAlchemy ORM Model**
+        __tablename__ = 'tracks'
+        --
+        + id: Column(String, primary_key=True)
+        + title: Column(String(255), nullable=False)
+        + album_id: Column(String, ForeignKey('albums.id'))
+        + track_number: Column(Integer)
+        + length: Column(Integer)
+        + created_at: Column(DateTime, default=datetime.utcnow)
+        --
+        + album: relationship("Album", back_populates="tracks")
+        --
+        **Methods:**
+        + __init__(id, title, album_id, track_number, length)
+        + __repr__(): str
+    }
+    
+    class Artist <<Model>> {
+        **SQLAlchemy ORM Model**
+        __tablename__ = 'artists'
+        --
+        + id: Column(String, primary_key=True)
+        + name: Column(String(255), nullable=False)
+        + sort_name: Column(String(255))
+        + type: Column(String(50))
+        + country: Column(String(10))
+        + begin_date: Column(String(20))
+        + end_date: Column(String(20))
+        + created_at: Column(DateTime, default=datetime.utcnow)
+        --
+        + albums: relationship("Album", back_populates="artist")
+        --
+        **Methods:**
+        + __init__(id, name, sort_name, type, country, begin_date, end_date)
+        + __repr__(): str
+    }
+}
+
+package "shared.database" <<Database>> {
+    
+    class Session <<Database>> {
+        **SQLAlchemy Session**
+        --
+        + query(model: Type[T]): Query[T]
+        + add(instance: Any): None
+        + commit(): None
+        + rollback(): None
+        + refresh(instance: Any): None
+        + close(): None
+        --
+        **Context Manager**
+    }
+    
+    class "get_db()" <<Database>> {
+        **Dependency Injection**
+        --
+        **Yields**: SessionLocal
+        --
+        **Implementation:**
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+    }
+}
+
+package "services.musicbrainz_service" <<Service>> {
+    
+    class MusicBrainzService <<Service>> {
+        - BASE_URL: str = "https://musicbrainz.org/ws/2"
+        - headers: Dict[str, str]
+        - rate_limit_delay: float = 1.0
+        --
+        + __init__(app_name: str, version: str, contact: str)
+        + get_release(release_id: str, include: str): Optional[Dict]
+        - _make_request(endpoint: str, params: Dict): Optional[Dict]
+        --
+        **Private Methods:**
+        - _make_request():
+            1. Build URL
+            2. Add fmt=json param
+            3. Make HTTP GET request
+            4. Sleep for rate limit
+            5. Return JSON or None
+    }
+    
+    class "requests" <<External>> {
+        **External Library**
+        --
+        + get(url: str, headers: Dict, params: Dict): Response
+        + raise_for_status(): None
+        + json(): Dict
+    }
+    
+    class "time" <<External>> {
+        **Standard Library**
+        --
+        + sleep(seconds: float): None
+    }
+}
+
+package "Exception Handling" {
+    
+    class HTTPException <<Controller>> {
+        **FastAPI Exception**
+        --
+        + status_code: int
+        + detail: str
+        --
+        + __init__(status_code: int, detail: str)
+        --
+        **Status Codes:**
+        - 404: Album not found
+        - 400: No artist information
+        - 500: Error processing album
+    }
+    
+    class logger <<Service>> {
+        **Python Logging**
+        --
+        + info(msg: str): None
+        + error(msg: str, exc_info: bool): None
+        --
+        **Log Levels:**
+        - INFO: Normal operations
+        - ERROR: Exceptions
+    }
+}
+
+' Relationships - Composition and Usage
+
+"FastAPI App" *-- get_album : "defines endpoint"
+get_album ..> "get_db()" : "<<depends>>"
+get_album ..> Session : "<<uses>>\ndb parameter"
+get_album ..> musicbrainz : "<<uses>>"
+get_album ..> Album : "<<queries>>"
+get_album ..> Track : "<<queries>>"
+get_album ..> Artist : "<<creates>>"
+get_album ..> HTTPException : "<<raises>>"
+get_album ..> logger : "<<uses>>"
+
+musicbrainz -- MusicBrainzService : "instance of"
+MusicBrainzService ..> "requests" : "<<uses>>"
+MusicBrainzService ..> "time" : "<<uses>>"
+
+Session ..> Album : "<<queries>>"
+Session ..> Track : "<<queries>>"
+Session ..> Artist : "<<queries>>"
+
+Album "1" *-- "many" Track : "has tracks"
+Artist "1" *-- "many" Album : "has albums"
+Album "many" --> "1" Artist : "belongs to"
+
+"get_db()" ..> Session : "<<yields>>"
+
+' Sequence of operations (shown as notes)
+note right of get_album
+**Execution Flow:**
+
+1. **Query Database**
+   album = db.query(Album)\\
+       .filter(Album.id == album_id)\\
+       .first()
+
+2. **If Not Found:**
+   if not album:
+       logger.info(f"Album {album_id} not in database...")
+       release_data = musicbrainz.get_release(
+           album_id, "recordings+artist-credits")
+
+3. **Extract Artist Credit:**
+   artist_credit = release_data.get('artist-credit', [{}])[0]
+   artist_id = artist_credit.get('artist', {}).get('id')
+
+4. **Get or Create Artist:**
+   artist = db.query(Artist)\\
+       .filter(Artist.id == artist_id)\\
+       .first()
+   if not artist:
+       artist = Artist(...)
+       db.add(artist)
+
+5. **Save Album:**
+   album = Album(
+       id=release_data['id'],
+       title=release_data['title'],
+       artist_id=artist_id,
+       ...)
+   db.add(album)
+   db.commit()
+
+6. **Process Tracks:**
+   for medium in release_data['media']:
+       for track_data in medium.get('tracks', []):
+           recording = track_data.get('recording', {})
+           track = Track(...)
+           db.add(track)
+   db.commit()
+
+7. **Query Saved Tracks:**
+   tracks = db.query(Track)\\
+       .filter(Track.album_id == album_id)\\
+       .order_by(Track.track_number)\\
+       .all()
+
+8. **Return Response:**
+   return {
+       "id": album.id,
+       "title": album.title,
+       "tracks": [...]
+   }
+end note
+
+note right of MusicBrainzService
+**get_release() Implementation:**
+
+def get_release(self, release_id: str, 
+                include: str = "recordings"):
+    params = {'inc': include}
+    return self._make_request(
+        f'release/{release_id}', 
+        params)
+
+**_make_request() Implementation:**
+
+def _make_request(self, endpoint: str, 
+                  params: Dict):
+    url = f"{self.BASE_URL}/{endpoint}"
+    params['fmt'] = 'json'
+    
+    try:
+        response = requests.get(
+            url, 
+            headers=self.headers, 
+            params=params)
+        response.raise_for_status()
+        time.sleep(self.rate_limit_delay)
+        return response.json()
+    except requests.RequestException as e:
+        logger.error(f"API request failed: {e}")
+        return None
+end note
+
+note right of Album
+**Database Schema:**
+
+CREATE TABLE albums (
+    id VARCHAR PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    artist_id VARCHAR REFERENCES artists(id),
+    release_date VARCHAR(20),
+    status VARCHAR(50),
+    country VARCHAR(10),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+**Indexes:**
+- PRIMARY KEY on id
+- FOREIGN KEY on artist_id
+end note
+
+note right of Track
+**Database Schema:**
+
+CREATE TABLE tracks (
+    id VARCHAR PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    album_id VARCHAR REFERENCES albums(id),
+    track_number INTEGER,
+    length INTEGER,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+**Indexes:**
+- PRIMARY KEY on id
+- FOREIGN KEY on album_id
+- INDEX on album_id for queries
+end note
+
+@enduml

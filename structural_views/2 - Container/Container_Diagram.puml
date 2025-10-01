@@ -1,0 +1,60 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Container Diagram - Orchestr8r Music Recommendation System (Level 2)
+
+Person(user, "Music Listener", "A user discovering music through the web interface")
+
+System_Ext(musicbrainz, "MusicBrainz API", "External music metadata API (rate limited: 1 req/sec)")
+
+System_Boundary(orchestr8r, "Orchestr8r System") {
+    Container(ui, "Streamlit UI", "Python, Streamlit", "Provides web-based user interface for music discovery with visual analytics and interactive features", $sprite="python")
+    
+    Container(gateway, "API Gateway", "Python, FastAPI, Uvicorn", "Routes and aggregates requests to microservices, handles timeouts and error handling", $sprite="python")
+    
+    Container(artist_service, "Artist Service", "Python, FastAPI", "Manages artist data: search, retrieval, and caching of artist metadata", $sprite="python")
+    
+    Container(album_service, "Album Service", "Python, FastAPI", "Manages album and track data: search, retrieval, and track listing", $sprite="python")
+    
+    Container(recommendation_service, "Recommendation Service", "Python, FastAPI", "Generates smart recommendations using genre detection, diversity algorithms, and profile-based suggestions", $sprite="python")
+    
+    ContainerDb(postgres, "PostgreSQL Database", "PostgreSQL 14", "Stores cached music data (artists, albums, tracks), user profiles, listening history, and recommendations")
+    
+    Container(db_init, "Database Init Service", "Python, SQLAlchemy", "One-time initialization service that creates database schema and tables", $sprite="python")
+}
+
+' User interactions
+Rel(user, ui, "Searches music, views recommendations, manages profile", "HTTPS:8501")
+
+' UI to Gateway
+Rel(ui, gateway, "Makes API calls", "HTTP/REST:8000")
+Rel(gateway, ui, "Returns JSON responses", "HTTP/REST")
+
+' Gateway to Services
+Rel(gateway, artist_service, "Search/get artists", "HTTP/REST:8001")
+Rel(gateway, album_service, "Search/get albums", "HTTP/REST:8002")
+Rel(gateway, recommendation_service, "Get recommendations, manage profiles", "HTTP/REST:8003")
+
+' Services to Database
+Rel(artist_service, postgres, "Read/write artist data", "PostgreSQL:5432")
+Rel(album_service, postgres, "Read/write albums and tracks", "PostgreSQL:5432")
+Rel(recommendation_service, postgres, "Read/write user profiles, listening history, recommendations", "PostgreSQL:5432")
+
+' Database initialization
+Rel(db_init, postgres, "Creates tables and schema on startup", "PostgreSQL:5432")
+
+' Services to MusicBrainz
+Rel(artist_service, musicbrainz, "Fetch artist metadata", "HTTPS/REST")
+Rel(album_service, musicbrainz, "Fetch album/track data", "HTTPS/REST")
+Rel(recommendation_service, musicbrainz, "Search recordings for recommendations", "HTTPS/REST")
+
+' Return paths from MusicBrainz
+Rel(musicbrainz, artist_service, "Returns artist JSON", "HTTPS")
+Rel(musicbrainz, album_service, "Returns album/track JSON", "HTTPS")
+Rel(musicbrainz, recommendation_service, "Returns recording JSON", "HTTPS")
+
+SHOW_LEGEND()
+
+@enduml

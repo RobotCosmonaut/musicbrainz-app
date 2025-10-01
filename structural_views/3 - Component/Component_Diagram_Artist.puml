@@ -1,0 +1,171 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Artist Service Container (Level 3)
+
+Container_Ext(gateway, "API Gateway", "FastAPI", "Routes artist-related requests")
+ContainerDb_Ext(postgres, "PostgreSQL Database", "PostgreSQL 14", "Stores cached artist data")
+System_Ext(musicbrainz, "MusicBrainz API", "External music database API")
+
+Container_Boundary(artist_service, "Artist Service Container") {
+    
+    Component(fastapi_app, "FastAPI Application", "FastAPI, Uvicorn", "Main application instance on port 8001:\n- HTTP request handling\n- Dependency injection\n- Route registration")
+    
+    Component(config_manager, "Configuration Manager", "Python, os.getenv", "Manages environment variables:\n- DATABASE_URL\n- Service port (8001)")
+    
+    Component(health_endpoint, "Health Check Endpoint", "FastAPI route", "GET /health\nReturns: {'status': 'healthy', 'service': 'artist-service'}")
+    
+    ' Route Handler Components
+    Component(search_endpoint, "Search Artists Endpoint", "FastAPI route handler", "GET /artists/search\nParams: query, limit (default: 25)\nSearches MusicBrainz and caches results")
+    
+    Component(detail_endpoint, "Get Artist Endpoint", "FastAPI route handler", "GET /artists/{artist_id}\nFetches individual artist details\nReturns comprehensive metadata")
+    
+    Component(list_endpoint, "List Artists Endpoint", "FastAPI route handler", "GET /artists\nParams: skip, limit (default: 100)\nReturns paginated cached artists")
+    
+    ' Core Business Logic
+    Component(search_handler, "Artist Search Handler", "Python", "Orchestrates artist search:\n- Queries MusicBrainz\n- Processes results\n- Saves to database\n- Handles duplicates")
+    
+    Component(detail_handler, "Artist Detail Handler", "Python", "Retrieves artist details:\n- Checks local cache first\n- Fetches from MusicBrainz if needed\n- Saves to database")
+    
+    Component(list_handler, "Artist List Handler", "Python", "Queries cached artists:\n- Orders by created_at DESC\n- Implements pagination\n- Formats response")
+    
+    Component(artist_processor, "Artist Data Processor", "Python", "Processes artist data:\n- Extracts metadata\n- Creates Artist models\n- Handles life-span dates\n- Validates data")
+    
+    Component(duplicate_checker, "Duplicate Checker", "Python", "Checks artist existence:\n- Queries by artist_id\n- Prevents duplicate saves\n- Returns existing artist")
+    
+    ' MusicBrainz Integration
+    Component(musicbrainz_client, "MusicBrainz Service Client", "Python, MusicBrainzService class", "HTTP client for MusicBrainz API:\n- User-Agent configuration\n- Rate limiting (1 req/sec)\n- Response parsing")
+    
+    Component(artist_search, "Artist Search Method", "Python, search_artists()", "Searches artists by name:\nGET /ws/2/artist\nquery={name}, limit={count}")
+    
+    Component(artist_detail, "Artist Detail Method", "Python, get_artist()", "Fetches artist by ID:\nGET /ws/2/artist/{id}\ninc=releases (optional)")
+    
+    Component(rate_limiter, "Rate Limiter", "Python, time.sleep", "Enforces MusicBrainz rate limit:\n1 second delay between requests\ntime.sleep(1.0)")
+    
+    Component(request_builder, "Request Builder", "Python", "Builds API requests:\n- Sets User-Agent header\n- Formats query parameters\n- Adds format: JSON")
+    
+    ' Database Components
+    Component(db_session_manager, "Database Session Manager", "SQLAlchemy, Depends(get_db)", "Provides database sessions:\n- Connection pooling\n- Auto-commit/rollback\n- Session lifecycle")
+    
+    Component(artist_repository, "Artist Repository", "SQLAlchemy ORM", "CRUD operations on artists table:\n- Query by ID\n- Insert new artists\n- Order by created_at\n- Pagination support")
+    
+    Component(artist_model, "Artist Model", "SQLAlchemy ORM", "Table: artists\nColumns:\n- id (PK, String - MusicBrainz ID)\n- name, sort_name\n- type (Person, Group, etc.)\n- country\n- begin_date, end_date\n- created_at (timestamp)")
+    
+    ' Response Processing
+    Component(response_formatter, "Response Formatter", "Python, dict", "Formats responses:\n- Artist JSON structure\n- List pagination metadata\n- Error messages")
+    
+    Component(metadata_extractor, "Metadata Extractor", "Python", "Extracts artist metadata:\n- Life-span dates\n- Country code\n- Artist type\n- Sort name")
+    
+    ' Error Handling
+    Component(error_handler, "Error Handler", "FastAPI HTTPException", "Handles errors:\n- 404 Not Found (artist doesn't exist)\n- 500 Internal Server Error\n- MusicBrainz API errors")
+    
+    Component(logger, "Logger", "Python logging", "Logs:\n- Search queries\n- MusicBrainz API calls\n- Database operations\n- Errors with stack traces")
+    
+    ' Transaction Management
+    Component(transaction_manager, "Transaction Manager", "SQLAlchemy db.commit", "Manages database transactions:\n- Commits successful saves\n- Auto-rollback on errors")
+}
+
+' External requests
+Rel(gateway, fastapi_app, "HTTP requests", "GET:8001\n/artists/search\n/artists/{artist_id}\n/artists")
+
+' App initialization
+Rel(fastapi_app, config_manager, "Loads configuration", "Startup")
+Rel(fastapi_app, logger, "Initializes logging", "Setup")
+Rel(fastapi_app, musicbrainz_client, "Creates instance", "Initialization")
+Rel(fastapi_app, health_endpoint, "Registers route", "Decorator @app.get")
+Rel(fastapi_app, search_endpoint, "Registers route", "Decorator @app.get")
+Rel(fastapi_app, detail_endpoint, "Registers route", "Decorator @app.get")
+Rel(fastapi_app, list_endpoint, "Registers route", "Decorator @app.get")
+
+' Dependency Injection
+Rel(search_endpoint, db_session_manager, "Injects DB session", "Depends(get_db)")
+Rel(detail_endpoint, db_session_manager, "Injects DB session", "Depends(get_db)")
+Rel(list_endpoint, db_session_manager, "Injects DB session", "Depends(get_db)")
+
+' Search Flow
+Rel(search_endpoint, search_handler, "Delegates search", "Function call with query, limit")
+Rel(search_handler, logger, "Logs search query", "logger.info")
+Rel(search_handler, musicbrainz_client, "Search artists", "Method call")
+Rel(musicbrainz_client, artist_search, "Executes search", "Internal method")
+Rel(artist_search, request_builder, "Builds request", "Function call")
+Rel(request_builder, rate_limiter, "Applies rate limit", "Before request")
+Rel(rate_limiter, musicbrainz, "GET /ws/2/artist", "HTTP:443\nquery=name&limit=25&fmt=json")
+Rel(musicbrainz, artist_search, "Returns JSON: {artists: [...]}", "HTTP response")
+
+' Search Processing
+Rel(search_handler, artist_processor, "Process each artist", "For each in results")
+Rel(artist_processor, metadata_extractor, "Extracts metadata", "Function call")
+Rel(metadata_extractor, artist_processor, "Returns parsed data", "Dict")
+Rel(search_handler, duplicate_checker, "Check if exists", "DB query")
+Rel(duplicate_checker, artist_repository, "Query by ID", "DB call")
+Rel(artist_repository, artist_model, "Uses model", "ORM")
+Rel(artist_repository, postgres, "SELECT * FROM artists WHERE id=?", "SQL")
+Rel(postgres, duplicate_checker, "Returns artist or None", "Query result")
+
+' Save new artists
+Rel(search_handler, artist_repository, "Insert artist", "If not exists")
+Rel(artist_repository, postgres, "INSERT INTO artists", "SQL with values")
+Rel(search_handler, transaction_manager, "Commit transaction", "db.commit()")
+Rel(transaction_manager, postgres, "COMMIT", "SQL")
+
+Rel(search_handler, response_formatter, "Formats response", "Function call")
+Rel(response_formatter, search_endpoint, "Returns artist list", "JSON: {artists: [...]}")
+
+' Detail Flow
+Rel(detail_endpoint, detail_handler, "Delegates retrieval", "Function call with artist_id")
+Rel(detail_handler, duplicate_checker, "Check cache first", "DB query")
+Rel(duplicate_checker, artist_repository, "Query by ID", "DB call")
+
+' If found in cache
+Rel(duplicate_checker, detail_handler, "Returns cached artist", "Artist object")
+Rel(detail_handler, response_formatter, "Formats cached data", "Function call")
+
+' If not found in cache
+Rel(detail_handler, logger, "Logs cache miss", "logger.info: 'fetching from MusicBrainz'")
+Rel(detail_handler, musicbrainz_client, "Fetch from API", "If not cached")
+Rel(musicbrainz_client, artist_detail, "Executes get_artist", "Method call")
+Rel(artist_detail, request_builder, "Builds request", "Function call")
+Rel(request_builder, rate_limiter, "Applies rate limit", "Before request")
+Rel(rate_limiter, musicbrainz, "GET /ws/2/artist/{id}", "HTTP:443\nfmt=json")
+Rel(musicbrainz, artist_detail, "Returns artist JSON", "HTTP response")
+
+' Save fetched artist
+Rel(detail_handler, artist_processor, "Process artist data", "Function call")
+Rel(detail_handler, artist_repository, "Insert artist", "DB call")
+Rel(detail_handler, transaction_manager, "Commit", "db.commit()")
+Rel(detail_handler, response_formatter, "Formats response", "Function call")
+Rel(response_formatter, detail_endpoint, "Returns artist details", "JSON")
+
+' List Flow
+Rel(list_endpoint, list_handler, "Delegates list query", "Function call with skip, limit")
+Rel(list_handler, artist_repository, "Query with pagination", "DB call")
+Rel(artist_repository, postgres, "SELECT * FROM artists\nORDER BY created_at DESC\nOFFSET {skip} LIMIT {limit}", "SQL")
+Rel(postgres, list_handler, "Returns artist list", "Query results")
+Rel(list_handler, response_formatter, "Formats list", "Function call")
+Rel(response_formatter, list_endpoint, "Returns paginated artists", "JSON: {artists: [...], skip, limit}")
+
+' Error Handling
+Rel(search_handler, error_handler, "Raises on error", "Exception")
+Rel(detail_handler, error_handler, "Raises on error", "Exception")
+Rel(list_handler, error_handler, "Raises on error", "Exception")
+Rel(musicbrainz_client, error_handler, "Raises on API error", "Exception")
+Rel(artist_repository, error_handler, "Raises on DB error", "Exception")
+Rel(error_handler, logger, "Logs errors", "logger.error with traceback")
+Rel(error_handler, transaction_manager, "Triggers rollback", "On exception")
+Rel(error_handler, search_endpoint, "HTTPException", "Raise 500/404")
+Rel(error_handler, detail_endpoint, "HTTPException", "Raise 500/404")
+Rel(error_handler, list_endpoint, "HTTPException", "Raise 500")
+
+' Logging throughout
+Rel(search_handler, logger, "Logs operations", "logger.info/error")
+Rel(detail_handler, logger, "Logs cache hits/misses", "logger.info")
+Rel(list_handler, logger, "Logs queries", "logger.info")
+
+' Response
+Rel(fastapi_app, gateway, "JSON responses", "HTTP:8001")
+
+SHOW_LEGEND()
+
+@enduml

@@ -1,0 +1,154 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Album Service Container (Level 3)
+
+Container_Ext(gateway, "API Gateway", "FastAPI", "Routes album-related requests")
+ContainerDb_Ext(postgres, "PostgreSQL Database", "PostgreSQL 14", "Stores cached album and track data")
+System_Ext(musicbrainz, "MusicBrainz API", "External music database API")
+
+Container_Boundary(album_service, "Album Service Container") {
+    
+    Component(fastapi_app, "FastAPI Application", "FastAPI, Uvicorn", "Main application instance running on port 8002:\n- Handles HTTP requests\n- Dependency injection\n- Exception handling")
+    
+    Component(config_manager, "Configuration Manager", "Python, os.getenv", "Manages environment variables:\n- DATABASE_URL\n- Service port (8002)")
+    
+    Component(health_endpoint, "Health Check Endpoint", "FastAPI route", "GET /health\nReturns: {'status': 'healthy', 'service': 'album-service'}")
+    
+    ' Route Handler Components
+    Component(search_endpoint, "Search Albums Endpoint", "FastAPI route handler", "GET /albums/search\nParams: artist_name, album_title, limit\nSearches MusicBrainz and caches results")
+    
+    Component(detail_endpoint, "Get Album Endpoint", "FastAPI route handler", "GET /albums/{album_id}\nFetches album details with track listings")
+    
+    ' Core Business Logic
+    Component(search_handler, "Album Search Handler", "Python", "Orchestrates album search:\n- Queries MusicBrainz\n- Processes results\n- Saves to database\n- Fetches and saves tracks")
+    
+    Component(detail_handler, "Album Detail Handler", "Python", "Retrieves album details:\n- Checks local cache\n- Fetches from MusicBrainz if needed\n- Saves with tracks")
+    
+    Component(track_processor, "Track Processor", "Python", "Processes track data:\n- Extracts recording info\n- Creates Track models\n- Saves to database\n- Handles duplicates")
+    
+    Component(artist_resolver, "Artist Resolver", "Python", "Resolves artist information:\n- Extracts from artist-credit\n- Checks if artist exists\n- Creates or retrieves Artist model")
+    
+    ' MusicBrainz Integration
+    Component(musicbrainz_client, "MusicBrainz Service Client", "Python, MusicBrainzService class", "HTTP client for MusicBrainz API:\n- Rate limiting (1 req/sec)\n- Retry logic\n- Response parsing")
+    
+    Component(release_search, "Release Search", "Python", "search_releases() method:\nSearches by artist and/or album title")
+    
+    Component(release_detail, "Release Detail Fetcher", "Python", "get_release() method:\nFetches complete release with recordings")
+    
+    Component(rate_limiter, "Rate Limiter", "Python, time.sleep", "Enforces MusicBrainz rate limit:\n1 second delay between requests")
+    
+    ' Database Components
+    Component(db_session_manager, "Database Session Manager", "SQLAlchemy, Depends(get_db)", "Provides database sessions:\n- Connection pooling\n- Transaction management\n- Auto-commit/rollback")
+    
+    Component(album_repository, "Album Repository", "SQLAlchemy ORM", "CRUD operations on albums table:\n- Query by ID\n- Insert new albums\n- Check existence")
+    
+    Component(track_repository, "Track Repository", "SQLAlchemy ORM", "CRUD operations on tracks table:\n- Query by album_id\n- Insert tracks\n- Check duplicates")
+    
+    Component(artist_repository, "Artist Repository", "SQLAlchemy ORM", "CRUD operations on artists table:\n- Query by ID\n- Insert new artists\n- Upsert logic")
+    
+    ' Data Models
+    Component(album_model, "Album Model", "SQLAlchemy ORM", "Table: albums\nFields: id, title, artist_id, release_date, status, country, created_at")
+    
+    Component(track_model, "Track Model", "SQLAlchemy ORM", "Table: tracks\nFields: id, title, album_id, track_number, length, created_at")
+    
+    Component(artist_model, "Artist Model", "SQLAlchemy ORM", "Table: artists\nFields: id, name, sort_name, type, country, begin_date, end_date, created_at")
+    
+    ' Response Processing
+    Component(response_formatter, "Response Formatter", "Python, dict", "Formats responses:\n- Album JSON structure\n- Track listings\n- Error messages")
+    
+    ' Error Handling
+    Component(error_handler, "Error Handler", "FastAPI HTTPException", "Handles errors:\n- 404 Not Found\n- 400 Bad Request\n- 500 Internal Server Error")
+    
+    Component(logger, "Logger", "Python logging", "Logs:\n- Search queries\n- MusicBrainz requests\n- Database operations\n- Errors and exceptions")
+    
+    ' Transaction Manager
+    Component(transaction_manager, "Transaction Manager", "SQLAlchemy db.commit/rollback", "Manages database transactions:\n- Commits successful operations\n- Rolls back on errors\n- Ensures data consistency")
+}
+
+' External requests
+Rel(gateway, fastapi_app, "HTTP requests", "GET:8002\n/albums/search\n/albums/{album_id}")
+
+' App initialization
+Rel(fastapi_app, config_manager, "Loads configuration", "Startup")
+Rel(fastapi_app, logger, "Initializes logging", "Setup")
+Rel(fastapi_app, musicbrainz_client, "Creates instance", "Initialization")
+Rel(fastapi_app, health_endpoint, "Registers route", "Decorator")
+Rel(fastapi_app, search_endpoint, "Registers route", "Decorator")
+Rel(fastapi_app, detail_endpoint, "Registers route", "Decorator")
+
+' Request routing
+Rel(search_endpoint, db_session_manager, "Injects DB session", "Depends(get_db)")
+Rel(detail_endpoint, db_session_manager, "Injects DB session", "Depends(get_db)")
+
+' Search flow
+Rel(search_endpoint, search_handler, "Delegates search", "Function call")
+Rel(search_handler, musicbrainz_client, "Search releases", "Method call")
+Rel(musicbrainz_client, release_search, "Executes search", "Internal call")
+Rel(release_search, rate_limiter, "Applies rate limit", "Before request")
+Rel(release_search, musicbrainz, "GET /ws/2/release", "HTTP:443\nquery=artist:'...' AND release:'...'")
+Rel(musicbrainz, release_search, "Returns JSON: {releases: [...]}", "HTTP response")
+
+' Search processing
+Rel(search_handler, artist_resolver, "Resolves artist", "For each release")
+Rel(artist_resolver, artist_repository, "Check/insert artist", "DB query")
+Rel(artist_repository, artist_model, "Uses model", "ORM")
+Rel(artist_repository, postgres, "SELECT/INSERT artists", "SQL")
+
+Rel(search_handler, album_repository, "Check album existence", "DB query")
+Rel(album_repository, album_model, "Uses model", "ORM")
+Rel(album_repository, postgres, "SELECT/INSERT albums", "SQL")
+
+Rel(search_handler, release_detail, "Fetch full release details", "For new albums")
+Rel(release_detail, rate_limiter, "Applies rate limit", "Before request")
+Rel(release_detail, musicbrainz, "GET /ws/2/release/{id}", "HTTP:443\ninc=recordings")
+Rel(musicbrainz, release_detail, "Returns release with media/tracks", "HTTP response")
+
+Rel(search_handler, track_processor, "Process tracks", "For each release")
+Rel(track_processor, track_repository, "Save tracks", "Bulk insert")
+Rel(track_repository, track_model, "Uses model", "ORM")
+Rel(track_repository, postgres, "INSERT tracks", "SQL")
+
+Rel(search_handler, transaction_manager, "Commit transaction", "After processing")
+Rel(transaction_manager, postgres, "COMMIT", "SQL")
+
+Rel(search_handler, logger, "Logs operations", "logger.info/error")
+Rel(search_handler, response_formatter, "Formats response", "Function call")
+Rel(response_formatter, search_endpoint, "Returns album list", "JSON")
+
+' Detail flow
+Rel(detail_endpoint, detail_handler, "Delegates retrieval", "Function call")
+Rel(detail_handler, album_repository, "Query album by ID", "DB query")
+Rel(album_repository, postgres, "SELECT * FROM albums WHERE id=?", "SQL")
+
+' If not found in DB
+Rel(detail_handler, release_detail, "Fetch from MusicBrainz", "If not in cache")
+Rel(detail_handler, artist_resolver, "Resolve artist", "If fetching")
+Rel(detail_handler, album_repository, "Save album", "After fetch")
+Rel(detail_handler, track_processor, "Process tracks", "After fetch")
+Rel(detail_handler, transaction_manager, "Commit", "After save")
+
+' If found in DB
+Rel(detail_handler, track_repository, "Query tracks", "DB query")
+Rel(track_repository, postgres, "SELECT * FROM tracks WHERE album_id=?", "SQL")
+
+Rel(detail_handler, response_formatter, "Formats album with tracks", "Function call")
+Rel(response_formatter, detail_endpoint, "Returns album details", "JSON")
+
+' Error handling
+Rel(search_handler, error_handler, "Raises on error", "Exception")
+Rel(detail_handler, error_handler, "Raises on error", "Exception")
+Rel(musicbrainz_client, error_handler, "Raises on API error", "Exception")
+Rel(transaction_manager, error_handler, "Rollback on error", "db.rollback()")
+Rel(error_handler, logger, "Logs errors", "Function call")
+Rel(error_handler, search_endpoint, "HTTPException", "Raise")
+Rel(error_handler, detail_endpoint, "HTTPException", "Raise")
+
+' Response
+Rel(fastapi_app, gateway, "JSON responses", "HTTP:8002")
+
+SHOW_LEGEND()
+
+@enduml

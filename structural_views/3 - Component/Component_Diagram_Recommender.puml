@@ -1,0 +1,209 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Recommendation Service Container (Level 3)
+
+Container_Ext(gateway, "API Gateway", "FastAPI", "Routes recommendation and profile requests")
+ContainerDb_Ext(postgres, "PostgreSQL Database", "PostgreSQL 14", "Stores user profiles and listening history")
+System_Ext(musicbrainz, "MusicBrainz API", "External music database API")
+
+Container_Boundary(rec_service, "Recommendation Service Container") {
+    
+    Component(fastapi_app, "FastAPI Application", "FastAPI, Uvicorn", "Main application on port 8003:\nVersion 2.5.0 - Diverse Recommendations")
+    
+    Component(config_manager, "Configuration Manager", "Python, os.getenv", "Manages:\n- DATABASE_URL\n- Service port (8003)")
+    
+    Component(health_endpoint, "Health Check Endpoint", "FastAPI route", "GET /health\nReturns service status and features")
+    
+    ' Recommendation Endpoints
+    Component(query_rec_endpoint, "Query Recommendations Endpoint", "FastAPI route", "GET /api/recommendations/query\nParams: query, limit, username\nSmart genre-based recommendations")
+    
+    Component(profile_rec_endpoint, "Profile Recommendations Endpoint", "FastAPI route", "GET /api/recommendations/profile/{username}\nParams: limit\nProfile-based suggestions")
+    
+    Component(similar_rec_endpoint, "Similar Recommendations Endpoint", "FastAPI route", "GET /api/recommendations/similar/{artist_name}\nParams: limit\nSimilar artist recommendations")
+    
+    ' User Profile Endpoints
+    Component(create_profile_endpoint, "Create Profile Endpoint", "FastAPI route", "POST /users/{username}/profile\nBody: ProfileData (JSON)\nCreates/updates user profile")
+    
+    Component(get_profile_endpoint, "Get Profile Endpoint", "FastAPI route", "GET /users/{username}/profile\nRetrieves user preferences")
+    
+    Component(add_history_endpoint, "Add Listening History Endpoint", "FastAPI route", "POST /users/{username}/listening-history\nParams: track_id, artist_id, interaction_type")
+    
+    ' Core Recommendation Engine
+    Component(diverse_rec_engine, "Diverse Recommendation Engine", "Python, get_diverse_recommendations()", "Main recommendation algorithm:\n- Multi-strategy search\n- Artist diversity filtering\n- Score-based ranking")
+    
+    Component(genre_detector, "Genre Detection Engine", "Python, detect_genre_enhanced()", "Enhanced keyword matching:\n- Hip-hop, rock, jazz, pop, etc.\n- Mood keywords (upbeat, relaxing)\n- Sub-genre detection")
+    
+    Component(genre_mapping, "Genre Mapping Registry", "Python dict, DIVERSE_GENRE_QUERIES", "Maps genres to representative artists:\n- 10+ genres\n- 8-12 artists per genre\n- Curated for diversity")
+    
+    Component(diversity_filter, "Artist Diversity Filter", "Python, ensure_artist_diversity()", "Ensures variety:\n- Max tracks per artist (1-2)\n- Prevents artist repetition\n- Maintains quality ranking")
+    
+    ' Search Strategy Components
+    Component(multi_artist_strategy, "Multi-Artist Genre Strategy", "Python", "Strategy 1 (Score: 85):\n- Searches 6+ artists per genre\n- 1-2 tracks per artist\n- Shuffled for variety")
+    
+    Component(tag_search_strategy, "Tag-Based Search Strategy", "Python", "Strategy 2 (Score: 75):\n- Searches by genre tags\n- Discovers new artists\n- Broader coverage")
+    
+    Component(direct_search_strategy, "Direct Search Fallback", "Python", "Strategy 3 (Score: 60):\n- Direct query search\n- Used when other strategies insufficient")
+    
+    ' MusicBrainz Integration
+    Component(mb_client, "MusicBrainz Client", "Python, DiverseMusicBrainzClient", "Specialized client for diverse results:\n- search_recordings_diverse()\n- Rate limiting\n- Timeout handling")
+    
+    Component(recording_search, "Recording Search", "Python", "Searches MusicBrainz recordings:\nGET /ws/2/recording\nquery=..., limit=25")
+    
+    Component(rate_limiter, "Rate Limiter", "Python, time.sleep", "1 second delay between requests")
+    
+    ' Profile Management
+    Component(profile_handler, "Profile CRUD Handler", "Python", "Manages user profiles:\n- Create/update profiles\n- Parse JSON preferences\n- Validate data")
+    
+    Component(profile_validator, "Profile Data Validator", "Pydantic, ProfileData", "Validates profile JSON:\n- favorite_genres: List[str]\n- favorite_artists: List[str]")
+    
+    Component(profile_generator, "Profile-Based Generator", "Python", "Generates recommendations from profile:\n- Uses favorite genres\n- Combines multiple genre searches\n- Marks as profile_based type")
+    
+    ' Listening History
+    Component(history_handler, "Listening History Handler", "Python", "Manages user interactions:\n- Played, liked, saved, skipped\n- Creates history entries\n- Verifies saves")
+    
+    ' Database Components
+    Component(db_session_manager, "Database Session Manager", "SQLAlchemy, Depends(get_db)", "Provides database sessions")
+    
+    Component(profile_repository, "User Profile Repository", "SQLAlchemy ORM", "CRUD on user_profiles table:\n- Query by username\n- Insert/update profiles\n- JSON field handling")
+    
+    Component(history_repository, "Listening History Repository", "SQLAlchemy ORM", "CRUD on listening_history table:\n- Insert interactions\n- Query by user_id")
+    
+    Component(profile_model, "UserProfile Model", "SQLAlchemy ORM", "Table: user_profiles\nFields: id, username, favorite_genres (JSON), favorite_artists (JSON), created_at, updated_at")
+    
+    Component(history_model, "ListeningHistory Model", "SQLAlchemy ORM", "Table: listening_history\nFields: id, user_id, track_id, artist_id, played_at, interaction_type")
+    
+    ' Response Processing
+    Component(response_formatter, "Response Formatter", "Python, dict", "Formats recommendation responses:\n- Recommendation list\n- Query analysis metadata\n- Algorithm version")
+    
+    Component(query_analyzer, "Query Analyzer", "Python", "Analyzes queries and tracks metrics:\n- Detected genre\n- Unique artists count\n- Diversity ratio\n- Processing time")
+    
+    Component(duplicate_remover, "Duplicate Remover", "Python, set", "Removes duplicate tracks:\n- By track_id\n- Maintains order")
+    
+    Component(score_sorter, "Score Sorter", "Python, sorted()", "Sorts recommendations by score:\nDescending order (highest first)")
+    
+    ' Error Handling & Logging
+    Component(error_handler, "Error Handler", "FastAPI HTTPException", "Handles errors:\n- 400 Bad Request\n- 404 Not Found\n- 500 Internal Server Error")
+    
+    Component(logger, "Logger", "Python logging", "Comprehensive logging:\n- Search queries\n- Strategy usage\n- Diversity metrics\n- Errors with traceback")
+    
+    Component(transaction_manager, "Transaction Manager", "SQLAlchemy db.commit/rollback", "Manages transactions:\n- Profile saves\n- History inserts")
+}
+
+' External requests
+Rel(gateway, fastapi_app, "HTTP requests", "GET/POST:8003")
+
+' App initialization
+Rel(fastapi_app, config_manager, "Loads config", "Startup")
+Rel(fastapi_app, mb_client, "Creates instance", "Initialization")
+Rel(fastapi_app, genre_mapping, "Loads genre data", "Startup")
+Rel(fastapi_app, health_endpoint, "Registers", "Decorator")
+Rel(fastapi_app, query_rec_endpoint, "Registers", "Decorator")
+Rel(fastapi_app, profile_rec_endpoint, "Registers", "Decorator")
+Rel(fastapi_app, similar_rec_endpoint, "Registers", "Decorator")
+Rel(fastapi_app, create_profile_endpoint, "Registers", "Decorator")
+Rel(fastapi_app, get_profile_endpoint, "Registers", "Decorator")
+Rel(fastapi_app, add_history_endpoint, "Registers", "Decorator")
+
+' Query Recommendation Flow
+Rel(query_rec_endpoint, diverse_rec_engine, "Delegates to engine", "Function call")
+Rel(diverse_rec_engine, genre_detector, "Detects genre from query", "Function call")
+Rel(genre_detector, genre_mapping, "Checks genre keywords", "Dictionary lookup")
+Rel(genre_detector, diverse_rec_engine, "Returns detected genre or None", "Return value")
+
+' Multi-Strategy Search
+Rel(diverse_rec_engine, multi_artist_strategy, "Strategy 1: Genre-based", "If genre detected")
+Rel(multi_artist_strategy, genre_mapping, "Gets artist list for genre", "Dictionary lookup")
+Rel(multi_artist_strategy, mb_client, "Searches recordings per artist", "Multiple calls")
+Rel(mb_client, recording_search, "Executes search", "Method call")
+Rel(recording_search, rate_limiter, "Applies rate limit", "Before each request")
+Rel(recording_search, musicbrainz, "GET /ws/2/recording", "HTTP:443\nquery=artist:'...', limit=3")
+Rel(musicbrainz, recording_search, "Returns recordings JSON", "HTTP response")
+
+Rel(diverse_rec_engine, tag_search_strategy, "Strategy 2: Tag-based", "If insufficient results")
+Rel(tag_search_strategy, mb_client, "Searches by tag", "Function call")
+Rel(mb_client, musicbrainz, "GET /ws/2/recording", "query=tag:genre")
+
+Rel(diverse_rec_engine, direct_search_strategy, "Strategy 3: Fallback", "If still insufficient")
+Rel(direct_search_strategy, mb_client, "Direct query search", "Function call")
+
+' Diversity Processing
+Rel(diverse_rec_engine, diversity_filter, "Filters for variety", "Function call")
+Rel(diversity_filter, diverse_rec_engine, "Returns diverse subset", "Max 1-2 per artist")
+
+Rel(diverse_rec_engine, duplicate_remover, "Removes duplicates", "Function call")
+Rel(duplicate_remover, score_sorter, "Passes unique tracks", "List")
+Rel(score_sorter, diverse_rec_engine, "Returns sorted by score", "Sorted list")
+
+Rel(diverse_rec_engine, query_analyzer, "Builds analysis", "Function call")
+Rel(query_analyzer, response_formatter, "Provides metadata", "Dict")
+Rel(diverse_rec_engine, response_formatter, "Formats response", "Function call")
+Rel(response_formatter, query_rec_endpoint, "Returns recommendations", "JSON")
+
+' Profile Recommendation Flow
+Rel(profile_rec_endpoint, db_session_manager, "Gets DB session", "Depends(get_db)")
+Rel(profile_rec_endpoint, profile_repository, "Query profile by username", "DB call")
+Rel(profile_repository, profile_model, "Uses model", "ORM")
+Rel(profile_repository, postgres, "SELECT * FROM user_profiles WHERE username=?", "SQL")
+Rel(postgres, profile_repository, "Returns profile or None", "Query result")
+
+Rel(profile_rec_endpoint, profile_generator, "Generates from profile", "If found")
+Rel(profile_generator, diverse_rec_engine, "Searches per genre", "Multiple calls")
+Rel(profile_generator, response_formatter, "Formats results", "Function call")
+Rel(response_formatter, profile_rec_endpoint, "Returns profile-based recs", "JSON")
+
+' Similar Artist Flow
+Rel(similar_rec_endpoint, diverse_rec_engine, "Uses artist name as query", "Function call")
+
+' Create Profile Flow
+Rel(create_profile_endpoint, profile_validator, "Validates request body", "Pydantic")
+Rel(profile_validator, create_profile_endpoint, "Returns ProfileData object", "Validation")
+Rel(create_profile_endpoint, db_session_manager, "Gets DB session", "Depends(get_db)")
+Rel(create_profile_endpoint, profile_handler, "Delegates save", "Function call")
+Rel(profile_handler, profile_repository, "Check existing profile", "DB query")
+Rel(profile_handler, profile_repository, "Insert or update", "DB operation")
+Rel(profile_repository, postgres, "INSERT/UPDATE user_profiles", "SQL")
+Rel(profile_handler, transaction_manager, "Commits transaction", "db.commit()")
+Rel(transaction_manager, postgres, "COMMIT", "SQL")
+Rel(profile_handler, create_profile_endpoint, "Returns success", "Dict")
+
+' Get Profile Flow
+Rel(get_profile_endpoint, profile_repository, "Query by username", "DB call")
+Rel(profile_repository, postgres, "SELECT", "SQL")
+Rel(get_profile_endpoint, response_formatter, "Formats profile", "JSON parsing")
+
+' Add Listening History Flow
+Rel(add_history_endpoint, db_session_manager, "Gets DB session", "Depends(get_db)")
+Rel(add_history_endpoint, history_handler, "Delegates save", "Function call")
+Rel(history_handler, profile_repository, "Get or create profile", "DB query")
+Rel(history_handler, history_repository, "Insert history entry", "DB operation")
+Rel(history_repository, history_model, "Uses model", "ORM")
+Rel(history_repository, postgres, "INSERT INTO listening_history", "SQL")
+Rel(history_handler, transaction_manager, "Commits", "db.commit()")
+Rel(history_handler, add_history_endpoint, "Returns confirmation", "Dict with verification")
+
+' Error Handling
+Rel(diverse_rec_engine, error_handler, "Raises on error", "Exception")
+Rel(profile_handler, error_handler, "Raises on error", "Exception")
+Rel(history_handler, error_handler, "Raises on error", "Exception")
+Rel(mb_client, error_handler, "Raises on API error", "Exception")
+Rel(error_handler, logger, "Logs errors", "logger.error with traceback")
+Rel(transaction_manager, logger, "Logs transactions", "logger.info")
+Rel(error_handler, query_rec_endpoint, "HTTPException", "Raise")
+Rel(error_handler, create_profile_endpoint, "HTTPException", "Raise")
+
+' Logging throughout
+Rel(diverse_rec_engine, logger, "Logs search progress", "logger.info")
+Rel(multi_artist_strategy, logger, "Logs strategy usage", "logger.info")
+Rel(diversity_filter, logger, "Logs diversity metrics", "logger.info")
+Rel(profile_handler, logger, "Logs profile operations", "logger.info")
+Rel(history_handler, logger, "Logs history operations", "logger.info")
+
+' Response
+Rel(fastapi_app, gateway, "JSON responses", "HTTP:8003")
+
+SHOW_LEGEND()
+
+@enduml

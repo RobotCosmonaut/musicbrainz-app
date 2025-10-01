@@ -1,0 +1,112 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Database Init Service Container (Level 3)
+
+ContainerDb_Ext(postgres, "PostgreSQL Database", "PostgreSQL 14", "Target database for schema initialization")
+Container_Ext(artist_service, "Artist Service", "FastAPI", "Waits for DB init to complete")
+Container_Ext(album_service, "Album Service", "FastAPI", "Waits for DB init to complete")
+Container_Ext(recommendation_service, "Recommendation Service", "FastAPI", "Waits for DB init to complete")
+
+Container_Boundary(db_init, "Database Init Service Container") {
+    
+    Component(main_script, "Main Initialization Script", "Python, init_db.py", "Entry point that orchestrates database initialization process and exits after completion")
+    
+    Component(config_loader, "Configuration Loader", "Python, os.getenv", "Loads DATABASE_URL from environment:\npostgresql://user:password@postgres:5432/musicbrainz")
+    
+    Component(engine_factory, "Engine Factory", "SQLAlchemy", "Creates database engine with connection settings:\n- pool_pre_ping: True\n- pool_recycle: 300")
+    
+    Component(connection_manager, "Connection Manager", "SQLAlchemy Engine", "Manages database connections and executes SQL commands")
+    
+    Component(readiness_checker, "Database Readiness Checker", "Python, time, logging", "Polls database with SELECT 1 query:\n- Max retries: 30\n- Delay: 2 seconds\n- Logs each attempt")
+    
+    Component(retry_handler, "Retry Handler", "Python, OperationalError", "Implements exponential backoff:\n- Catches OperationalError\n- Waits 2^attempt seconds\n- Max 5 retries")
+    
+    Component(schema_checker, "Schema Existence Checker", "SQLAlchemy, information_schema", "Queries information_schema.tables to check if tables already exist:\nSELECT table_name FROM information_schema.tables\nWHERE table_schema = 'public'")
+    
+    Component(table_creator, "Table Creator", "SQLAlchemy, Base.metadata", "Creates all tables using:\nBase.metadata.create_all(bind=engine)")
+    
+    Component(logger, "Logger", "Python logging", "Logs initialization progress:\n- Database connection attempts\n- Table creation status\n- Success/failure messages")
+    
+    ' Model Registry Components
+    Component(model_registry, "Model Registry", "SQLAlchemy Base", "Declarative base registry containing all ORM models")
+    
+    Component(artist_model, "Artist Model", "SQLAlchemy Model", "Table: artists\nColumns: id, name, sort_name, type, country, begin_date, end_date, created_at")
+    
+    Component(album_model, "Album Model", "SQLAlchemy Model", "Table: albums\nColumns: id, title, artist_id, release_date, status, country, created_at")
+    
+    Component(track_model, "Track Model", "SQLAlchemy Model", "Table: tracks\nColumns: id, title, album_id, track_number, length, created_at")
+    
+    Component(user_profile_model, "UserProfile Model", "SQLAlchemy Model", "Table: user_profiles\nColumns: id, username, favorite_genres, favorite_artists, listening_history, created_at, updated_at")
+    
+    Component(recommendation_model, "Recommendation Model", "SQLAlchemy Model", "Table: recommendations\nColumns: id, user_id, track_id, artist_id, track_title, artist_name, score, recommendation_type, created_at")
+    
+    Component(listening_history_model, "ListeningHistory Model", "SQLAlchemy Model", "Table: listening_history\nColumns: id, user_id, track_id, artist_id, played_at, interaction_type")
+    
+    Component(relationship_manager, "Relationship Manager", "SQLAlchemy relationships", "Manages foreign key relationships:\n- Artist ↔ Album\n- Album ↔ Track\n- UserProfile ↔ ListeningHistory")
+}
+
+' Initialization flow
+Rel(main_script, config_loader, "Loads configuration", "Startup")
+Rel(config_loader, main_script, "Returns DATABASE_URL", "Environment variable")
+
+Rel(main_script, logger, "Initializes logging", "Setup")
+Rel(main_script, engine_factory, "Creates engine", "Function call")
+Rel(engine_factory, connection_manager, "Returns engine instance", "Object creation")
+
+Rel(main_script, readiness_checker, "Waits for database", "Function call")
+Rel(readiness_checker, connection_manager, "Executes SELECT 1", "SQL query")
+Rel(connection_manager, postgres, "Tests connection", "PostgreSQL protocol")
+Rel(postgres, connection_manager, "Connection response", "Success/Failure")
+
+Rel(readiness_checker, retry_handler, "Handles connection failures", "Exception handling")
+Rel(retry_handler, logger, "Logs retry attempts", "Function call")
+Rel(readiness_checker, logger, "Logs connection status", "Function call")
+
+' Schema creation flow
+Rel(main_script, schema_checker, "Checks existing tables", "Function call")
+Rel(schema_checker, connection_manager, "Queries information_schema", "SQL query")
+Rel(connection_manager, postgres, "SELECT table_name", "PostgreSQL protocol")
+Rel(postgres, schema_checker, "Returns table list", "Query result")
+
+Rel(main_script, table_creator, "Creates tables", "Conditional execution")
+Rel(table_creator, model_registry, "Reads metadata", "Base.metadata")
+
+' Model registry relationships
+Rel(model_registry, artist_model, "Contains", "Registry")
+Rel(model_registry, album_model, "Contains", "Registry")
+Rel(model_registry, track_model, "Contains", "Registry")
+Rel(model_registry, user_profile_model, "Contains", "Registry")
+Rel(model_registry, recommendation_model, "Contains", "Registry")
+Rel(model_registry, listening_history_model, "Contains", "Registry")
+
+Rel(artist_model, relationship_manager, "Defines relationships", "SQLAlchemy ORM")
+Rel(album_model, relationship_manager, "Defines relationships", "SQLAlchemy ORM")
+Rel(track_model, relationship_manager, "Defines relationships", "SQLAlchemy ORM")
+Rel(user_profile_model, relationship_manager, "Defines relationships", "SQLAlchemy ORM")
+
+' Table creation
+Rel(table_creator, connection_manager, "Executes CREATE TABLE statements", "Transaction")
+Rel(connection_manager, postgres, "CREATE TABLE artists", "DDL")
+Rel(connection_manager, postgres, "CREATE TABLE albums", "DDL")
+Rel(connection_manager, postgres, "CREATE TABLE tracks", "DDL")
+Rel(connection_manager, postgres, "CREATE TABLE user_profiles", "DDL")
+Rel(connection_manager, postgres, "CREATE TABLE recommendations", "DDL")
+Rel(connection_manager, postgres, "CREATE TABLE listening_history", "DDL")
+Rel(connection_manager, postgres, "CREATE FOREIGN KEY constraints", "DDL")
+
+Rel(postgres, table_creator, "Creation status", "Success/Error")
+Rel(table_creator, logger, "Logs creation status", "Function call")
+Rel(table_creator, retry_handler, "Handles creation errors", "Exception handling")
+
+' Completion
+Rel(main_script, logger, "Logs completion", "Success message")
+Rel(main_script, artist_service, "Signals completion", "Docker healthcheck")
+Rel(main_script, album_service, "Signals completion", "Docker healthcheck")
+Rel(main_script, recommendation_service, "Signals completion", "Docker healthcheck")
+
+SHOW_LEGEND()
+
+@enduml
