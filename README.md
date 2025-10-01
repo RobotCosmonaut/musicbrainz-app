@@ -31,6 +31,11 @@ While recommendation engines exist for major music services, they are generally 
 #### Artist Service Component Diagram
 ![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_Artist.png "Artist Service Component Diagram")
 
+### Code Diagrams: 
+
+#### Get Album Code Diagram
+![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/4%20-%20Code/Code_Diagram_Get_Album.png "Get Album Code Diagram")
+
 ## Installation
 TBD
 
