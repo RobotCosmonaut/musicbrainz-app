@@ -1,16 +1,43 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from shared.database import get_db
+from shared.models import UserProfile
 import uvicorn
 import logging
 import requests
 import time
+import json
+import os
 from typing import List, Dict, Set
 from collections import defaultdict
 import random
+from sqlalchemy import create_engine, text
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def get_db_connection():
+    DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/musicbrainz")
+    return create_engine(DATABASE_URL)
+
 app = FastAPI(title="Diverse Recommendation Service", version="2.5.0")
+
+class ProfileData(BaseModel):
+    """
+    Model for user profile data received in JSON request body.
+    
+    When the gateway sends:
+    {
+        "favorite_genres": ["rock", "jazz"],
+        "favorite_artists": ["id1", "id2"]
+    }
+    
+    FastAPI automatically converts it into a ProfileData object.
+    """
+    favorite_genres: List[str] = []
+    favorite_artists: List[str] = []
 
 class DiverseMusicBrainzClient:
     def __init__(self):
@@ -304,8 +331,89 @@ def get_query_recommendations(query: str, limit: int = 10, username: str = None)
 
 @app.get("/recommendations/profile/{username}")
 def get_profile_recommendations(username: str, limit: int = 10):
-    """Diverse profile recommendations"""
-    return {"recommendations": [], "message": "Use genre-based search for diverse results"}
+    """Generate recommendations based on user's profile preferences"""
+    try:
+        # Get user profile from database
+        DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/musicbrainz")
+        
+        from sqlalchemy import create_engine, text
+        engine = create_engine(DATABASE_URL)
+        
+        with engine.connect() as conn:
+            result = conn.execute(
+                text("SELECT favorite_genres, favorite_artists FROM user_profiles WHERE username = :username"),
+                {"username": username}
+            )
+            profile = result.fetchone()
+        
+        if not profile:
+            logger.warning(f"No profile found for user: {username}")
+            return {
+                "recommendations": [],
+                "message": "Profile not found. Please create a profile first."
+            }
+        
+        # Parse favorite genres (stored as JSON string)
+        import json
+        favorite_genres = json.loads(profile[0]) if profile[0] else []
+        favorite_artists = json.loads(profile[1]) if profile[1] else []
+        
+        if not favorite_genres and not favorite_artists:
+            logger.warning(f"Empty profile for user: {username}")
+            return {
+                "recommendations": [],
+                "message": "Please add favorite genres or artists to your profile."
+            }
+        
+        # Generate recommendations based on favorite genres
+        all_recommendations = []
+        
+        # Strategy 1: Use favorite genres
+        if favorite_genres:
+            logger.info(f"Generating recommendations for genres: {favorite_genres}")
+            
+            # Take the first 2-3 genres to avoid overwhelming the API
+            for genre in favorite_genres[:3]:
+                genre_recs = get_diverse_recommendations(genre, limit=limit // len(favorite_genres[:3]) + 2)
+                all_recommendations.extend(genre_recs.get('recommendations', []))
+        
+        # Strategy 2: Use favorite artists (if you want to implement this)
+        # This would require querying MusicBrainz for songs by those artists
+        
+        # Remove duplicates and sort by score
+        seen_tracks = set()
+        unique_recommendations = []
+        
+        for rec in all_recommendations:
+            if rec['track_id'] not in seen_tracks:
+                seen_tracks.add(rec['track_id'])
+                # Mark as profile-based recommendation
+                rec['recommendation_type'] = 'profile_based'
+                unique_recommendations.append(rec)
+        
+        # Sort by score and limit results
+        unique_recommendations.sort(key=lambda x: x['score'], reverse=True)
+        final_recommendations = unique_recommendations[:limit]
+        
+        logger.info(f"Generated {len(final_recommendations)} profile-based recommendations for {username}")
+        
+        return {
+            "recommendations": final_recommendations,
+            "profile_analysis": {
+                "favorite_genres": favorite_genres,
+                "genres_used": favorite_genres[:3],
+                "total_matches": len(all_recommendations),
+                "unique_results": len(final_recommendations)
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Profile recommendations error for {username}: {e}")
+        return {
+            "recommendations": [],
+            "error": str(e),
+            "message": "Error generating profile recommendations"
+        }
 
 @app.get("/recommendations/similar/{artist_name}")
 def get_similar_recommendations(artist_name: str, limit: int = 10):
@@ -320,16 +428,161 @@ def get_similar_recommendations(artist_name: str, limit: int = 10):
 
 # Profile endpoints
 @app.post("/users/{username}/profile")
-def create_profile(username: str):
-    return {"message": f"Profile created for {username}"}
+def create_profile(
+    username: str,                      # <- From URL path: /users/{username}/profile
+    profile_data: ProfileData,          # <- From JSON body (Pydantic auto-parses)
+    db: Session = Depends(get_db)       # <- Database session (dependency injection)
+):
+    """
+    Create or update user profile.
+    
+    Request example:
+        POST /users/john/profile
+        Body: {"favorite_genres": ["rock"], "favorite_artists": ["id1"]}
+    
+    Flow:
+        1. FastAPI extracts 'john' from URL -> username
+        2. FastAPI parses JSON body -> profile_data (ProfileData object)
+        3. FastAPI provides database session -> db
+        4. We extract and save the data
+    """
+    try:
+        # Step 1: Extract data from Pydantic model
+        favorite_genres = profile_data.favorite_genres    # This is a list
+        favorite_artists = profile_data.favorite_artists  # This is a list
+        
+        logger.info(f"Received profile data for {username}: genres={favorite_genres}, artists={favorite_artists}")
+        
+        # Step 2: Check if profile already exists in database
+        profile = db.query(UserProfile).filter(UserProfile.username == username).first()
+        
+        if profile:
+            # UPDATE existing profile
+            profile.favorite_genres = json.dumps(favorite_genres)    # Convert list to JSON string
+            profile.favorite_artists = json.dumps(favorite_artists)  # Convert list to JSON string
+            logger.info(f"Updated existing profile for {username}")
+        else:
+            # CREATE new profile
+            profile = UserProfile(
+                username=username,
+                favorite_genres=json.dumps(favorite_genres),    # Convert list to JSON string
+                favorite_artists=json.dumps(favorite_artists)   # Convert list to JSON string
+            )
+            db.add(profile)
+            logger.info(f"Created new profile for {username}")
+        
+        # Step 3: Save to database
+        db.commit()
+        db.refresh(profile)
+        
+        # Step 4: Return success response
+        return {
+            "message": f"Profile saved for {username}",
+            "username": username,
+            "favorite_genres": favorite_genres,      # Return as list
+            "favorite_artists": favorite_artists     # Return as list
+        }
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error saving profile for {username}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error saving profile: {str(e)}")
+
 
 @app.get("/users/{username}/profile") 
-def get_profile(username: str):
-    return {"username": username, "favorite_genres": [], "favorite_artists": []}
+def get_profile(
+    username: str,                      # <- From URL path
+    db: Session = Depends(get_db)       # <- Database session
+):
+    """
+    Get user profile.
+    
+    Request example:
+        GET /users/john/profile
+    
+    Returns the user's saved favorite genres and artists.
+    """
+    try:
+        # Step 1: Query database for profile
+        profile = db.query(UserProfile).filter(UserProfile.username == username).first()
+        
+        # Step 2: If no profile found, return empty
+        if not profile:
+            logger.info(f"No profile found for {username}, returning empty")
+            return {
+                "username": username,
+                "favorite_genres": [],
+                "favorite_artists": []
+            }
+        
+        # Step 3: Parse JSON strings back to lists
+        # (Database stores as JSON strings, we need to convert back to lists)
+        favorite_genres = json.loads(profile.favorite_genres) if profile.favorite_genres else []
+        favorite_artists = json.loads(profile.favorite_artists) if profile.favorite_artists else []
+        
+        logger.info(f"Retrieved profile for {username}: {len(favorite_genres)} genres, {len(favorite_artists)} artists")
+        
+        # Step 4: Return profile data
+        return {
+            "username": username,
+            "favorite_genres": favorite_genres,
+            "favorite_artists": favorite_artists,
+            "created_at": str(profile.created_at),
+            "updated_at": str(profile.updated_at)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting profile for {username}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting profile: {str(e)}")
+
 
 @app.post("/users/{username}/listening-history")
-def add_history(username: str, track_id: str, artist_id: str, interaction_type: str = "played"):
-    return {"message": "History added"}
+def add_history(
+    username: str, 
+    track_id: str, 
+    artist_id: str, 
+    interaction_type: str = "played", 
+    db: Session = Depends(get_db)
+):
+    """Add listening history entry"""
+    try:
+        from shared.models import ListeningHistory
+        from datetime import datetime
+        
+        # Get or create user profile
+        profile = db.query(UserProfile).filter(UserProfile.username == username).first()
+        if not profile:
+            profile = UserProfile(
+                username=username,
+                favorite_genres=json.dumps([]),
+                favorite_artists=json.dumps([])
+            )
+            db.add(profile)
+            db.commit()
+            db.refresh(profile)
+        
+        # Add listening history entry
+        history_entry = ListeningHistory(
+            user_id=profile.id,
+            track_id=track_id,
+            artist_id=artist_id,
+            interaction_type=interaction_type,
+            played_at=datetime.utcnow()
+        )
+        db.add(history_entry)
+        db.commit()
+        
+        return {
+            "message": "History added",
+            "username": username,
+            "track_id": track_id,
+            "interaction_type": interaction_type
+        }
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error adding history for {username}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error adding history: {str(e)}")
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8003)

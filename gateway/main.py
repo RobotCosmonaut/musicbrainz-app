@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 import httpx
 import uvicorn
 import os
@@ -21,6 +22,11 @@ TIMEOUT_CONFIG = httpx.Timeout(
     write=10.0,     # 10 seconds to write request
     pool=10.0       # 10 seconds to get connection from pool
 )
+
+class ProfileCreate(BaseModel):
+    """Request body model for creating/updating user profiles"""
+    favorite_genres: list = []
+    favorite_artists: list = []
 
 @app.get("/health")
 def health_check():
@@ -177,20 +183,39 @@ async def get_similar_recommendations(artist_name: str, limit: int = 10):
         raise HTTPException(status_code=503, detail="Similar recommendations unavailable")
 
 @app.post("/api/users/{username}/profile")
-async def create_user_profile(username: str, favorite_genres: list = [], favorite_artists: list = []):
+async def create_user_profile(username: str, profile: ProfileCreate):
+    """
+    Create or update a user profile
+    
+    Args:
+        username: Username from URL path
+        profile: Profile data from request body (JSON)
+    """
     try:
         async with httpx.AsyncClient(timeout=TIMEOUT_CONFIG) as client:
-            response = await client.post(f"{RECOMMENDATION_SERVICE_URL}/users/{username}/profile", 
-                                       json={"favorite_genres": favorite_genres, "favorite_artists": favorite_artists})
+            # Forward the request to recommendation service
+            response = await client.post(
+                f"{RECOMMENDATION_SERVICE_URL}/users/{username}/profile", 
+                json={
+                    "favorite_genres": profile.favorite_genres,
+                    "favorite_artists": profile.favorite_artists
+                }
+            )
+            
             if response.status_code == 200:
                 return response.json()
             else:
-                raise HTTPException(status_code=response.status_code, detail="Profile creation failed")
+                logger.error(f"Profile creation failed: {response.status_code} - {response.text}")
+                raise HTTPException(
+                    status_code=response.status_code, 
+                    detail=f"Profile creation failed: {response.text}"
+                )
     except httpx.TimeoutException:
+        logger.error("Profile service timeout")
         raise HTTPException(status_code=504, detail="Profile service timeout")
     except Exception as e:
         logger.error(f"Create profile error: {e}")
-        raise HTTPException(status_code=503, detail="Profile service unavailable")
+        raise HTTPException(status_code=503, detail=f"Profile service unavailable: {str(e)}")
 
 @app.get("/api/users/{username}/profile")
 async def get_user_profile(username: str):
@@ -224,6 +249,7 @@ async def add_listening_history(username: str, track_id: str, artist_id: str, in
     except Exception as e:
         logger.error(f"Add history error: {e}")
         raise HTTPException(status_code=503, detail="History service unavailable")
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
