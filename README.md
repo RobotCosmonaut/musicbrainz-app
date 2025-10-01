@@ -13,8 +13,23 @@ While recommendation engines exist for major music services, they are generally 
 
 ### Component Diagrams: 
 
-#### Streamlit UI Component Diagram
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_Streamlit.png "Streamlit UI Component Diagram")
+#### Streamlit UI Service Component Diagram
+![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_Streamlit.png "Streamlit UI Service Component Diagram")
+
+#### API Gateway Service Component Diagram
+![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_API_Gateway.png "API Gateway Service Component Diagram")
+
+#### Database Init Service Component Diagram
+![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_Database_Init.png "Database Init Service Component Diagram")
+
+#### Album Service Component Diagram
+![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_Album.png "Album Service Component Diagram")
+
+#### Recommendation Service Component Diagram
+![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_Recommender.png "Recommendation Service Component Diagram")
+
+#### Artist Service Component Diagram
+![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_Artist.png "Artist Service Component Diagram")
 
 ## Installation
 TBD
