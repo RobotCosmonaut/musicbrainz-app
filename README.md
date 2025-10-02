@@ -34,7 +34,7 @@ The application is developed via a set of microservices:
 ![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_Streamlit.png "Streamlit UI Service Component Diagram")
 
 #### Streamlit UI Service Simplified Component Diagram
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Simplified_Viwe/Component_Diagram_Streamlit_UI.png "Streamlit UI Service Simplified Component Diagram")
+![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Streamlit_UI.png "Streamlit UI Service Simplified Component Diagram")
 
 #### API Gateway Service Component Diagram
 ![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Component_Diagram_API_Gateway.png "API Gateway Service Component Diagram")
