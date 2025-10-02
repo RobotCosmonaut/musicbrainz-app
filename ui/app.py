@@ -1243,7 +1243,7 @@ st.markdown("""
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🏠 Home", "🎤 Search Artists", "💿 Search Albums", "🎯 Recommendations", "💾 Saved Data", "🔧 Info for Nerds"])
 
 with tab1:
-    st.header("🏠 Enhanced Music Discovery with Visual Analytics")
+    st.header("Enhanced Music Discovery with Visual Analytics")
 
     st.markdown("""
     ### Smart Song Recommendations

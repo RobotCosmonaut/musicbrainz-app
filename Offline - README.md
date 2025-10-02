@@ -43,8 +43,109 @@ TBD
 ## Usage
 This application is deployed via Docker and Minikube
 
+### Run with Docker (no Minikube)
+
+Bring up all Docker images
+```bash
+docker-compose up --build
+```
+
+### Run with Minikube
+
+Start Minikube
 ```bash
 minikube start
+```
+
+Ensure Minikube is using docker-env
+```bash
+minikube docker-env | Invoke-Expression
+```
+
+Now using Minikube's Docker daemon, so need to build all Docker 
+
+```bash
+# Build database initialization image
+docker build -t musicbrainz-db-init:latest -f dockerfiles/Dockerfile.init .
+
+# Build artist service
+docker build -t musicbrainz-artist-service:latest -f dockerfiles/Dockerfile.artist .
+
+# Build album service
+docker build -t musicbrainz-album-service:latest -f dockerfiles/Dockerfile.album .
+
+# Build recommendation service
+docker build -t musicbrainz-recommendation-service:latest -f dockerfiles/Dockerfile.recommendation .
+
+# Build API gateway
+docker build -t musicbrainz-api-gateway:latest -f dockerfiles/Dockerfile.gateway .
+
+# Build Streamlit UI
+docker build -t musicbrainz-streamlit-ui:latest -f dockerfiles/Dockerfile.ui .
+```
+
+Ensure Minikube is using docker-env
+```bash
+docker images | Select-String -Pattern "musicbrainz"
+```
+
+Deploy to Kubernetes
+```bash
+# Apply all Kubernetes manifests
+kubectl apply -f k8s.yaml
+```
+
+```bash
+# Watch the deployment progress
+kubectl get pods -w
+```
+
+```bash
+# Get Minikube IP
+minikube ip
+```
+
+```bash
+# Get the NodePort for Streamlit UI
+kubectl get svc streamlit-ui-service
+```
+
+```bash
+# Access the UI (example if NodePort is 30007)
+# Open browser to: http://<minikube-ip>:30007
+minikube service streamlit-ui-service --url
+```
+
+### Troubleshooting
+
+#### When running with Docker (no Minikube)
+
+Remove any existing containers and images
+```bash
+docker-compose down
+docker system prune -f
+```
+
+Rebuild everything with no cache from scratch
+```bash
+docker-compose build --no-cache
+```
+
+And run again with Docker
+```bash
+docker-compose up
+```
+#### When running with Minikube
+
+Verify using Minikube's Docker:
+```bash
+docker info | Select-String -Pattern "Name:" -CaseSensitive:$false
+# Should show: Name: minikube
+```
+
+Restart pods
+```bash
+kubectl delete pods --all
 ```
 
 ## Contributing
