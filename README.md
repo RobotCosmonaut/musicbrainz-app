@@ -43,6 +43,9 @@ TBD
 ## Usage
 This application is deployed via Docker and Minikube
 
+### Set up PostgreSQL
+docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=musicbrainz -p 5432:5432 -d postgres:14
+
 ### Run with Docker (no Minikube)
 
 Bring up all Docker images

@@ -1,0 +1,134 @@
+@startuml Code_Diagram_Artist_Search_Tab
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Code Diagram - Artist Search Tab (Streamlit UI)
+
+package "Streamlit Session State" {
+    class SessionState {
+        + selected_artist_id: str
+        + albums_loaded: bool
+        + albums_data: list
+        + albums_error: str
+        + last_artist_search: str
+        + last_artist_results: list
+        + artist_previews: dict
+    }
+}
+
+package "Helper Functions" {
+    class StateManager {
+        + set_artist_id(artist_id: str): void
+        + clear_artist_id(): void
+    }
+}
+
+package "Artist Search Tab" {
+    class ArtistSearchView {
+        - render_search_interface(): void
+        - render_search_results(artists: list): void
+        - restore_previous_search(): void
+        - handle_search_button(query: str, limit: int): void
+    }
+    
+    class ArtistDetailsView {
+        - render_artist_header(artist_data: dict): void
+        - render_artist_details(artist_data: dict): void
+        - render_albums_section(artist_name: str): void
+        - load_albums_on_demand(): void
+        - render_album_tracks(album_id: str): void
+        - render_similar_music(artist_name: str): void
+    }
+    
+    class SearchResultCard {
+        - artist: dict
+        - index: int
+        + render(): void
+        + render_details_button(): void
+        + render_preview_button(): void
+    }
+    
+    class AlbumCard {
+        - album: dict
+        + render(): void
+        + render_tracks_button(): void
+        - fetch_tracks(album_id: str): list
+    }
+}
+
+package "API Communication" {
+    class ArtistAPIClient {
+        - base_url: str
+        + search_artists(query: str, limit: int): Response
+        + get_artist_details(artist_id: str): Response
+        + get_artist_albums(artist_name: str, limit: int): Response
+        + get_album_tracks(album_id: str): Response
+    }
+    
+    class RecommendationAPIClient {
+        - base_url: str
+        + get_similar_songs(artist_name: str, limit: int): Response
+    }
+}
+
+package "UI Components" {
+    class ProgressIndicator {
+        + show_spinner(message: str): void
+        + show_progress_bar(progress: int): void
+        + clear(): void
+    }
+    
+    class ErrorHandler {
+        + handle_timeout(): void
+        + handle_api_error(status_code: int): void
+        + show_error_message(message: str): void
+    }
+}
+
+' Relationships
+ArtistSearchView --> SessionState: reads/writes
+ArtistDetailsView --> SessionState: reads/writes
+StateManager --> SessionState: updates
+
+ArtistSearchView --> ArtistAPIClient: uses
+ArtistDetailsView --> ArtistAPIClient: uses
+ArtistDetailsView --> RecommendationAPIClient: uses
+
+ArtistSearchView --> SearchResultCard: creates
+ArtistDetailsView --> AlbumCard: creates
+
+SearchResultCard --> StateManager: calls set_artist_id()
+ArtistDetailsView --> StateManager: calls clear_artist_id()
+
+ArtistAPIClient --> ProgressIndicator: shows status
+ArtistAPIClient --> ErrorHandler: handles errors
+
+ArtistDetailsView --> ProgressIndicator: uses
+ArtistDetailsView --> ErrorHandler: uses
+
+note right of ArtistSearchView
+  Main view when no artist selected
+  - Renders search input (text + limit slider)
+  - Displays cached results if available
+  - Handles new search requests
+  - Creates SearchResultCard per artist
+end note
+
+note right of ArtistDetailsView
+  Displayed when artist selected
+  - Shows artist metadata (country, type, dates)
+  - On-demand album loading with progress
+  - Track listing expansion
+  - Similar music recommendations
+end note
+
+note right of SessionState
+  Persistent state across reruns:
+  - selected_artist_id: Currently viewed artist
+  - albums_loaded: Whether albums fetched
+  - albums_data: Cached album list
+  - albums_error: Error message if any
+  - last_artist_search: Previous query
+  - last_artist_results: Cached search results
+end note
+
+@enduml

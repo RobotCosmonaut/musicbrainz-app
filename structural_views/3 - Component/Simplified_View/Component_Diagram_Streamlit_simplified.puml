@@ -1,0 +1,56 @@
+@startuml Component_Diagram_Streamlit_UI
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Streamlit UI Service
+
+Container_Boundary(ui_boundary, "Streamlit UI Container") {
+    
+    Component(main_app, "Main Application", "Streamlit", "Orchestrates tabs and manages page configuration")
+    
+    Component(search_interface, "Search Interface Component", "Streamlit", "Handles artist, album, and recommendation searches")
+    
+    Component(profile_manager, "User Profile Manager", "Streamlit Sidebar", "Manages user preferences, favorite genres, and artists")
+    
+    Component(recommendation_display, "Recommendation Display", "Streamlit", "Shows recommendation results with interactive actions (like/save)")
+    
+    Component(visualization_engine, "Visualization Engine", "Plotly/Streamlit", "Generates charts: score distribution, artist diversity, geographic maps, timelines")
+    
+    Component(analytics_tracker, "Search Analytics Tracker", "Session State", "Tracks search history, recommendations, and session metrics")
+    
+    Component(database_viewer, "Database Explorer", "Streamlit/SQLAlchemy", "Provides web-based database querying and viewing")
+    
+    Component(api_client, "API Gateway Client", "HTTP/Requests", "Communicates with backend services via API Gateway")
+    
+    Component(session_manager, "Session State Manager", "Streamlit Session", "Maintains user state, search results, and UI preferences")
+}
+
+System_Ext(api_gateway, "API Gateway", "Routes requests to microservices")
+
+System_Ext(postgres_db, "PostgreSQL Database", "Stores music and user data")
+
+Rel(main_app, search_interface, "Delegates to", "Function calls")
+Rel(main_app, profile_manager, "Includes", "Sidebar")
+Rel(main_app, recommendation_display, "Renders", "Tab content")
+Rel(main_app, database_viewer, "Shows", "Tab content")
+
+Rel(search_interface, api_client, "Fetches data via", "HTTP GET")
+Rel(profile_manager, api_client, "Saves/loads profile", "HTTP POST/GET")
+Rel(recommendation_display, api_client, "Tracks interactions", "HTTP POST")
+Rel(database_viewer, postgres_db, "Queries directly", "SQL/SQLAlchemy")
+
+Rel(api_client, api_gateway, "Sends requests to", "HTTPS/JSON")
+
+Rel(search_interface, session_manager, "Stores results in", "State updates")
+Rel(search_interface, analytics_tracker, "Logs searches to", "Append data")
+Rel(recommendation_display, session_manager, "Reads from", "State access")
+
+Rel(analytics_tracker, visualization_engine, "Provides data to", "DataFrame/Dict")
+Rel(recommendation_display, visualization_engine, "Requests charts from", "Function calls")
+
+Rel(visualization_engine, recommendation_display, "Returns Plotly figures to", "Chart objects")
+
+Rel(session_manager, analytics_tracker, "Persists", "In-memory storage")
+
+@enduml
