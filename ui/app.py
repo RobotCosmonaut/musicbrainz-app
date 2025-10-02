@@ -732,7 +732,7 @@ def create_country_bar_chart(recommendations, api_gateway_url):
 def add_database_viewer_tab():
     """Add this to your Streamlit app for web-based database viewing"""
     
-    st.header("🗄️ Database Explorer")
+    st.header("Database Explorer")
     
     # Database connection - determine if running in Docker or locally
     API_GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://localhost:8000")
@@ -806,8 +806,8 @@ def add_database_viewer_tab():
                     st.warning("No data found in table")
         
         # Custom SQL query section
-        st.subheader("📝 Custom SQL Query")
-        st.info("💡 Tip: Use 'ORDER BY created_at DESC' to see most recent records first")
+        st.subheader("Custom SQL Query")
+        st.info("Note: Use 'ORDER BY created_at DESC' to see most recent records first")
         custom_query = st.text_area(
             "Enter your SQL query:", 
             placeholder="SELECT * FROM artists ORDER BY created_at DESC LIMIT 10",
@@ -1264,7 +1264,7 @@ with tab1:
     with col2:
         st.write("")
         st.write("")
-        search_button = st.button("🎵 Get Smart Recommendations", type="primary")
+        search_button = st.button("Get Smart Recommendations", type="primary")
     
     if search_button and query:
         with st.spinner("Analyzing your query and finding perfect matches..."):
@@ -1293,7 +1293,7 @@ with tab1:
                     st.session_state.recommendation_history.extend(recommendations)
                     
                     if recommendations:
-                        st.success(f"🎉 Found {len(recommendations)} smart recommendations!")
+                        st.success(f"Found {len(recommendations)} smart recommendations!")
                         
                         # Create tabbed interface for results
                         result_tabs = st.tabs(["🎵 Song List", "📊 Visual Overview", "📈 Session Analytics", "🧠 Algorithm Insights"])
@@ -1301,7 +1301,7 @@ with tab1:
 
                         
                         with result_tabs[0]:  # Song List - IMPROVED VERSION
-                            st.subheader("🎵 Your Song Recommendations")
+                            st.subheader("Your Song Recommendations")
     
                             # Initialize session state for liked/saved songs if not exists
                             if 'liked_songs' not in st.session_state:
@@ -1572,12 +1572,6 @@ with tab1:
                                         ended = sum(1 for t in artist_timeline.values() if t['end_year'])
                                         st.metric("Still Active", f"{active}/{active+ended}")
 
-                                # Quality gauge
-                                quality_gauge = create_search_quality_gauge(recommendations, query_analysis)
-                                if quality_gauge:
-                                    st.plotly_chart(quality_gauge, use_container_width=True)
-
-
                         with result_tabs[2]:  # Analytics
                             if len(st.session_state.search_analytics) > 1:
                                 col1, col2 = st.columns(2)
@@ -1695,7 +1689,7 @@ with tab1:
     
 
 with tab2:
-    st.header("🎤 Search Artists")
+    st.header("Search Artists")
     
     # Check if we should display artist details
     if st.session_state.selected_artist_id:
@@ -1704,7 +1698,7 @@ with tab2:
         # Back button to return to search
         col1, col2 = st.columns([1, 4])
         with col1:
-            if st.button("⬅️ Back to Search", on_click=clear_artist_id, type="primary"):
+            if st.button("Back to Search", on_click=clear_artist_id, type="primary"):
                 pass
         
         # Fetch and display artist details
@@ -1716,7 +1710,7 @@ with tab2:
                     artist_data = response.json()
                     
                     # Display artist details
-                    st.subheader(f"🎤 {artist_data['name']}")
+                    st.subheader(f"{artist_data['name']}")
                     
                     col1, col2, col3 = st.columns(3)
                     with col1:
@@ -1728,7 +1722,7 @@ with tab2:
                             st.metric("Active Since", artist_data['begin_date'][:4] if len(artist_data['begin_date']) >= 4 else artist_data['begin_date'])
                     
                     # Detailed information
-                    st.markdown("### 📋 Details")
+                    st.markdown("### Details")
                     detail_col1, detail_col2 = st.columns(2)
                     
                     with detail_col1:
@@ -1744,16 +1738,16 @@ with tab2:
                     st.markdown("---")
                     
                     # Get albums for this artist - MAKE IT OPTIONAL WITH A BUTTON
-                    st.markdown("### 💿 Albums")
-                    st.info("⏱️ Loading albums may take 10-30 seconds due to MusicBrainz API rate limits")
+                    st.markdown("### Albums")
+                    st.info("Loading albums may take 10-30 seconds due to MusicBrainz API rate limits")
                     
                     # Button to load albums
                     col1, col2 = st.columns([1, 3])
                     with col1:
-                        load_albums_btn = st.button("📀 Load Albums", type="secondary", disabled=st.session_state.albums_loaded)
+                        load_albums_btn = st.button("Load Albums", type="secondary", disabled=st.session_state.albums_loaded)
                     with col2:
                         if st.session_state.albums_loaded:
-                            st.success("✅ Albums loaded!")
+                            st.success("Albums loaded!")
                     
                     if load_albums_btn:
                         st.session_state.albums_loaded = False
@@ -1880,7 +1874,7 @@ with tab2:
                     
                     # Similar Music Section
                     st.markdown("---")
-                    st.markdown("### 🎵 Similar Music")
+                    st.markdown("### Similar Music")
                     
                     if st.button("Get Song Recommendations", type="secondary"):
                         with st.spinner("Finding similar songs... (may take 10-20 seconds)"):
@@ -1929,7 +1923,7 @@ with tab2:
         
         # Show restored search results if coming back from artist details
         if st.session_state.last_artist_results and st.session_state.last_artist_search:
-            st.info(f"💡 Showing previous search results for: **'{st.session_state.last_artist_search}'**")
+            st.info(f"Showing previous search results for: **'{st.session_state.last_artist_search}'**")
             
             # Button to clear and start fresh
             if st.button("🗑️ Clear Results & Search Again"):
@@ -2021,7 +2015,7 @@ with tab2:
                                     st.error(f"Error: {str(e)[:50]}")
 
 with tab3:
-    st.header("💿 Search Albums")
+    st.header("Search Albums")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -2066,7 +2060,7 @@ with tab3:
                 st.error(f"Connection error: {e}")
 
 with tab4:
-    st.header("🎯 Advanced Recommendations")
+    st.header("Advanced Recommendations")
     st.markdown("Get targeted music recommendations using different methods")
     
     # Recommendation method selection
@@ -2148,13 +2142,13 @@ with tab4:
                             st.error(f"Error: {e}")
     
     elif rec_method == "Query-Based":
-        st.subheader("🔍 Search-Based Recommendations")
+        st.subheader("Search-Based Recommendations")
         
         query = st.text_input("Describe what you're looking for:", 
                             placeholder="e.g., 'upbeat rock songs', 'relaxing piano music', 'energetic dance tracks'")
         rec_limit = st.slider("Number of recommendations:", 5, 20, 10, key="query_rec_limit")
         
-        if st.button("🎵 Find Songs", type="primary") and query:
+        if st.button("Find Songs", type="primary") and query:
             with st.spinner("Searching for perfect matches..."):
                 try:
                     response = requests.get(f"{API_GATEWAY_URL}/api/recommendations/query", 
@@ -2165,7 +2159,7 @@ with tab4:
                         recommendations = data.get("recommendations", [])
                         
                         if recommendations:
-                            st.success(f"🎉 Found {len(recommendations)} matching songs!")
+                            st.success(f"Found {len(recommendations)} matching songs!")
                             
                             # Create a nice grid layout
                             for i in range(0, len(recommendations), 2):
@@ -2216,13 +2210,13 @@ with tab4:
                     st.error(f"Error: {e}")
     
     elif rec_method == "Similar Artists":
-        st.subheader("🎤 Discover Similar Artists")
+        st.subheader("Discover Similar Artists")
         
         artist_name = st.text_input("Enter an artist name:", 
                                   placeholder="e.g., Kendrick Lamar, Chappell Roan, Miles Davis")
         rec_limit = st.slider("Number of recommendations:", 5, 20, 10, key="similar_rec_limit")
         
-        if st.button("🎵 Find Similar Music", type="primary") and artist_name:
+        if st.button("Find Similar Music", type="primary") and artist_name:
             with st.spinner("Finding artists and songs similar to your taste..."):
                 try:
                     response = requests.get(f"{API_GATEWAY_URL}/api/recommendations/similar/{artist_name}", 
@@ -2271,7 +2265,7 @@ with tab4:
                     st.error(f"Error: {e}")
     
     elif rec_method == "Genre Explorer":
-        st.subheader("🎭 Explore by Genre")
+        st.subheader("Explore by Genre")
         
         col1, col2 = st.columns(2)
         with col1:
@@ -2287,7 +2281,7 @@ with tab4:
         
         rec_limit = st.slider("Number of recommendations:", 5, 20, 10, key="genre_rec_limit")
         
-        if st.button("🎵 Explore Genre", type="primary"):
+        if st.button("Explore Genre", type="primary"):
             genre_query = primary_genre
             if secondary_genre:
                 genre_query += f" {secondary_genre}"
@@ -2336,7 +2330,7 @@ with tab4:
                     st.error(f"Error: {e}")
 
 with tab5:
-    st.header("💾 Saved Data")
+    st.header("Saved Data")
     
     st.subheader("Most Recent 100 Saved Artists")
     try:
@@ -2357,49 +2351,9 @@ with tab5:
     add_database_viewer_tab()
 
 with tab6:
-    st.header("🔧 Service Status & Algorithm Information & Verification")
+    st.header("Service Status")
     
-    # Add explanation of algorithm improvements
-    st.info("""
-    🎯 **Enhanced Algorithm**: 
-    - **Artist Focus**: 30% weight on matching artists
-    - **Genre Intelligence**: 25% weight on musical genres  
-    - **Mood Detection**: Understands "upbeat", "relaxing", "aggressive", etc.
-    - **Smart Search**: Multiple search strategies per query
-    - **Title Balance**: Only 25% weight (down from 90%+)
-    """)
-    
-
-    # Check if enhanced algorithm is running
-    st.subheader("🧠 Algorithm Status")
-    
-    try:
-        response = requests.get(f"{API_GATEWAY_URL}/api/recommendations/query", 
-                              params={"query": "test algorithm", "limit": 1}, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            if "query_analyzed" in data:
-                st.success("✅ **Enhanced Algorithm Active**")
-                #st.json(data.get("query_analyzed", {}))
-                
-                # Show version info
-                health_response = requests.get(f"{API_GATEWAY_URL}/health", timeout=5)
-                if health_response.status_code == 200:
-                    st.write("Gateway healthy")
-            else:
-                st.error("❌ **Old Algorithm Running** - Rebuild needed!")
-                st.code("""
-# To fix, run:
-docker-compose down
-docker-compose build --no-cache recommendation-service
-docker-compose up
-                """)
-        else:
-            st.error(f"❌ Recommendation service error: {response.status_code}")
-    except Exception as e:
-        st.error(f"❌ Cannot verify algorithm: {e}")
-    
-    st.subheader("🏥 Service Health")
+    st.subheader("Service Health")
     
     services = [
         ("API Gateway", f"{API_GATEWAY_URL}/health"),
