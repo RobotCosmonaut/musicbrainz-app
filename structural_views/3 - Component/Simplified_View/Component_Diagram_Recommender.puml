@@ -1,0 +1,331 @@
+@startuml Component_Diagram_Recommendation_Service
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Recommendation Service
+
+Container_Boundary(recommendation_boundary, "Recommendation Service Container") {
+    
+    Component(fastapi_app, "FastAPI Application", "FastAPI", "HTTP server handling recommendation requests on port 8003")
+    
+    Component(query_endpoint, "Query Recommendation Endpoint", "FastAPI Route", "GET /recommendations/query - Generates diverse recommendations from search query")
+    
+    Component(profile_endpoint, "Profile Recommendation Endpoint", "FastAPI Route", "GET /recommendations/profile/{username} - Profile-based recommendations")
+    
+    Component(similar_endpoint, "Similar Artist Endpoint", "FastAPI Route", "GET /recommendations/similar/{artist_name} - Similar artist recommendations")
+    
+    Component(create_profile_endpoint, "Create Profile Endpoint", "FastAPI Route", "POST /users/{username}/profile - Creates/updates user profile")
+    
+    Component(get_profile_endpoint, "Get Profile Endpoint", "FastAPI Route", "GET /users/{username}/profile - Retrieves user preferences")
+    
+    Component(listening_history_endpoint, "Add Listening History Endpoint", "FastAPI Route", "POST /users/{username}/listening-history - Records user interactions")
+    
+    Component(health_endpoint, "Health Check Endpoint", "FastAPI Route", "Returns service health and version")
+    
+    Component(recommendation_engine, "Diverse Recommendation Engine", "Python Logic", "Core algorithm for generating diverse, multi-artist recommendations")
+    
+    Component(genre_detector, "Genre Detection Component", "Python Logic", "Analyzes queries to detect musical genres and moods")
+    
+    Component(diversity_filter, "Artist Diversity Filter", "Python Logic", "Ensures variety by limiting tracks per artist")
+    
+    Component(genre_mapper, "Genre-Artist Mapper", "Dictionary/Config", "Maps genres to representative artists for diverse searches")
+    
+    Component(musicbrainz_client, "Diverse MusicBrainz Client", "HTTP/Requests", "Searches MusicBrainz with diversity-focused queries")
+    
+    Component(profile_manager, "User Profile Manager", "SQLAlchemy Logic", "Manages user preferences and favorite genres/artists")
+    
+    Component(history_tracker, "Listening History Tracker", "SQLAlchemy Logic", "Records and retrieves user listening interactions")
+    
+    Component(db_session_manager, "Database Session Manager", "SQLAlchemy", "Manages database connections and transactions")
+}
+
+Container_Ext(api_gateway, "API Gateway", "FastAPI", "Routes requests to Recommendation Service")
+
+Container_Ext(shared_models, "Shared Models", "SQLAlchemy ORM", "UserProfile, Recommendation, ListeningHistory models")
+
+Container_Ext(shared_database, "Shared Database Module", "SQLAlchemy", "Database connection factory")
+
+System_Ext(musicbrainz_api, "MusicBrainz API", "External music metadata service")
+
+System_Ext(postgres_db, "PostgreSQL Database", "Stores user profiles and listening history")
+
+' Internal relationships
+Rel(fastapi_app, query_endpoint, "Routes /recommendations/query to")
+Rel(fastapi_app, profile_endpoint, "Routes /recommendations/profile to")
+Rel(fastapi_app, similar_endpoint, "Routes /recommendations/similar to")
+Rel(fastapi_app, create_profile_endpoint, "Routes POST /users/profile to")
+Rel(fastapi_app, get_profile_endpoint, "Routes GET /users/profile to")
+Rel(fastapi_app, listening_history_endpoint, "Routes POST /listening-history to")
+Rel(fastapi_app, health_endpoint, "Routes /health to")
+
+Rel(query_endpoint, recommendation_engine, "Generates recommendations via")
+Rel(profile_endpoint, profile_manager, "Loads user profile via")
+Rel(profile_endpoint, recommendation_engine, "Generates from profile via")
+Rel(similar_endpoint, recommendation_engine, "Generates similar music via")
+
+Rel(recommendation_engine, genre_detector, "Analyzes query via")
+Rel(recommendation_engine, genre_mapper, "Maps genres to artists via")
+Rel(recommendation_engine, musicbrainz_client, "Fetches recordings via")
+Rel(recommendation_engine, diversity_filter, "Filters results via")
+
+Rel(genre_detector, genre_mapper, "Uses genre keywords from")
+
+Rel(create_profile_endpoint, profile_manager, "Saves profile via")
+Rel(get_profile_endpoint, profile_manager, "Retrieves profile via")
+Rel(listening_history_endpoint, history_tracker, "Records interaction via")
+
+Rel(profile_manager, db_session_manager, "Uses sessions from")
+Rel(history_tracker, db_session_manager, "Uses sessions from")
+
+' External relationships
+Rel(api_gateway, fastapi_app, "Forwards requests to", "HTTP/JSON")
+
+Rel(musicbrainz_client, musicbrainz_api, "Searches for recordings", "HTTPS/JSON")
+
+Rel(db_session_manager, postgres_db, "Reads/writes profile and history data", "SQL")
+
+Rel(profile_manager, shared_models, "Uses UserProfile model from", "ORM")
+Rel(history_tracker, shared_models, "Uses ListeningHistory model from", "ORM")
+Rel(db_session_manager, shared_database, "Obtains sessions from", "get_db()")
+
+note right of query_endpoint
+  **GET /recommendations/query**
+  Parameters:
+  - query: str (genre/mood/artist description)
+  - limit: int (default 10, max 20)
+  - username: str (optional, for personalization)
+  
+  Example Queries:
+  - "old school rap"
+  - "relaxing jazz piano"
+  - "energetic rock songs"
+  - "hazy vaporwave"
+  
+  Returns:
+  - Diverse recommendations (max 1-2 tracks per artist)
+  - Score (0-100)
+  - Query analysis (detected genre, diversity metrics)
+  - Algorithm version info
+end note
+
+note right of recommendation_engine
+  **Core Algorithm (v2.5.0_diverse):**
+  
+  Strategy 1: Multi-Artist Genre Search
+  - Detect genre from query
+  - Map to 10+ diverse artists
+  - Search 6 artists, 2 tracks each
+  - Shuffle for variety
+  
+  Strategy 2: Tag-Based Search
+  - Search by genre tag
+  - Get different artists
+  
+  Strategy 3: Direct Query Fallback
+  - Search exact query terms
+  
+  **Diversity Enforcement:**
+  - Max 1 track per artist (primary)
+  - Max 2 tracks per artist (fallback)
+  - Remove duplicate tracks
+  - Sort by score
+  
+  **Processing Time:** 8-10 seconds
+  **Timeout Protection:** Built-in
+end note
+
+note right of genre_detector
+  **Enhanced Genre Detection:**
+  
+  Detects from query keywords:
+  - Hip-Hop: rap, hip-hop, trap, boom bap
+  - Rock: rock, alternative, grunge, punk
+  - Jazz: jazz, swing, bebop, fusion
+  - Pop: pop, mainstream, chart
+  - Electronic: edm, techno, house, ambient
+  - Country: country, folk, bluegrass
+  - Metal: metal, heavy metal, thrash
+  - Blues: blues, delta blues
+  - R&B: r&b, soul, funk
+  - Reggae: reggae, ska, dub
+  
+  **Confidence:** High (keyword match)
+  **Fallback:** Returns None if no match
+end note
+
+note right of diversity_filter
+  **Artist Diversity Algorithm:**
+  
+  def ensure_artist_diversity(
+      recommendations, 
+      max_per_artist=1
+  ):
+      artist_counts = defaultdict(int)
+      diverse_recs = []
+      
+      for rec in sorted_by_score:
+          artist = rec['artist_name'].lower()
+          if artist_counts[artist] < max_per_artist:
+              diverse_recs.append(rec)
+              artist_counts[artist] += 1
+      
+      return diverse_recs
+  
+  **Goal:** Prevent artist repetition
+  **Result:** More varied recommendations
+end note
+
+note right of genre_mapper
+  **Genre-Artist Mapping:**
+  
+  DIVERSE_GENRE_QUERIES = {
+    'rock': ['the beatles', 'queen', 
+             'led zeppelin', 'nirvana', ...],
+    'jazz': ['miles davis', 'john coltrane',
+             'bill evans', ...],
+    'hip-hop': ['eminem', 'kendrick lamar',
+                'jay-z', 'nas', ...],
+    'pop': ['taylor swift', 'ed sheeran',
+            'bruno mars', ...],
+    ...
+  }
+  
+  **10 genres** × **8-10 artists** each
+  **100+ artist mappings**
+  
+  **Purpose:** Seed diverse searches
+end note
+
+note right of musicbrainz_client
+  **Diverse Search Methods:**
+  
+  search_recordings_diverse(query, limit)
+  - Searches MusicBrainz recordings
+  - Returns artist credits
+  - Limit: 25 max per query
+  
+  **Queries Generated:**
+  - artist:"artist name"
+  - tag:genre
+  - Direct text search
+  
+  **Features:**
+  - Timeout: 10 seconds
+  - Session management
+  - Error handling
+  - Rate limiting compliance
+end note
+
+note right of profile_endpoint
+  **GET /recommendations/profile/{username}**
+  
+  Process:
+  1. Load user profile from DB
+  2. Extract favorite_genres
+  3. For each genre (max 3):
+     - Generate diverse recommendations
+  4. Combine and deduplicate
+  5. Sort by score
+  6. Return top N results
+  
+  Uses:
+  - favorite_genres: ["rock", "jazz", ...]
+  - favorite_artists: [artist_ids...]
+  
+  Returns profile-based recommendations
+end note
+
+note right of create_profile_endpoint
+  **POST /users/{username}/profile**
+  
+  Request Body (Pydantic):
+  {
+    "favorite_genres": ["rock", "jazz"],
+    "favorite_artists": ["artist_id_1", "artist_id_2"]
+  }
+  
+  Process:
+  1. Parse JSON body to ProfileData
+  2. Check if profile exists
+  3. UPDATE or CREATE profile
+  4. Store as JSON strings in DB
+  5. Commit transaction
+  
+  **Database Fields:**
+  - username (unique)
+  - favorite_genres (JSON text)
+  - favorite_artists (JSON text)
+  - created_at, updated_at
+end note
+
+note right of listening_history_endpoint
+  **POST /users/{username}/listening-history**
+  
+  Parameters:
+  - track_id: str (MusicBrainz recording ID)
+  - artist_id: str (MusicBrainz artist ID)
+  - interaction_type: str
+    * "played"
+    * "liked"
+    * "saved"
+    * "skipped"
+  
+  Process:
+  1. Get or create user profile
+  2. Create ListeningHistory record
+  3. Commit with user_id reference
+  
+  **Use Cases:**
+  - Track engagement metrics
+  - Improve future recommendations
+  - User music history
+end note
+
+note right of profile_manager
+  **Profile Operations:**
+  
+  **Create/Update:**
+  profile = UserProfile(
+    username=username,
+    favorite_genres=json.dumps(genres),
+    favorite_artists=json.dumps(artists)
+  )
+  db.add(profile)
+  db.commit()
+  
+  **Retrieve:**
+  profile = db.query(UserProfile)
+              .filter(username == user)
+              .first()
+  
+  genres = json.loads(profile.favorite_genres)
+  artists = json.loads(profile.favorite_artists)
+  
+  **Storage Format:** JSON strings
+end note
+
+note right of history_tracker
+  **Listening History Tracking:**
+  
+  entry = ListeningHistory(
+    user_id=profile.id,
+    track_id=track_id,
+    artist_id=artist_id,
+    interaction_type=interaction_type,
+    played_at=datetime.utcnow()
+  )
+  
+  **Interaction Types:**
+  - played (track listened to)
+  - liked (user liked track)
+  - saved (saved for later)
+  - skipped (user skipped)
+  
+  **Future Use:**
+  - Collaborative filtering
+  - Personalized recommendations
+  - User behavior analysis
+end note
+
+@enduml

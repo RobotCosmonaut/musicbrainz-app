@@ -1,0 +1,178 @@
+@startuml Component_Diagram_API_Gateway
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - API Gateway Service
+
+Container_Boundary(gateway_boundary, "API Gateway Container") {
+    
+    Component(fastapi_app, "FastAPI Application", "FastAPI", "Main HTTP server handling all client requests on port 8000")
+    
+    Component(artist_routes, "Artist Routes", "FastAPI Router", "Endpoints: /api/artists/search, /api/artists/{id}, /api/artists")
+    
+    Component(album_routes, "Album Routes", "FastAPI Router", "Endpoints: /api/albums/search, /api/albums/{id}")
+    
+    Component(recommendation_routes, "Recommendation Routes", "FastAPI Router", "Endpoints: /api/recommendations/query, /api/recommendations/profile/{username}, /api/recommendations/similar/{artist}")
+    
+    Component(user_profile_routes, "User Profile Routes", "FastAPI Router", "Endpoints: /api/users/{username}/profile, /api/users/{username}/listening-history")
+    
+    Component(health_endpoint, "Health Check Endpoint", "FastAPI Route", "Returns gateway health status")
+    
+    Component(request_router, "Request Router", "Python Logic", "Routes requests to appropriate backend service based on endpoint")
+    
+    Component(http_client_manager, "HTTP Client Manager", "httpx.AsyncClient", "Manages async HTTP clients with timeout configurations")
+    
+    Component(timeout_config, "Timeout Configuration", "httpx.Timeout", "Defines connection, read, write, and pool timeouts")
+    
+    Component(error_handler, "Error Handler", "HTTPException Logic", "Handles timeouts, connection errors, and HTTP status codes")
+    
+    Component(service_config, "Service URL Configuration", "Environment Variables", "Stores backend service URLs")
+}
+
+Container_Ext(streamlit_ui, "Streamlit UI", "Python/Streamlit", "Web interface for users")
+
+Container_Ext(artist_service, "Artist Service", "FastAPI", "Handles artist search and retrieval")
+
+Container_Ext(album_service, "Album Service", "FastAPI", "Handles album search and retrieval")
+
+Container_Ext(recommendation_service, "Recommendation Service", "FastAPI", "Generates music recommendations")
+
+' Internal relationships
+Rel(fastapi_app, artist_routes, "Registers")
+Rel(fastapi_app, album_routes, "Registers")
+Rel(fastapi_app, recommendation_routes, "Registers")
+Rel(fastapi_app, user_profile_routes, "Registers")
+Rel(fastapi_app, health_endpoint, "Registers")
+
+Rel(artist_routes, request_router, "Delegates to")
+Rel(album_routes, request_router, "Delegates to")
+Rel(recommendation_routes, request_router, "Delegates to")
+Rel(user_profile_routes, request_router, "Delegates to")
+
+Rel(request_router, http_client_manager, "Uses")
+Rel(request_router, error_handler, "Uses")
+Rel(request_router, service_config, "Reads URLs from")
+
+Rel(http_client_manager, timeout_config, "Applies")
+
+' External relationships
+Rel(streamlit_ui, fastapi_app, "Sends requests to", "HTTP/JSON")
+
+Rel(request_router, artist_service, "Forwards artist requests to", "HTTP/JSON")
+Rel(request_router, album_service, "Forwards album requests to", "HTTP/JSON")
+Rel(request_router, recommendation_service, "Forwards recommendation requests to", "HTTP/JSON")
+
+note right of artist_routes
+  **Artist Endpoints:**
+  
+  GET /api/artists/search
+  - Query: artist name
+  - Limit: number of results
+  
+  GET /api/artists/{artist_id}
+  - Returns artist details
+  
+  GET /api/artists
+  - Lists saved artists
+  - Pagination: skip, limit
+end note
+
+note right of album_routes
+  **Album Endpoints:**
+  
+  GET /api/albums/search
+  - artist_name: filter by artist
+  - album_title: filter by title
+  - limit: result count
+  
+  GET /api/albums/{album_id}
+  - Returns album with tracks
+end note
+
+note right of recommendation_routes
+  **Recommendation Endpoints:**
+  
+  GET /api/recommendations/query
+  - query: search string (genre/mood)
+  - limit: number of recommendations
+  - Extended 60s timeout for API calls
+  
+  GET /api/recommendations/profile/{username}
+  - Profile-based recommendations
+  
+  GET /api/recommendations/similar/{artist_name}
+  - Similar artist recommendations
+end note
+
+note right of user_profile_routes
+  **User Profile Endpoints:**
+  
+  POST /api/users/{username}/profile
+  - Body: favorite_genres, favorite_artists
+  - Creates/updates user profile
+  
+  GET /api/users/{username}/profile
+  - Retrieves user preferences
+  
+  POST /api/users/{username}/listening-history
+  - track_id, artist_id, interaction_type
+  - Records play/like/save actions
+end note
+
+note right of timeout_config
+  **Default Timeouts:**
+  - connect: 5.0s
+  - read: 30.0s
+  - write: 10.0s
+  - pool: 10.0s
+  
+  **Extended (Recommendations):**
+  - connect: 10.0s
+  - read: 60.0s (for MusicBrainz)
+  - write: 10.0s
+  - pool: 10.0s
+end note
+
+note right of error_handler
+  **Error Handling:**
+  
+  - TimeoutException → 504 Gateway Timeout
+  - ConnectError → 503 Service Unavailable
+  - 400 → Invalid parameters
+  - 404 → Resource not found
+  - Other → Pass through status code
+  
+  Logs all errors for monitoring
+end note
+
+note right of service_config
+  **Environment Variables:**
+  
+  ARTIST_SERVICE_URL
+  - Default: http://localhost:8001
+  
+  ALBUM_SERVICE_URL
+  - Default: http://localhost:8002
+  
+  RECOMMENDATION_SERVICE_URL
+  - Default: http://localhost:8003
+  
+  Set via docker-compose or k8s
+end note
+
+note right of http_client_manager
+  **Async HTTP Client:**
+  
+  - Uses httpx.AsyncClient
+  - Context manager for proper cleanup
+  - Automatic connection pooling
+  - Timeout enforcement
+  - Async/await pattern
+  
+  Example:
+  async with httpx.AsyncClient(timeout=config):
+      response = await client.get(url)
+end note
+
+@enduml

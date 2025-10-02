@@ -1,0 +1,126 @@
+@startuml Component_Diagram_Album_Service
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Album Service
+
+Container_Boundary(album_service_boundary, "Album Service Container") {
+    
+    Component(fastapi_app, "FastAPI Application", "FastAPI", "HTTP server handling album-related requests on port 8002")
+    
+    Component(search_endpoint, "Search Albums Endpoint", "FastAPI Route", "Searches albums by artist name and/or album title, saves results to database")
+    
+    Component(get_endpoint, "Get Album Endpoint", "FastAPI Route", "Retrieves album details with full track listing")
+    
+    Component(health_endpoint, "Health Check Endpoint", "FastAPI Route", "Returns service health status")
+    
+    Component(album_processor, "Album Data Processor", "Python Logic", "Processes album metadata, creates Artist/Album/Track records")
+    
+    Component(track_saver, "Track Saver", "Python Logic", "Fetches and saves track listings with recording details")
+    
+    Component(musicbrainz_client, "MusicBrainz Service Client", "Python/Requests", "Communicates with MusicBrainz API for album and recording data")
+    
+    Component(db_session_manager, "Database Session Manager", "SQLAlchemy", "Manages database connections and transactions")
+}
+
+Container_Ext(api_gateway, "API Gateway", "FastAPI", "Routes requests to Album Service")
+
+Container_Ext(shared_models, "Shared Models", "SQLAlchemy ORM", "Artist, Album, Track data models")
+
+Container_Ext(shared_database, "Shared Database Module", "SQLAlchemy", "Database connection factory")
+
+System_Ext(musicbrainz_api, "MusicBrainz API", "External music metadata service")
+
+System_Ext(postgres_db, "PostgreSQL Database", "Stores artists, albums, and tracks")
+
+' Relationships within Album Service
+Rel(fastapi_app, search_endpoint, "Routes /albums/search to")
+Rel(fastapi_app, get_endpoint, "Routes /albums/{id} to")
+Rel(fastapi_app, health_endpoint, "Routes /health to")
+
+Rel(search_endpoint, album_processor, "Delegates processing to")
+Rel(get_endpoint, album_processor, "Delegates processing to")
+
+Rel(album_processor, track_saver, "Calls for track data")
+Rel(album_processor, musicbrainz_client, "Fetches album metadata via")
+Rel(track_saver, musicbrainz_client, "Fetches recordings via")
+
+Rel(search_endpoint, db_session_manager, "Uses")
+Rel(get_endpoint, db_session_manager, "Uses")
+Rel(album_processor, db_session_manager, "Saves data via")
+
+' External relationships
+Rel(api_gateway, fastapi_app, "Forwards requests to", "HTTP/JSON")
+
+Rel(musicbrainz_client, musicbrainz_api, "Queries for releases and recordings", "HTTPS/JSON")
+
+Rel(db_session_manager, postgres_db, "Reads/writes album and track data", "SQL")
+
+Rel(album_processor, shared_models, "Creates instances of", "ORM")
+Rel(db_session_manager, shared_database, "Obtains sessions from", "get_db()")
+
+note right of search_endpoint
+  **POST /albums/search**
+  Parameters:
+  - artist_name: str (optional)
+  - album_title: str (optional)
+  - limit: int (default 25)
+  
+  Process:
+  1. Search MusicBrainz API
+  2. Check for existing albums in DB
+  3. Create Artist if not exists
+  4. Save Album metadata
+  5. Fetch and save Tracks
+  6. Return album list
+end note
+
+note right of get_endpoint
+  **GET /albums/{album_id}**
+  
+  Process:
+  1. Check local database first
+  2. If not found, fetch from MusicBrainz
+  3. Save artist, album, tracks
+  4. Return complete album with tracks
+  
+  Returns:
+  - Album metadata
+  - Full track listing with durations
+  - Artist information
+end note
+
+note right of album_processor
+  Core processing logic:
+  - Extracts artist credits
+  - Creates or retrieves Artist records
+  - Saves Album metadata (title, date, status, country)
+  - Coordinates track saving
+  - Handles database rollback on errors
+end note
+
+note right of track_saver
+  Track processing:
+  - Fetches release details with "recordings" inc parameter
+  - Iterates through media/tracks
+  - Creates Track records with:
+    * track_id (recording ID)
+    * title
+    * track_number (position)
+    * length (milliseconds)
+  - Commits in batches per album
+end note
+
+note right of musicbrainz_client
+  API Methods:
+  - search_releases(artist_name, album_title, limit)
+  - get_release(release_id, inc="recordings")
+  
+  Features:
+  - 1 request/second rate limiting
+  - User-Agent header compliance
+  - Error handling and retries
+end note
+
+@enduml

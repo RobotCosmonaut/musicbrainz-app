@@ -1,0 +1,237 @@
+@startuml Component_Diagram_Artist_Service
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Artist Service
+
+Container_Boundary(artist_service_boundary, "Artist Service Container") {
+    
+    Component(fastapi_app, "FastAPI Application", "FastAPI", "HTTP server handling artist-related requests on port 8001")
+    
+    Component(search_endpoint, "Search Artists Endpoint", "FastAPI Route", "Searches artists by name query, saves results to database")
+    
+    Component(get_endpoint, "Get Artist Endpoint", "FastAPI Route", "Retrieves specific artist by MusicBrainz ID")
+    
+    Component(list_endpoint, "List Artists Endpoint", "FastAPI Route", "Lists saved artists with pagination")
+    
+    Component(health_endpoint, "Health Check Endpoint", "FastAPI Route", "Returns service health status")
+    
+    Component(artist_processor, "Artist Data Processor", "Python Logic", "Processes artist metadata, validates and transforms API responses")
+    
+    Component(artist_persistence, "Artist Persistence Layer", "SQLAlchemy Logic", "Handles database CRUD operations for Artist entities")
+    
+    Component(musicbrainz_client, "MusicBrainz Service Client", "Python/Requests", "Communicates with MusicBrainz API for artist data")
+    
+    Component(db_session_manager, "Database Session Manager", "SQLAlchemy", "Manages database connections, transactions, and sessions")
+    
+    Component(cache_checker, "Cache Checker", "Query Logic", "Checks if artist already exists in database before fetching")
+}
+
+Container_Ext(api_gateway, "API Gateway", "FastAPI", "Routes requests to Artist Service")
+
+Container_Ext(shared_models, "Shared Models", "SQLAlchemy ORM", "Artist and Album data models")
+
+Container_Ext(shared_database, "Shared Database Module", "SQLAlchemy", "Database connection factory and utilities")
+
+System_Ext(musicbrainz_api, "MusicBrainz API", "External music encyclopedia service")
+
+System_Ext(postgres_db, "PostgreSQL Database", "Stores artist and album data")
+
+' Relationships within Artist Service
+Rel(fastapi_app, search_endpoint, "Routes /artists/search to")
+Rel(fastapi_app, get_endpoint, "Routes /artists/{id} to")
+Rel(fastapi_app, list_endpoint, "Routes /artists to")
+Rel(fastapi_app, health_endpoint, "Routes /health to")
+
+Rel(search_endpoint, cache_checker, "Checks existing artists")
+Rel(search_endpoint, artist_processor, "Delegates processing to")
+Rel(get_endpoint, cache_checker, "Checks local database first")
+Rel(get_endpoint, artist_processor, "Delegates processing to")
+Rel(list_endpoint, artist_persistence, "Queries artists from")
+
+Rel(artist_processor, musicbrainz_client, "Fetches artist metadata via")
+Rel(artist_processor, artist_persistence, "Saves artist via")
+
+Rel(cache_checker, db_session_manager, "Queries via")
+Rel(artist_persistence, db_session_manager, "Uses sessions from")
+
+Rel(search_endpoint, db_session_manager, "Uses")
+Rel(get_endpoint, db_session_manager, "Uses")
+Rel(list_endpoint, db_session_manager, "Uses")
+
+' External relationships
+Rel(api_gateway, fastapi_app, "Forwards requests to", "HTTP/JSON")
+
+Rel(musicbrainz_client, musicbrainz_api, "Queries for artist information", "HTTPS/JSON")
+
+Rel(db_session_manager, postgres_db, "Reads/writes artist data", "SQL")
+
+Rel(artist_processor, shared_models, "Creates Artist instances from", "ORM")
+Rel(db_session_manager, shared_database, "Obtains sessions from", "get_db()")
+
+note right of search_endpoint
+  **GET /artists/search**
+  Parameters:
+  - query: str (artist name)
+  - limit: int (default 25, max results)
+  
+  Process:
+  1. Call MusicBrainz API search
+  2. For each artist result:
+     a. Check if already in database
+     b. If not, create Artist record
+     c. Save with metadata
+  3. Return list of artists
+  
+  Saves:
+  - id (MusicBrainz ID)
+  - name, sort_name
+  - type, country
+  - begin_date, end_date
+end note
+
+note right of get_endpoint
+  **GET /artists/{artist_id}**
+  
+  Process:
+  1. Query local database for artist_id
+  2. If found, return from cache
+  3. If not found:
+     a. Fetch from MusicBrainz API
+     b. Save to database
+     c. Return artist data
+  
+  Returns:
+  - Complete artist metadata
+  - Formatted dates and country
+  - MusicBrainz ID for reference
+end note
+
+note right of list_endpoint
+  **GET /artists**
+  Parameters:
+  - skip: int (pagination offset)
+  - limit: int (max 100 results)
+  
+  Returns:
+  - List of saved artists
+  - Ordered by created_at DESC
+  - Shows most recent additions first
+  
+  Use case:
+  - Browse saved artists
+  - View discovery history
+end note
+
+note right of artist_processor
+  Core processing logic:
+  
+  **From Search Results:**
+  - Extracts artist metadata
+  - Maps MusicBrainz fields to DB schema
+  - Handles optional fields (country, dates)
+  
+  **From Single Artist:**
+  - Fetches detailed artist info
+  - Includes life-span data
+  - Processes type (person, group, etc.)
+  
+  **Data Mapping:**
+  - id → MusicBrainz UUID
+  - name → Display name
+  - sort-name → Sortable name
+  - type → Artist type
+  - country → ISO country code
+  - life-span.begin → begin_date
+  - life-span.end → end_date
+end note
+
+note right of cache_checker
+  Optimization strategy:
+  
+  **Before API Call:**
+  artist = db.query(Artist)
+           .filter(Artist.id == artist_id)
+           .first()
+  
+  **Benefits:**
+  - Reduces external API calls
+  - Faster response times
+  - Respects MusicBrainz rate limits
+  - Provides offline capability
+  
+  **Cache Hit:** Return immediately
+  **Cache Miss:** Fetch and save
+end note
+
+note right of musicbrainz_client
+  **API Methods:**
+  
+  search_artists(query, limit)
+  - Searches by artist name
+  - Returns list of matches
+  
+  get_artist(artist_id, include)
+  - Gets detailed artist info
+  - Optional: include releases
+  
+  **Features:**
+  - Rate limiting: 1 req/sec
+  - User-Agent compliance
+  - Retry on network errors
+  - JSON response parsing
+end note
+
+note right of artist_persistence
+  **Database Operations:**
+  
+  **Create:**
+  artist = Artist(
+      id=artist_id,
+      name=name,
+      sort_name=sort_name,
+      type=type,
+      country=country,
+      begin_date=begin,
+      end_date=end
+  )
+  db.add(artist)
+  db.commit()
+  
+  **Read:**
+  - Query by ID
+  - Query all with pagination
+  - Order by created_at
+  
+  **Error Handling:**
+  - Rollback on failures
+  - Log errors
+  - Return meaningful exceptions
+end note
+
+note right of db_session_manager
+  **Session Management:**
+  
+  Dependency Injection:
+  def get_db():
+      db = SessionLocal()
+      try:
+          yield db
+      finally:
+          db.close()
+  
+  Usage in endpoints:
+  @app.get("/artists")
+  def list_artists(
+      db: Session = Depends(get_db)
+  ):
+      # Use db session
+  
+  **Features:**
+  - Connection pooling
+  - Automatic cleanup
+  - Transaction management
+end note
+
+@enduml

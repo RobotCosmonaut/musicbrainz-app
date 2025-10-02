@@ -1,0 +1,196 @@
+@startuml Component_Diagram_Database_Init_Service
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Database Init Service
+
+Container_Boundary(db_init_boundary, "Database Init Service Container") {
+    
+    Component(init_script, "Initialization Script", "Python Main", "Entry point that orchestrates database setup, runs once at startup")
+    
+    Component(connection_manager, "Database Connection Manager", "SQLAlchemy Engine", "Creates and manages database engine connection")
+    
+    Component(connection_waiter, "Connection Readiness Waiter", "Retry Logic", "Waits for PostgreSQL to become available with exponential backoff")
+    
+    Component(table_creator, "Table Creator", "SQLAlchemy DDL", "Creates all database tables from ORM models using metadata")
+    
+    Component(schema_validator, "Schema Validator", "SQL Query", "Validates that tables were created successfully")
+    
+    Component(logger, "Logging Service", "Python Logging", "Logs initialization progress, errors, and success messages")
+    
+    Component(config_reader, "Configuration Reader", "Environment Variables", "Reads DATABASE_URL from environment")
+}
+
+Container_Ext(shared_models, "Shared Models Module", "SQLAlchemy ORM", "Defines all database table schemas (Base, Artist, Album, Track, etc.)")
+
+System_Ext(postgres_db, "PostgreSQL Database", "Persistent data store")
+
+Container_Ext(artist_service, "Artist Service", "FastAPI", "Waits for DB init to complete")
+
+Container_Ext(album_service, "Album Service", "FastAPI", "Waits for DB init to complete")
+
+Container_Ext(recommendation_service, "Recommendation Service", "FastAPI", "Waits for DB init to complete")
+
+' Internal relationships
+Rel(init_script, config_reader, "Reads DATABASE_URL from")
+Rel(init_script, connection_manager, "Creates engine via")
+Rel(init_script, connection_waiter, "Waits for DB via")
+Rel(init_script, table_creator, "Creates tables via")
+Rel(init_script, schema_validator, "Validates schema via")
+Rel(init_script, logger, "Logs progress to")
+
+Rel(connection_manager, logger, "Logs connection info to")
+Rel(connection_waiter, connection_manager, "Tests connection via")
+Rel(connection_waiter, logger, "Logs retry attempts to")
+
+Rel(table_creator, connection_manager, "Uses engine from")
+Rel(table_creator, shared_models, "Reads schema from")
+Rel(table_creator, logger, "Logs creation to")
+
+Rel(schema_validator, connection_manager, "Queries via")
+Rel(schema_validator, logger, "Logs validation to")
+
+' External relationships
+Rel(connection_manager, postgres_db, "Connects to", "PostgreSQL Protocol")
+Rel(connection_waiter, postgres_db, "Tests availability of", "SELECT 1")
+Rel(table_creator, postgres_db, "Creates tables in", "DDL Statements")
+Rel(schema_validator, postgres_db, "Validates tables in", "SQL Queries")
+
+Rel(shared_models, table_creator, "Provides Base.metadata to")
+
+Rel_Back(artist_service, init_script, "Depends on completion of")
+Rel_Back(album_service, init_script, "Depends on completion of")
+Rel_Back(recommendation_service, init_script, "Depends on completion of")
+
+note right of init_script
+  **Main Execution Flow:**
+  
+  def init_database():
+      1. Read DATABASE_URL config
+      2. Create SQLAlchemy engine
+      3. Wait for DB ready (max 30 retries)
+      4. Create all tables from Base.metadata
+      5. Validate tables created
+      6. Exit with status code (0=success, 1=fail)
+  
+  **Run Mode:**
+  - Executes once as Docker init container
+  - Blocks dependent services until complete
+  - Fails fast if DB unreachable
+end note
+
+note right of connection_waiter
+  **Retry Strategy:**
+  
+  Max retries: 30
+  Retry interval: 2 seconds
+  Total max wait: 60 seconds
+  
+  for attempt in range(30):
+      try:
+          connection.execute("SELECT 1")
+          return True  # Success
+      except OperationalError:
+          sleep(2)
+          continue
+  
+  return False  # Failed after retries
+  
+  **Purpose:**
+  - PostgreSQL may take time to start
+  - Handles Docker orchestration delays
+  - Prevents race conditions
+end note
+
+note right of table_creator
+  **Table Creation:**
+  
+  Base.metadata.create_all(bind=engine)
+  
+  **Creates tables:**
+  - artists
+  - albums
+  - tracks
+  - user_profiles
+  - recommendations
+  - listening_history
+  
+  **Features:**
+  - Idempotent (safe to run multiple times)
+  - Creates only missing tables
+  - Applies constraints and indexes
+  - Foreign key relationships
+end note
+
+note right of schema_validator
+  **Validation Query:**
+  
+  SELECT table_name 
+  FROM information_schema.tables 
+  WHERE table_schema = 'public' 
+    AND table_name = 'artists'
+  
+  **Purpose:**
+  - Confirms tables exist
+  - Prevents silent failures
+  - Verifies schema correctness
+  
+  **Checks:**
+  - At least one core table exists
+  - Can be extended to validate all tables
+end note
+
+note right of config_reader
+  **Environment Variables:**
+  
+  DATABASE_URL
+  Default: postgresql://user:password@localhost:5432/musicbrainz
+  
+  **Docker Override:**
+  postgresql://user:password@postgres:5432/musicbrainz
+  
+  **Format:**
+  postgresql://[user]:[password]@[host]:[port]/[database]
+  
+  **Security:**
+  - Credentials from environment
+  - Not hardcoded in code
+  - Configurable per deployment
+end note
+
+note right of connection_manager
+  **SQLAlchemy Engine:**
+  
+  engine = create_engine(DATABASE_URL)
+  
+  **Features:**
+  - Connection pooling
+  - Automatic reconnection
+  - Transaction management
+  - Thread-safe operations
+  
+  **Connection String:**
+  - Parsed from DATABASE_URL
+  - Supports PostgreSQL protocol
+  - Includes auth credentials
+end note
+
+note right of logger
+  **Log Messages:**
+  
+  INFO: "Initializing database..."
+  INFO: "Database URL: postgresql://..."
+  INFO: "Waiting for database (attempt 1/30)..."
+  INFO: "Database connection successful!"
+  INFO: "Creating database tables..."
+  ✅ INFO: "Database initialization complete!"
+  
+  ERROR: "Could not connect to database!"
+  ❌ ERROR: "Database initialization failed: [error]"
+  
+  **Log Level:** INFO
+  **Output:** stdout (Docker logs)
+end note
+
+@enduml
