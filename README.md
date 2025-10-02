@@ -54,14 +54,12 @@ The application is developed via a set of microservices:
 ![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/4%20-%20Code/Simplified_View/Code_Diagram_Artist_Search_Tab.png "Get Album Code Diagram")
 
 ## Installation
-TBD
-
-
-## Usage
-This application is deployed via Docker and Minikube
 
 ### Set up PostgreSQL
 docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=musicbrainz -p 5432:5432 -d postgres:14
+
+## Usage
+This application is deployed via Docker and Minikube
 
 ### Run with Docker (no Minikube)
 
