@@ -1,4 +1,4 @@
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/ui/static/images/orchestr8r_logo.png "Orchestr8r - Continuous Delivery of your Perfect Playlist")
+![alt text](ui/static/images/orchestr8r_logo.png "Orchestr8r - Continuous Delivery of your Perfect Playlist")
 
 # Orchestr8r: Continuous Delivery of your Perfect Playlist
 ## A Music Recommendation System using Microservices Architecture
@@ -27,7 +27,7 @@ The application is developed via a set of microservices:
     * Stores cached music data (artists, albums, tracks), user profiles, listening history, and recommendations
 
 ## PostgreSQL Database
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/ui/static/images/PostgreSQL_Database.png "PostgreSQL Database")
+![alt text](ui/static/images/PostgreSQL_Database.png "PostgreSQL Database")
 - Local database storing recently searched results
     * MusicBrainz database > 40 GB
 - Created via YAML file
@@ -45,44 +45,45 @@ The application is developed via a set of microservices:
     * If not enough results obtained, a direct search of MusicBrainz is performed
 - Diversity Filtering
     * Filter artists to attempt to limit frequency of a single artist in the results
+    
 
 ## C4 Model System Context, Container, Component, and Code diagrams
 
 ### Context Diagram: 
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/1%20-%20Context/Context_Diagram.png "Context Diagram")
+![alt text](structural_views/1%20-%20Context/Context_Diagram.png "Context Diagram")
 
 ### Container Diagram: 
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/2%20-%20Container/Container_Diagram.png "Container Diagram")
+![alt text](structural_views/2%20-%20Container/Container_Diagram.png "Container Diagram")
 
 ### Component Diagrams: 
 
 #### Streamlit UI Service Component Diagram
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Streamlit_UI.png "Streamlit UI Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Streamlit_UI.png "Streamlit UI Service Component Diagram")
 
 #### API Gateway Service Component Diagram
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Simplified_View/Component_Diagram_API_Gateway.png "API Gateway Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_API_Gateway.png "API Gateway Service Component Diagram")
 
 #### Database Init Service Component Diagram
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Database_Init_Service.png "Database Init Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Database_Init_Service.png "Database Init Service Component Diagram")
 
 #### Album Service Component Diagram
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Album_Service.png "Album Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Album_Service.png "Album Service Component Diagram")
 
 #### Recommendation Service Component Diagram
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Recommendation_Service.png "Recommendation Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Recommendation_Service.png  "Recommendation Service Component Diagram")
 
 #### Artist Service Component Diagram
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Artist_Service.png "Artist Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Artist_Service.png "Artist Service Component Diagram")
 
 ### Code Diagrams: 
 
 #### Artist Search Code Diagram
-![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/structural_views/4%20-%20Code/Simplified_View/Code_Diagram_Artist_Search_Tab.png "Get Album Code Diagram")
+![alt text](structural_views/4%20-%20Code/Simplified_View/Code_Diagram_Artist_Search_tab.png "Get Album Code Diagram")
 
 ## Installation
 
 ### Docker and Minikube
-Docker Desktop and Minikube are utilized in the deployment of this project  
+Docker Desktop and Minikube are utilized in the deployment of this project
 
 ## Usage
 This application is deployed via Docker and Minikube
