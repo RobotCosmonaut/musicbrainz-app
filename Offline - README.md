@@ -22,6 +22,11 @@ The application is developed via a set of microservices:
 - PostgreSQL Database:
     * Stores cached music data (artists, albums, tracks), user profiles, listening history, and recommendations
 
+![alt text](ui/static/images/PostgreSQL_Database.png "PostgreSQL Database")
+- Local database storing recently searched results
+    * MusicBrainz database > 40 GB
+- Docker volume for persistence of data
+
 ## C4 Model System Context, Container, Component, and Code diagrams
 
 ### Context Diagram: 
