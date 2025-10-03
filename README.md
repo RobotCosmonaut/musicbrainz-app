@@ -20,7 +20,7 @@ The application is developed via a set of microservices:
 - Album Service: 
     * Manages album and track data: search, retrieval, and track listing
 - Recommendation Service:
-    * Generates smart recommendations using genre detection, diversity algorithms, and profile-based suggestions
+    * Generates recommendations using genre detection, diversity algorithms, and profile-based suggestions
 - Artist Service: 
     * Manages artist data: search, retrieval, and caching of artist metadata
 - PostgreSQL Database:
