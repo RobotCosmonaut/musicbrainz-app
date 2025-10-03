@@ -25,7 +25,9 @@ The application is developed via a set of microservices:
 ![alt text](https://github.com/RobotCosmonaut/musicbrainz-app/blob/main/ui/static/images/PostgreSQL_Database.png "PostgreSQL Database")
 - Local database storing recently searched results
     * MusicBrainz database > 40 GB
-- Docker volume for persistence of data
+- Created via YAML file
+    * Docker Volume for persistence of data when invoked via docker-compose
+    * PersistentVolumeClaim when deployed via Minikube
 
 ## C4 Model System Context, Container, Component, and Code diagrams
 
@@ -62,8 +64,8 @@ The application is developed via a set of microservices:
 
 ## Installation
 
-### Set up PostgreSQL
-docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=musicbrainz -p 5432:5432 -d postgres:14
+### Docker and Minikube
+Docker Desktop and Minikube are utilized in the deployment of this project  
 
 ## Usage
 This application is deployed via Docker and Minikube
