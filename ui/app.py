@@ -1337,16 +1337,16 @@ with tab1:
                                     score = rec['score']
                                     if score >= 80:
                                         border_color = "#22C55E"  # Green for high scores
-                                        score_emoji = "🔥"
+                                        score_emoji = ""
                                     elif score >= 60:
                                         border_color = "#6366F1"  # Blue for medium scores
-                                        score_emoji = "⭐"
+                                        score_emoji = ""
                                     elif score >= 40:
                                         border_color = "#F59E0B"  # Yellow for fair scores
-                                        score_emoji = "👍"
+                                        score_emoji = ""
                                     else:
                                         border_color = "#EF4444"  # Red for low scores
-                                        score_emoji = "💡"
+                                        score_emoji = ""
             
                                     st.markdown(f"""
                                     <div style="
