@@ -78,7 +78,7 @@ The application is developed via a set of microservices:
 ### Code Diagrams: 
 
 #### Artist Search Code Diagram
-![alt text](structural_views/4%20-%20Code/Simplified_View/Code_Diagram_Artist_Search_tab.png "Get Album Code Diagram")
+![alt text](structural_views/4%20-%20Code/Simplified_View/Code_Diagram_Artist_Search_Tab.png "Get Album Code Diagram")
 
 ## Installation
 
