@@ -80,10 +80,12 @@ The application is developed via a set of microservices:
 #### Artist Search Code Diagram
 ![alt text](structural_views/4%20-%20Code/Simplified_View/Code_Diagram_Artist_Search_Tab.png "Get Album Code Diagram")
 
-## Installation
+## Installation/Prerequisites
 
 ### Docker and Minikube
 Docker Desktop and Minikube are utilized in the deployment of this project
+
+Ensure Docker is invoked prior to starting Minikube
 
 ## Usage
 This application is deployed via Docker and Minikube
