@@ -1,3 +1,5 @@
+![alt text](ui/static/images/orchestr8r_logo.png "Orchestr8r - Continuous Delivery of your Perfect Playlist")
+
 # Orchestr8r: Continuous Delivery of your Perfect Playlist
 ## A Music Recommendation System using Microservices Architecture
 
@@ -31,25 +33,22 @@ The application is developed via a set of microservices:
 ### Component Diagrams: 
 
 #### Streamlit UI Service Component Diagram
-![alt text](structural_views/3%20-%20Component/Component_Diagram_Streamlit.png "Streamlit UI Service Component Diagram")
-
-#### Streamlit UI Service Simplified Component Diagram
-![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Streamlit_UI.png "Streamlit UI Service Simplified Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Streamlit_UI.png "Streamlit UI Service Component Diagram")
 
 #### API Gateway Service Component Diagram
-![alt text](structural_views/3%20-%20Component/Component_Diagram_API_Gateway.png "API Gateway Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_API_Gateway.png "API Gateway Service Component Diagram")
 
 #### Database Init Service Component Diagram
-![alt text](structural_views/3%20-%20Component/Component_Diagram_Database_Init.png "Database Init Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Database_Init_Service.png "Database Init Service Component Diagram")
 
 #### Album Service Component Diagram
-![alt text](structural_views/3%20-%20Component/Component_Diagram_Album.png "Album Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Album_Service.png "Album Service Component Diagram")
 
 #### Recommendation Service Component Diagram
-![alt text](structural_views/3%20-%20Component/Component_Diagram_Album.png  "Recommendation Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Recommendation_Service.png  "Recommendation Service Component Diagram")
 
 #### Artist Service Component Diagram
-![alt text](structural_views/3%20-%20Component/Component_Diagram_Artist.png "Artist Service Component Diagram")
+![alt text](structural_views/3%20-%20Component/Simplified_View/Component_Diagram_Artist_Service.png "Artist Service Component Diagram")
 
 ### Code Diagrams: 
 
