@@ -39,6 +39,8 @@ The application is developed via a set of microservices:
     * Attempts to find tracks tagged with the genre from other artists
 - Direct search fallback
     * If not enough results obtained, a direct search of MusicBrainz is performed
+- Diversity Filtering
+    * Filter artists to attempt to limit frequency of a single artist in the results
 
 ## C4 Model System Context, Container, Component, and Code diagrams
 
