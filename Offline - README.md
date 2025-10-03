@@ -22,6 +22,7 @@ The application is developed via a set of microservices:
 - PostgreSQL Database:
     * Stores cached music data (artists, albums, tracks), user profiles, listening history, and recommendations
 
+## PostgreSQL Database
 ![alt text](ui/static/images/PostgreSQL_Database.png "PostgreSQL Database")
 - Local database storing recently searched results
     * MusicBrainz database > 40 GB
@@ -29,6 +30,15 @@ The application is developed via a set of microservices:
     * Docker Volume for persistence of data when invoked via docker-compose
     * PersistentVolumeClaim when deployed via Minikube
 
+## Recommendation Service
+- Genre detection 
+    * Uses keywords for genre classification
+- Multi-artist genre queries
+    * Selects an array of artists based on selected genre
+- Tag-based secondary search
+    * Attempts to find tracks tagged with the genre from other artists
+- Direct search fallback
+    * If not enough results obtained, a direct search of MusicBrainz is performed
 
 ## C4 Model System Context, Container, Component, and Code diagrams
 
