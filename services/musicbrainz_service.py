@@ -1,3 +1,11 @@
+#
+#   Orchestr8r – A Prototype Music Recommendation System using Microservices 
+#   
+#   MusicBrainz Service: Interacts with the MusicBrainz API to fetch artist, album, and track data.
+#
+#   This script was created in Microsoft VSCode and Claude.ai was referenced/utilized in the script development
+#
+
 import requests
 import time
 from typing import Dict, List, Optional

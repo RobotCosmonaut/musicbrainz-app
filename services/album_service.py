@@ -1,3 +1,11 @@
+#
+#   Orchestr8r – A Prototype Music Recommendation System using Microservices 
+#   
+#   Album Service: Manages album data, including searching for albums, retrieving album details, and storing album information along with associated tracks.
+#
+#   This script was created in Microsoft VSCode and Claude.ai was referenced/utilized in the script development
+#
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from shared.database import get_db

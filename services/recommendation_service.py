@@ -1,3 +1,11 @@
+#
+#   Orchestr8r – A Prototype Music Recommendation System using Microservices 
+#   
+#   Recommendation Service: Provides music recommendations with artist diversity based on user queries and profiles.
+#
+#   This script was created in Microsoft VSCode and Claude.ai was referenced/utilized in the script development
+#
+
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session

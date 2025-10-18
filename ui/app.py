@@ -1,4 +1,10 @@
-# Streamlit UI
+#
+#   Orchestr8r – A Prototype Music Recommendation System using Microservices 
+#   
+#   Streamlit UI Application for Orchestr8r Music Recommendation System
+#
+#   This script was created in Microsoft VSCode and Claude.ai was referenced/utilized in the script development
+#
 
 import streamlit as st
 import requests

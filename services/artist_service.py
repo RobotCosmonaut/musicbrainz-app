@@ -1,3 +1,11 @@
+#
+#   Orchestr8r – A Prototype Music Recommendation System using Microservices 
+#   
+#   Artist Service: Manages artist data, including searching for artists, retrieving artist details, and storing artist information.
+#
+#   This script was created in Microsoft VSCode and Claude.ai was referenced/utilized in the script development
+#
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from shared.database import get_db  # Remove create_tables import
