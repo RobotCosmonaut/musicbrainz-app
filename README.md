@@ -6,6 +6,8 @@
 ### GitHub Repo
 This project may be accessed on GitHub at [https://github.com/RobotCosmonaut/musicbrainz-app](https://github.com/RobotCosmonaut/musicbrainz-app).
 
+![alt text](ui/static/images/Orchestr8r_Main_Page.png "Orchestr8r Main Page")
+
 ## Project Summary
 While recommendation engines exist for major music services, they are generally limited to that specific service. If a music fan wants to consider recommendations from other services, a service agnostic recommendation platform may be helpful for more diverse results. Stores of music data that are not tied to specific services include Last.fm and MusicBrainz.org. These tools obtain listener data across a number of services. Thus, querying these services can provide a larger breadth of music data not specific to a single service.
 
