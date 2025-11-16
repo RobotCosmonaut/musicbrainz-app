@@ -24,9 +24,10 @@ exclude =
 
 # Minimal ignores - only truly unavoidable issues
 # For research, we want to capture most violations!
+# W503: line break before binary operator (conflicts with W504)
+# E203: whitespace before ':' (conflicts with Black formatter)
 ignore = 
-    W503,  # line break before binary operator (conflicts with W504)
-    E203   # whitespace before ':' (conflicts with Black formatter)
+    W503,E203
 
 # IMPORTANT: Don't use 'select' - it's too restrictive!
 # Instead, we rely on defaults + plugins will automatically add their checks
