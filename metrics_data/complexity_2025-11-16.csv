@@ -1,0 +1,10 @@
+File,Complexity,Lines_of_Code,Violations
+services/artist_service.py,0,86,0
+services/album_service.py,0,150,0
+services/recommendation_service.py,0,473,0
+services/musicbrainz_service.py,0,83,0
+gateway/main.py,0,222,0
+ui/app.py,0,1877,0
+init_db.py,0,44,0
+shared/database.py,0,65,0
+shared/models.py,0,64,0

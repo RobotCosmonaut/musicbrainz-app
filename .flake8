@@ -1,0 +1,44 @@
+# Flake8 Configuration for Orchestr8r Research Project
+# Stricter settings to capture meaningful quality metrics
+
+[flake8]
+# PEP 8 Standard Line Length (strict)
+max-line-length = 79
+
+# Lower complexity threshold for research sensitivity
+max-complexity = 8
+
+# Exclude directories
+exclude = 
+    .git,
+    __pycache__,
+    venv,
+    env,
+    .venv,
+    build,
+    dist,
+    *.egg-info,
+    .eggs,
+    .pytest_cache,
+    .mypy_cache
+
+# Minimal ignores - only truly unavoidable issues
+# For research, we want to capture most violations!
+ignore = 
+    W503,  # line break before binary operator (conflicts with W504)
+    E203   # whitespace before ':' (conflicts with Black formatter)
+
+# IMPORTANT: Don't use 'select' - it's too restrictive!
+# Instead, we rely on defaults + plugins will automatically add their checks
+# The plugins (bugbear, comprehensions, simplify, docstrings, import-order) 
+# will automatically be enabled when installed
+
+# Show detailed information
+show-source = True
+statistics = True
+count = True
+
+# Per-file type ignores (if needed for specific files)
+# Uncomment and adjust as needed:
+# per-file-ignores =
+#     __init__.py:F401  # Unused imports OK in __init__.py

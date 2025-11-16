@@ -1,0 +1,22 @@
+# Requirements for Flake8 Metrics Collection
+# Install with: pip install -r requirements-metrics.txt
+
+# Core Flake8
+flake8>=6.1.0
+
+# Complexity analysis
+mccabe>=0.7.0
+
+# Additional Flake8 plugins for enhanced metrics
+flake8-bugbear>=23.9.16        # Detects common bugs
+flake8-comprehensions>=3.14.0   # Comprehension improvements
+flake8-docstrings>=1.7.0       # Docstring conventions
+flake8-simplify>=0.21.0        # Code simplification suggestions
+
+# Data visualization (for trend analysis)
+pandas>=2.1.0
+matplotlib>=3.8.0
+plotly>=5.17.0
+
+# For automated scheduling (optional)
+schedule>=1.2.0

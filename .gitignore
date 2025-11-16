@@ -7,3 +7,6 @@ __pycache__/
 # Local environment file containing secrets/tokens
 # **This is the critical line to prevent committing your token!**
 .env
+
+# Don't commit metric logs
+metrics_data/*.log        # Don't commit logs
