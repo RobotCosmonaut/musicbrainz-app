@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 """
 Flake8 Metrics Visualization and Trend Analysis
-Clean production version - generates charts and reports from collected metrics
+FIXED VERSION - Properly imports numpy and handles data
+Generates charts and reports from collected metrics data
 
 Author: Ron Denny
-Course: CS 8314 - Software Metrics & Quality Engineering
+Course: CS 8314 - Software Engineering Research
 """
 
 import pandas as pd
-import numpy as np
+import numpy as np  # FIXED: Import at module level
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from pathlib import Path
 from datetime import datetime
+import sys
 
 METRICS_DIR = Path(__file__).parent / "metrics_data"
 
@@ -53,7 +55,7 @@ class MetricsVisualizer:
             marker=dict(size=8)
         ))
         
-        # Add trend line if we have multiple data points
+        # Add trend line
         if len(self.df) > 1:
             z = np.polyfit(range(len(self.df)), self.df['Defect_Density'], 1)
             p = np.poly1d(z)
@@ -122,7 +124,7 @@ class MetricsVisualizer:
             marker=dict(size=8)
         ), row=2, col=1)
         
-        # Add threshold line at 8 (your configured max)
+        # Add threshold line at 8 (your configured max complexity)
         fig.add_hline(y=8, line_dash="dot", line_color="gray", 
                      annotation_text="Configured Max (8)", row=2, col=1)
         
@@ -222,8 +224,10 @@ class MetricsVisualizer:
         print(f"  Maximum Complexity: {latest['Max_Complexity']}")
         print(f"  Lines of Code: {latest['Total_Lines']}")
         
+        print(f"\nTrend Analysis:")
+        
+        # Calculate trends
         if len(self.df) > 1:
-            print(f"\nTrend Analysis:")
             first = self.df.iloc[0]
             
             defect_change = ((latest['Defect_Density'] - first['Defect_Density']) / 
@@ -252,108 +256,117 @@ class MetricsVisualizer:
         print("Creating visualizations...")
         
         charts = []
-        chart_names = []
+        try:
+            print("  - Defect Density Chart...")
+            charts.append(self.create_defect_density_chart())
+        except Exception as e:
+            print(f"    ⚠️ Warning: Could not create defect density chart: {e}")
         
-        # Create all charts
-        chart_creators = [
-            ("Defect Density", self.create_defect_density_chart),
-            ("Violations", self.create_violations_chart),
-            ("Complexity", self.create_complexity_chart),
-            ("Error Breakdown", self.create_error_breakdown_chart),
-            ("Code Growth", self.create_code_growth_chart)
-        ]
+        try:
+            print("  - Violations Chart...")
+            charts.append(self.create_violations_chart())
+        except Exception as e:
+            print(f"    ⚠️ Warning: Could not create violations chart: {e}")
         
-        for name, creator in chart_creators:
-            try:
-                charts.append(creator())
-                chart_names.append(name)
-                print(f"  ✓ {name}")
-            except Exception as e:
-                print(f"  ✗ {name}: {e}")
+        try:
+            print("  - Complexity Chart...")
+            charts.append(self.create_complexity_chart())
+        except Exception as e:
+            print(f"    ⚠️ Warning: Could not create complexity chart: {e}")
+        
+        try:
+            print("  - Error Breakdown Chart...")
+            charts.append(self.create_error_breakdown_chart())
+        except Exception as e:
+            print(f"    ⚠️ Warning: Could not create error breakdown chart: {e}")
+        
+        try:
+            print("  - Code Growth Chart...")
+            charts.append(self.create_code_growth_chart())
+        except Exception as e:
+            print(f"    ⚠️ Warning: Could not create code growth chart: {e}")
         
         if not charts:
-            print("\n❌ No charts could be created!")
+            print("❌ No charts could be created!")
             return
         
-        # Get latest metrics
-        latest = self.df.iloc[-1]
+        # Create HTML with all charts
+        html_content = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Orchestr8r - Software Quality Metrics Dashboard</title>
+            <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+            <style>
+                body {{ 
+                    font-family: Arial, sans-serif; 
+                    margin: 20px;
+                    background-color: #f5f5f5;
+                }}
+                h1 {{ 
+                    color: #333; 
+                    text-align: center;
+                }}
+                .chart {{ 
+                    margin: 30px auto;
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    max-width: 1200px;
+                }}
+                .footer {{
+                    text-align: center;
+                    margin-top: 40px;
+                    color: #666;
+                }}
+                .stats {{
+                    background: white;
+                    padding: 20px;
+                    margin: 20px auto;
+                    max-width: 1200px;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }}
+            </style>
+        </head>
+        <body>
+            <h1>🎵 Orchestr8r - Software Quality Metrics Dashboard</h1>
+            <div class="stats">
+                <h2>Latest Metrics Summary</h2>
+                <p><strong>Date:</strong> {date}</p>
+                <p><strong>Total Violations:</strong> {total_violations}</p>
+                <p><strong>Defect Density:</strong> {defect_density:.2f} violations per 1000 LOC</p>
+                <p><strong>Average Complexity:</strong> {avg_complexity:.2f}</p>
+                <p><strong>Maximum Complexity:</strong> {max_complexity}</p>
+                <p><strong>Total Lines of Code:</strong> {total_lines:,}</p>
+            </div>
+            {charts}
+            <div class="footer">
+                <p>Generated: {timestamp}<br>
+                Course: CS 8314 - Software Engineering Research<br>
+                Data collected using Flake8 static analysis</p>
+            </div>
+        </body>
+        </html>
+        """.format(
+            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            date=self.df.iloc[-1]['Date'].strftime('%Y-%m-%d'),
+            total_violations=int(self.df.iloc[-1]['Total_Violations']),
+            defect_density=float(self.df.iloc[-1]['Defect_Density']),
+            avg_complexity=float(self.df.iloc[-1]['Avg_Complexity']),
+            max_complexity=int(self.df.iloc[-1]['Max_Complexity']),
+            total_lines=int(self.df.iloc[-1]['Total_Lines']),
+            charts="\n".join([f'<div class="chart">{chart.to_html(full_html=False, include_plotlyjs=False)}</div>' 
+                             for chart in charts])
+        )
         
-        # Generate chart HTML strings
-        chart_html_list = []
-        for i, chart in enumerate(charts):
-            chart_html = chart.to_html(full_html=False, include_plotlyjs=False, div_id=f"chart_{i}")
-            chart_html_list.append(f'<div class="chart">{chart_html}</div>')
-        
-        charts_combined = "\n".join(chart_html_list)
-        
-        # Build HTML using f-strings (handles CSS braces correctly)
-        html_content = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Orchestr8r - Software Quality Metrics Dashboard</title>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <style>
-        body {{ 
-            font-family: Arial, sans-serif; 
-            margin: 20px;
-            background-color: #f5f5f5;
-        }}
-        h1 {{ 
-            color: #333; 
-            text-align: center;
-        }}
-        .chart {{ 
-            margin: 30px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 1200px;
-        }}
-        .footer {{
-            text-align: center;
-            margin-top: 40px;
-            color: #666;
-        }}
-        .stats {{
-            background: white;
-            padding: 20px;
-            margin: 20px auto;
-            max-width: 1200px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }}
-    </style>
-</head>
-<body>
-    <h1>Orchestr8r - Software Quality Metrics Dashboard</h1>
-    <div class="stats">
-        <h2>Latest Metrics Summary</h2>
-        <p><strong>Date:</strong> {latest['Date'].strftime('%Y-%m-%d')}</p>
-        <p><strong>Total Violations:</strong> {int(latest['Total_Violations'])}</p>
-        <p><strong>Defect Density:</strong> {float(latest['Defect_Density']):.2f} violations per 1000 LOC</p>
-        <p><strong>Average Complexity:</strong> {float(latest['Avg_Complexity']):.2f}</p>
-        <p><strong>Maximum Complexity:</strong> {int(latest['Max_Complexity'])}</p>
-        <p><strong>Total Lines of Code:</strong> {int(latest['Total_Lines']):,}</p>
-    </div>
-    {charts_combined}
-    <div class="footer">
-        <p>Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}<br>
-        Course: CS 8314 - Software Metrics & Quality Engineering<br>
-        Data collected using Flake8 static analysis</p>
-    </div>
-</body>
-</html>
-"""
-        
-        # Write with UTF-8 encoding
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, 'w') as f:
             f.write(html_content)
         
         print(f"\n✓ Dashboard saved to: {output_file}")
-        print(f"  Created {len(charts)} charts successfully!")
         print(f"  Open in browser: file://{output_file.absolute()}")
+        print(f"  Created {len(charts)} charts successfully!")
 
 def main():
     """Main execution function"""
@@ -367,6 +380,7 @@ def main():
     visualizer.generate_summary_stats()
     
     # Create and save visualizations
+    print("\nGenerating visualizations...")
     visualizer.save_all_charts()
     
     print("\n✓ Visualization complete!")
