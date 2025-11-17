@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
 Flake8 Metrics Visualization and Trend Analysis
+FIXED VERSION - Properly imports numpy and handles data
 Generates charts and reports from collected metrics data
 
 Author: Ron Denny
-Course: CS 8314 - Software Metrics & Quality Engineering
+Course: CS 8314 - Software Engineering Research
 """
 
 import pandas as pd
+import numpy as np  # FIXED: Import at module level
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from pathlib import Path
@@ -122,9 +124,9 @@ class MetricsVisualizer:
             marker=dict(size=8)
         ), row=2, col=1)
         
-        # Add threshold line at 10 (recommended max complexity)
-        fig.add_hline(y=10, line_dash="dot", line_color="gray", 
-                     annotation_text="Recommended Max (10)", row=2, col=1)
+        # Add threshold line at 8 (your configured max complexity)
+        fig.add_hline(y=8, line_dash="dot", line_color="gray", 
+                     annotation_text="Configured Max (8)", row=2, col=1)
         
         fig.update_layout(
             height=600,
@@ -251,12 +253,42 @@ class MetricsVisualizer:
         """Save all charts to HTML file"""
         output_file = METRICS_DIR / "metrics_dashboard.html"
         
+        print("Creating visualizations...")
+        
         charts = []
-        charts.append(self.create_defect_density_chart())
-        charts.append(self.create_violations_chart())
-        charts.append(self.create_complexity_chart())
-        charts.append(self.create_error_breakdown_chart())
-        charts.append(self.create_code_growth_chart())
+        try:
+            print("  - Defect Density Chart...")
+            charts.append(self.create_defect_density_chart())
+        except Exception as e:
+            print(f"    ⚠️ Warning: Could not create defect density chart: {e}")
+        
+        try:
+            print("  - Violations Chart...")
+            charts.append(self.create_violations_chart())
+        except Exception as e:
+            print(f"    ⚠️ Warning: Could not create violations chart: {e}")
+        
+        try:
+            print("  - Complexity Chart...")
+            charts.append(self.create_complexity_chart())
+        except Exception as e:
+            print(f"    ⚠️ Warning: Could not create complexity chart: {e}")
+        
+        try:
+            print("  - Error Breakdown Chart...")
+            charts.append(self.create_error_breakdown_chart())
+        except Exception as e:
+            print(f"    ⚠️ Warning: Could not create error breakdown chart: {e}")
+        
+        try:
+            print("  - Code Growth Chart...")
+            charts.append(self.create_code_growth_chart())
+        except Exception as e:
+            print(f"    ⚠️ Warning: Could not create code growth chart: {e}")
+        
+        if not charts:
+            print("❌ No charts could be created!")
+            return
         
         # Create HTML with all charts
         html_content = """
@@ -281,28 +313,50 @@ class MetricsVisualizer:
                     padding: 20px;
                     border-radius: 8px;
                     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    max-width: 1200px;
                 }}
                 .footer {{
                     text-align: center;
                     margin-top: 40px;
                     color: #666;
                 }}
+                .stats {{
+                    background: white;
+                    padding: 20px;
+                    margin: 20px auto;
+                    max-width: 1200px;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }}
             </style>
         </head>
         <body>
-            <h1>Orchestr8r - Software Quality Metrics Dashboard</h1>
-            <p style="text-align: center; color: #666;">
-                Generated: {timestamp}<br>
-                Course: CS 8314 - Software Engineering Research
-            </p>
+            <h1>🎵 Orchestr8r - Software Quality Metrics Dashboard</h1>
+            <div class="stats">
+                <h2>Latest Metrics Summary</h2>
+                <p><strong>Date:</strong> {date}</p>
+                <p><strong>Total Violations:</strong> {total_violations}</p>
+                <p><strong>Defect Density:</strong> {defect_density:.2f} violations per 1000 LOC</p>
+                <p><strong>Average Complexity:</strong> {avg_complexity:.2f}</p>
+                <p><strong>Maximum Complexity:</strong> {max_complexity}</p>
+                <p><strong>Total Lines of Code:</strong> {total_lines:,}</p>
+            </div>
             {charts}
             <div class="footer">
-                <p>Data collected using Flake8 static analysis</p>
+                <p>Generated: {timestamp}<br>
+                Course: CS 8314 - Software Engineering Research<br>
+                Data collected using Flake8 static analysis</p>
             </div>
         </body>
         </html>
         """.format(
             timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            date=self.df.iloc[-1]['Date'].strftime('%Y-%m-%d'),
+            total_violations=int(self.df.iloc[-1]['Total_Violations']),
+            defect_density=float(self.df.iloc[-1]['Defect_Density']),
+            avg_complexity=float(self.df.iloc[-1]['Avg_Complexity']),
+            max_complexity=int(self.df.iloc[-1]['Max_Complexity']),
+            total_lines=int(self.df.iloc[-1]['Total_Lines']),
             charts="\n".join([f'<div class="chart">{chart.to_html(full_html=False, include_plotlyjs=False)}</div>' 
                              for chart in charts])
         )
@@ -310,12 +364,12 @@ class MetricsVisualizer:
         with open(output_file, 'w') as f:
             f.write(html_content)
         
-        print(f"✓ Dashboard saved to: {output_file}")
+        print(f"\n✓ Dashboard saved to: {output_file}")
         print(f"  Open in browser: file://{output_file.absolute()}")
+        print(f"  Created {len(charts)} charts successfully!")
 
 def main():
     """Main execution function"""
-    import numpy as np  # Import here for trend line calculation
     
     visualizer = MetricsVisualizer()
     
@@ -326,7 +380,7 @@ def main():
     visualizer.generate_summary_stats()
     
     # Create and save visualizations
-    print("Generating visualizations...")
+    print("\nGenerating visualizations...")
     visualizer.save_all_charts()
     
     print("\n✓ Visualization complete!")

@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 """
 Automated Flake8 Metrics Collection Script for Orchestr8r Project
-Collects daily software quality metrics including:
-- Cyclomatic complexity
-- Code style violations
-- Error counts by type
-- Defect density
-- Lines of code metrics
+FIXED VERSION - Properly counts violations per file
 
 Author: Ron Denny
 Course: CS 8314 - Software Engineering Research
@@ -72,7 +67,7 @@ class FlakeMetricsCollector:
             return 0
     
     def run_flake8_basic(self):
-        """Run basic Flake8 analysis"""
+        """Run basic Flake8 analysis - FIXED VERSION"""
         print(f"\n{'='*60}")
         print(f"Running Flake8 Analysis - {self.timestamp}")
         print(f"{'='*60}\n")
@@ -103,19 +98,26 @@ class FlakeMetricsCollector:
                     violations = result.stdout.strip().split('\n')
                     all_violations.extend(violations)
                     
+                    # Count violations for THIS file
+                    file_violation_count = 0
+                    
                     # Parse violations
                     for violation in violations:
                         if violation:
-                            # Extract error code (e.g., E501, W503)
-                            match = re.search(r'([EWF]\d{3})', violation)
+                            # Extract error code - EXPANDED REGEX to catch all codes
+                            match = re.search(r'([EWFCDSBI]\d{3})', violation)
                             if match:
                                 error_code = match.group(1)
                                 self.metrics['violations_by_type'][error_code] += 1
-                                self.metrics['violations_by_file'][filepath] += 1
+                                file_violation_count += 1
                     
-                    print(f"   Found {len(violations)} violations")
+                    # Store the actual count for this file
+                    self.metrics['violations_by_file'][filepath] = file_violation_count
+                    
+                    print(f"   Found {file_violation_count} violations")
                 else:
                     print(f"   ✓ No violations found")
+                    self.metrics['violations_by_file'][filepath] = 0
                     
             except FileNotFoundError:
                 print("   ❌ Flake8 not installed. Run: pip install flake8")
@@ -149,7 +151,7 @@ class FlakeMetricsCollector:
             try:
                 # Run Flake8 with McCabe complexity plugin
                 result = subprocess.run(
-                    ['flake8', filepath, '--max-complexity=10', '--select=C901'],
+                    ['flake8', filepath, '--max-complexity=8', '--select=C901'],
                     capture_output=True,
                     text=True
                 )
@@ -249,7 +251,14 @@ class FlakeMetricsCollector:
                 'W6': 'Deprecated warnings',
                 'F4': 'Module import errors',
                 'F8': 'Name errors',
-                'C9': 'Complexity warnings'
+                'C9': 'Complexity warnings',
+                'D1': 'Missing docstrings',
+                'D2': 'Docstring whitespace',
+                'D3': 'Docstring quotes',
+                'D4': 'Docstring content',
+                'S': 'Simplify suggestions',
+                'B': 'Bugbear findings',
+                'I': 'Import order'
             }
             
             for error_code, count in sorted(self.metrics['violations_by_type'].items()):
@@ -294,7 +303,7 @@ class FlakeMetricsCollector:
             self.metrics['violations_by_type'].items(), 
             key=lambda x: x[1], 
             reverse=True
-        )[:5]:
+        )[:10]:
             print(f"  {error_code}: {count}")
         
         print(f"\nFiles with Most Violations:")

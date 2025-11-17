@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Plotly Test</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+    <h1>Plotly Test Page</h1>
+    <p>If you see a chart below, Plotly is working correctly.</p>
+    
+    <div id="test-chart" style="width:800px;height:400px;"></div>
+    
+    <script>
+        var data = [{
+            x: ['2025-11-14', '2025-11-15', '2025-11-16'],
+            y: [100, 150, 200],
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Test Data',
+            line: {color: '#6366F1', width: 3},
+            marker: {size: 8}
+        }];
+        
+        var layout = {
+            title: 'Test Chart - If you see this, Plotly works!',
+            xaxis: {title: 'Date'},
+            yaxis: {title: 'Value'},
+            template: 'plotly_white'
+        };
+        
+        Plotly.newPlot('test-chart', data, layout);
+    </script>
+    
+    <p style="margin-top: 20px;">
+        <strong>What to check:</strong><br>
+        1. Do you see a line chart above?<br>
+        2. Can you hover over the points?<br>
+        3. Do the controls (zoom, pan) appear?<br>
+        <br>
+        If YES: Plotly works, the issue is with your data/charts<br>
+        If NO: Browser or JavaScript issue
+    </p>
+</body>
+</html>
