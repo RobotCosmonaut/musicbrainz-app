@@ -202,6 +202,53 @@ class MetricsVisualizer:
         
         return fig
     
+    def create_test_metrics_chart(self):
+        """Create test pass rate and coverage chart"""
+        test_summary_file = METRICS_DIR / "test_summary.csv"
+        
+        if not test_summary_file.exists():
+            return None
+        
+        df_test = pd.read_csv(test_summary_file)
+        df_test['Date'] = pd.to_datetime(df_test['Date'])
+        
+        fig = make_subplots(
+            rows=2, cols=1,
+            subplot_titles=('Test Pass Rate', 'Code Coverage'),
+            vertical_spacing=0.15
+        )
+        
+        # Pass rate
+        fig.add_trace(go.Scatter(
+            x=df_test['Date'],
+            y=df_test['Pass_Rate'],
+            mode='lines+markers',
+            name='Pass Rate %',
+            line=dict(color='#22C55E', width=3),
+            marker=dict(size=8)
+        ), row=1, col=1)
+        
+        # Coverage
+        fig.add_trace(go.Scatter(
+            x=df_test['Date'],
+            y=df_test['Coverage_Percentage'],
+            mode='lines+markers',
+            name='Coverage %',
+            line=dict(color='#6366F1', width=3),
+            marker=dict(size=8)
+        ), row=2, col=1)
+        
+        fig.update_layout(
+            height=600,
+            template='plotly_white',
+            showlegend=False
+        )
+        
+        fig.update_yaxes(range=[0, 100], row=1, col=1)
+        fig.update_yaxes(range=[0, 100], row=2, col=1)
+        
+        return fig
+    
     def generate_summary_stats(self):
         """Generate summary statistics"""
         if len(self.df) == 0:
