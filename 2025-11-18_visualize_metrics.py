@@ -31,37 +31,13 @@ class MetricsVisualizer:
             return False
         
         try:
-            # Read CSV and explicitly convert numeric columns
             self.df = pd.read_csv(self.summary_file)
-            
-            # Convert date column
             self.df['Date'] = pd.to_datetime(self.df['Date'])
-            
-            # Explicitly convert all numeric columns to proper types
-            numeric_columns = [
-                'Total_Violations', 'Total_Lines', 'Total_Files',
-                'Defect_Density', 'Avg_Complexity', 'Max_Complexity',
-                'E_Errors', 'W_Warnings', 'F_Errors'
-            ]
-            
-            for col in numeric_columns:
-                if col in self.df.columns:
-                    self.df[col] = pd.to_numeric(self.df[col], errors='coerce')
-            
-            # Sort by date
             self.df = self.df.sort_values('Date')
-            
-            # Verify data loaded correctly
             print(f"✓ Loaded {len(self.df)} days of metrics data")
-            print(f"  Sample values - Total Violations: {self.df['Total_Violations'].iloc[-1]}, "
-                  f"Lines: {self.df['Total_Lines'].iloc[-1]}, "
-                  f"Defect Density: {self.df['Defect_Density'].iloc[-1]:.2f}")
-            
             return True
         except Exception as e:
             print(f"❌ Error loading data: {e}")
-            import traceback
-            traceback.print_exc()
             return False
     
     def create_defect_density_chart(self):
@@ -246,10 +222,6 @@ class MetricsVisualizer:
         
         df_test = pd.read_csv(test_summary_file)
         df_test['Date'] = pd.to_datetime(df_test['Date'])
-        
-        # Convert numeric columns
-        df_test['Pass_Rate'] = pd.to_numeric(df_test['Pass_Rate'], errors='coerce')
-        df_test['Coverage_Percentage'] = pd.to_numeric(df_test['Coverage_Percentage'], errors='coerce')
         
         fig = make_subplots(
             rows=2, cols=1,

@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from shared.database import get_db  # Remove create_tables import
 from shared.models import Artist, Album
 from services.musicbrainz_service import MusicBrainzService
+from prometheus_fastapi_instrumentator import Instrumentator
 import uvicorn
 import logging
 
@@ -18,6 +19,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Artist Service", version="1.0.0")
+
+# Add Prometheus instrumentation
+Instrumentator().instrument(app).expose(app)
+
 musicbrainz = MusicBrainzService()
 
 # Remove this line - tables will be created by init service

@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Artist Service
+  - job_name: 'artist-service'
+    static_configs:
+      - targets: ['artist-service:8001']
+    metrics_path: '/metrics'
+
+  # Album Service
+  - job_name: 'album-service'
+    static_configs:
+      - targets: ['album-service:8002']
+    metrics_path: '/metrics'
+
+  # Recommendation Service
+  - job_name: 'recommendation-service'
+    static_configs:
+      - targets: ['recommendation-service:8003']
+    metrics_path: '/metrics'
+
+  # API Gateway
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8000']
+    metrics_path: '/metrics'
+
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

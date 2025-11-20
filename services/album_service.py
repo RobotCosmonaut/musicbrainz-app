@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from shared.database import get_db
 from shared.models import Album, Artist, Track
 from services.musicbrainz_service import MusicBrainzService
+from prometheus_fastapi_instrumentator import Instrumentator
 import uvicorn
 import logging
 
@@ -18,6 +19,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Album Service", version="1.0.0")
+
+# Add Prometheus instrumentation
+Instrumentator().instrument(app).expose(app)
+
 musicbrainz = MusicBrainzService()
 
 @app.get("/health")

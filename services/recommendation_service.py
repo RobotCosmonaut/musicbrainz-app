@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from shared.database import get_db
 from shared.models import UserProfile
+from prometheus_fastapi_instrumentator import Instrumentator
 import uvicorn
 import logging
 import requests
@@ -32,6 +33,9 @@ def get_db_connection():
     return create_engine(DATABASE_URL)
 
 app = FastAPI(title="Diverse Recommendation Service", version="2.5.0")
+
+# Add Prometheus instrumentation
+Instrumentator().instrument(app).expose(app)
 
 class ProfileData(BaseModel):
     """

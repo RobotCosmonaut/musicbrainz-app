@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from prometheus_fastapi_instrumentator import Instrumentator
 import httpx
 import uvicorn
 import os
@@ -9,6 +10,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="MusicBrainz API Gateway", version="1.0.0")
+
+# Add Prometheus instrumentation
+Instrumentator().instrument(app).expose(app)
 
 # Service URLs
 ARTIST_SERVICE_URL = os.getenv("ARTIST_SERVICE_URL", "http://localhost:8001")

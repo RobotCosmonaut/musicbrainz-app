@@ -50,7 +50,8 @@ class TestMetricsCollector:
         try:
             # Run pytest
             result = subprocess.run(
-                ['pytest', '-v', '--tb=short'],
+                ['pytest', '-v', '--tb=short', 
+                 '--junitxml=metrics_data/pytest_report.xml'],
                 capture_output=True,
                 text=True,
                 timeout=300  # 5 minute timeout
