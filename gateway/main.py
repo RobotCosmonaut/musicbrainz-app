@@ -6,6 +6,11 @@ import uvicorn
 import os
 import logging
 
+# Constants
+SERVICE_UNAVAILABLE = "Service unavailable"
+ARTIST_SERVICE_TIMEOUT = "Artist service timeout"
+
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -44,10 +49,10 @@ async def search_artists(query: str, limit: int = 25):
             response = await client.get(f"{ARTIST_SERVICE_URL}/artists/search", params={"query": query, "limit": limit})
             if response.status_code == 200:
                 return response.json()
-            raise HTTPException(status_code=response.status_code, detail="Service unavailable")
+            raise HTTPException(status_code=response.status_code, detail=SERVICE_UNAVAILABLE)
     except httpx.TimeoutException:
-        logger.error("Artist service timeout")
-        raise HTTPException(status_code=504, detail="Artist service timeout")
+        logger.error(ARTIST_SERVICE_TIMEOUT)
+        raise HTTPException(status_code=504, detail=ARTIST_SERVICE_TIMEOUT)
     except Exception as e:
         logger.error(f"Artist service error: {e}")
         raise HTTPException(status_code=503, detail="Artist service unavailable")
@@ -61,7 +66,7 @@ async def get_artist(artist_id: str):
                 return response.json()
             raise HTTPException(status_code=response.status_code, detail="Artist not found")
     except httpx.TimeoutException:
-        raise HTTPException(status_code=504, detail="Artist service timeout")
+        raise HTTPException(status_code=504, detail=ARTIST_SERVICE_TIMEOUT)
     except Exception as e:
         logger.error(f"Get artist error: {e}")
         raise HTTPException(status_code=503, detail="Artist service unavailable")
@@ -73,9 +78,9 @@ async def list_artists(skip: int = 0, limit: int = 100):
             response = await client.get(f"{ARTIST_SERVICE_URL}/artists", params={"skip": skip, "limit": limit})
             if response.status_code == 200:
                 return response.json()
-            raise HTTPException(status_code=response.status_code, detail="Service unavailable")
+            raise HTTPException(status_code=response.status_code, detail=SERVICE_UNAVAILABLE)
     except httpx.TimeoutException:
-        raise HTTPException(status_code=504, detail="Artist service timeout")
+        raise HTTPException(status_code=504, detail=ARTIST_SERVICE_TIMEOUT)
     except Exception as e:
         logger.error(f"List artists error: {e}")
         raise HTTPException(status_code=503, detail="Artist service unavailable")
@@ -89,7 +94,7 @@ async def search_albums(artist_name: str = "", album_title: str = "", limit: int
                                       params={"artist_name": artist_name, "album_title": album_title, "limit": limit})
             if response.status_code == 200:
                 return response.json()
-            raise HTTPException(status_code=response.status_code, detail="Service unavailable")
+            raise HTTPException(status_code=response.status_code, detail=SERVICE_UNAVAILABLE)
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Album service timeout")
     except Exception as e:
