@@ -9,7 +9,8 @@ import logging
 # Constants
 SERVICE_UNAVAILABLE = "Service unavailable"
 ARTIST_SERVICE_TIMEOUT = "Artist service timeout"
-
+ARTIST_SERVICE_UNAVAILABLE = "Artist service unavailable"
+PROFILE_SERVICE_TIMEOUT = "Profile service timeout"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ async def search_artists(query: str, limit: int = 25):
         raise HTTPException(status_code=504, detail=ARTIST_SERVICE_TIMEOUT)
     except Exception as e:
         logger.error(f"Artist service error: {e}")
-        raise HTTPException(status_code=503, detail="Artist service unavailable")
+        raise HTTPException(status_code=503, detail=ARTIST_SERVICE_UNAVAILABLE)
 
 @app.get("/api/artists/{artist_id}")
 async def get_artist(artist_id: str):
@@ -69,7 +70,7 @@ async def get_artist(artist_id: str):
         raise HTTPException(status_code=504, detail=ARTIST_SERVICE_TIMEOUT)
     except Exception as e:
         logger.error(f"Get artist error: {e}")
-        raise HTTPException(status_code=503, detail="Artist service unavailable")
+        raise HTTPException(status_code=503, detail=ARTIST_SERVICE_UNAVAILABLE)
 
 @app.get("/api/artists")
 async def list_artists(skip: int = 0, limit: int = 100):
@@ -83,7 +84,7 @@ async def list_artists(skip: int = 0, limit: int = 100):
         raise HTTPException(status_code=504, detail=ARTIST_SERVICE_TIMEOUT)
     except Exception as e:
         logger.error(f"List artists error: {e}")
-        raise HTTPException(status_code=503, detail="Artist service unavailable")
+        raise HTTPException(status_code=503, detail=ARTIST_SERVICE_UNAVAILABLE)
 
 # Album endpoints
 @app.get("/api/albums/search")
@@ -170,7 +171,7 @@ async def get_profile_recommendations(username: str, limit: int = 10):
             else:
                 raise HTTPException(status_code=response.status_code, detail="Profile service error")
     except httpx.TimeoutException:
-        raise HTTPException(status_code=504, detail="Profile service timeout")
+        raise HTTPException(status_code=504, detail=PROFILE_SERVICE_TIMEOUT)
     except Exception as e:
         logger.error(f"Profile recommendations error: {e}")
         raise HTTPException(status_code=503, detail="Profile service unavailable")
@@ -220,8 +221,8 @@ async def create_user_profile(username: str, profile: ProfileCreate):
                     detail=f"Profile creation failed: {response.text}"
                 )
     except httpx.TimeoutException:
-        logger.error("Profile service timeout")
-        raise HTTPException(status_code=504, detail="Profile service timeout")
+        logger.error(PROFILE_SERVICE_TIMEOUT)
+        raise HTTPException(status_code=504, detail=PROFILE_SERVICE_TIMEOUT)
     except Exception as e:
         logger.error(f"Create profile error: {e}")
         raise HTTPException(status_code=503, detail=f"Profile service unavailable: {str(e)}")
@@ -238,7 +239,7 @@ async def get_user_profile(username: str):
             else:
                 raise HTTPException(status_code=response.status_code, detail="Profile service error")
     except httpx.TimeoutException:
-        raise HTTPException(status_code=504, detail="Profile service timeout")
+        raise HTTPException(status_code=504, detail=PROFILE_SERVICE_TIMEOUT)
     except Exception as e:
         logger.error(f"Get profile error: {e}")
         raise HTTPException(status_code=503, detail="Profile service unavailable")

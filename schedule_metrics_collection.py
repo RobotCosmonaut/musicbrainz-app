@@ -48,21 +48,22 @@ def collect_runtime_metrics():
     metrics = {
         'timestamp': timestamp,
         'date': date,
-        'request_rate_per_sec': query_prometheus('sum(rate(http_requests_total[1m]))'),
+        # CHANGED: Use 5m window instead of 1m for smoother rate calculation
+        'request_rate_per_sec': query_prometheus('sum(rate(http_requests_total[5m]))'),
         'avg_latency_ms': query_prometheus('avg(http_request_duration_seconds)') * 1000,
         'p50_latency_ms': query_prometheus('histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))') * 1000,
         'p95_latency_ms': query_prometheus('histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))') * 1000,
         'p99_latency_ms': query_prometheus('histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))') * 1000,
-        'error_rate_per_sec': query_prometheus('sum(rate(http_requests_total{status=~"5.."}[1m]))'),
-        'error_percentage': query_prometheus('(sum(rate(http_requests_total{status=~"5.."}[1m])) / sum(rate(http_requests_total[1m]))) * 100'),
+        'error_rate_per_sec': query_prometheus('sum(rate(http_requests_total{status=~"5.."}[5m]))'),  # CHANGED
+        'error_percentage': query_prometheus('(sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))) * 100'),  # CHANGED
         'active_requests': int(query_prometheus('sum(http_requests_in_progress)')),
         'total_requests': int(query_prometheus('sum(http_requests_total)')),
         
-        # Per-service metrics
-        'artist_service_requests': query_prometheus('sum(rate(http_requests_total{job="artist-service"}[1m]))'),
-        'album_service_requests': query_prometheus('sum(rate(http_requests_total{job="album-service"}[1m]))'),
-        'recommendation_service_requests': query_prometheus('sum(rate(http_requests_total{job="recommendation-service"}[1m]))'),
-        'api_gateway_requests': query_prometheus('sum(rate(http_requests_total{job="api-gateway"}[1m]))'),
+        # Per-service metrics - also use 5m window
+        'artist_service_requests': query_prometheus('sum(rate(http_requests_total{job="artist-service"}[5m]))'),
+        'album_service_requests': query_prometheus('sum(rate(http_requests_total{job="album-service"}[5m]))'),
+        'recommendation_service_requests': query_prometheus('sum(rate(http_requests_total{job="recommendation-service"}[5m]))'),
+        'api_gateway_requests': query_prometheus('sum(rate(http_requests_total{job="api-gateway"}[5m]))'),
     }
     
     # Save to CSV
@@ -109,7 +110,7 @@ def main():
             
         except KeyboardInterrupt:
             logger.info("\n" + "="*70)
-            logger.info(f"✓ Metrics collection stopped")
+            logger.info("✓ Metrics collection stopped")
             logger.info(f"✓ Total collections: {collection_count}")
             logger.info(f"✓ Data saved to: {METRICS_DIR / 'runtime_summary.csv'}")
             logger.info("="*70)
