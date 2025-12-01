@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "robotcosmonaut",
+        "projectKey": "RobotCosmonaut_musicbrainz-app"
+    }
+}
