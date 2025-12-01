@@ -286,7 +286,7 @@ def get_diverse_recommendations(query: str, limit: int = 10) -> Dict:
         elapsed_time = time.time() - start_time
         
         # Count unique artists in final results
-        unique_artists = len(set(rec['artist_name'] for rec in final_recs))
+        unique_artists = len({rec['artist_name'] for rec in final_recs})
         
         logger.info(f"Diverse recommendations: {len(final_recs)} tracks from {unique_artists} different artists in {elapsed_time:.2f}s")
         
