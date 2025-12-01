@@ -18,7 +18,7 @@ import requests
 import time
 import json
 import os
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Optional
 from collections import defaultdict
 import random
 from sqlalchemy import create_engine, text
@@ -129,7 +129,7 @@ DIVERSE_GENRE_QUERIES = {
     ]
 }
 
-def detect_genre_enhanced(query: str) -> str:
+def detect_genre_enhanced(query: str) -> Optional[str]:
     """Enhanced genre detection with more keywords"""
     query_lower = query.lower()
     
