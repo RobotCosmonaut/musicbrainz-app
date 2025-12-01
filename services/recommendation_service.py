@@ -22,7 +22,7 @@ from typing import List, Dict, Set
 from collections import defaultdict
 import random
 from sqlalchemy import create_engine, text
-from datetime import datetime
+from datetime import datetime, timezone
 import traceback
 
 logging.basicConfig(level=logging.INFO)
@@ -587,7 +587,7 @@ def add_history(
             track_id=track_id,
             artist_id=artist_id,
             interaction_type=interaction_type,
-            played_at=datetime.utcnow()
+            played_at=datetime.now(timezone.utc)
         )
         
         db.add(history_entry)
