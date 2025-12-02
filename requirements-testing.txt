@@ -7,3 +7,4 @@ pytest-timeout>=2.1.0
 pytest-mock>=3.11.1
 httpx>=0.24.0  # For testing FastAPI
 faker>=19.0.0  # For generating test data
+prometheus-fastapi-instrumentator>=6.1.0 # For testing metrics instrumentation
