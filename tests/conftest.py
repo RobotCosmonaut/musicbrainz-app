@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from unittest.mock import Mock, patch, MagicMock  # NEW: Add this import
 import sys
 from pathlib import Path
 
@@ -40,6 +41,51 @@ def test_db():
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)
+
+# NEW FIXTURE: Mock MusicBrainz API
+@pytest.fixture(scope="function")
+def mock_musicbrainz():
+    """Mock MusicBrainz API for all tests - prevents real API calls"""
+    # Mock the DiverseMusicBrainzClient class
+    with patch('services.recommendation_service.DiverseMusicBrainzClient') as MockClient:
+        mock_instance = MagicMock()
+        MockClient.return_value = mock_instance
+        
+        # Configure mock to return realistic test data
+        mock_instance.search_recordings_diverse.return_value = [
+            {
+                'id': 'mock-track-1',
+                'title': 'Mock Rock Song',
+                'artist-credit': [{
+                    'artist': {
+                        'id': 'mock-artist-1',
+                        'name': 'Mock Rock Band'
+                    }
+                }]
+            },
+            {
+                'id': 'mock-track-2',
+                'title': 'Mock Jazz Song',
+                'artist-credit': [{
+                    'artist': {
+                        'id': 'mock-artist-2',
+                        'name': 'Mock Jazz Artist'
+                    }
+                }]
+            },
+            {
+                'id': 'mock-track-3',
+                'title': 'Another Rock Track',
+                'artist-credit': [{
+                    'artist': {
+                        'id': 'mock-artist-3',
+                        'name': 'Another Rock Band'
+                    }
+                }]
+            }
+        ]
+        
+        yield mock_instance
 
 @pytest.fixture(scope="function")
 def artist_client(test_db):
@@ -77,9 +123,10 @@ def album_client(test_db):
     
     app.dependency_overrides.clear()
 
+# UPDATED FIXTURE: Now includes mock_musicbrainz
 @pytest.fixture(scope="function")
-def recommendation_client(test_db):
-    """Test client for recommendation service"""
+def recommendation_client(test_db, mock_musicbrainz):  # CHANGED: Added mock_musicbrainz parameter
+    """Test client for recommendation service with mocked MusicBrainz API"""
     from services.recommendation_service import app
     
     def override_get_db():

@@ -343,21 +343,17 @@ def get_query_recommendations(query: str, limit: int = 10, username: str = None)
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
 @app.get("/recommendations/profile/{username}")
-def get_profile_recommendations(username: str, limit: int = 10):
+def get_profile_recommendations(
+    username: str, 
+    limit: int = 10,
+    db: Session = Depends(get_db)  # ✓ Reuses connection pool
+):
     """Generate recommendations based on user's profile preferences"""
     try:
-        # Get user profile from database
-        DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/musicbrainz")
+        logger.info(f"Getting profile recommendations for {username}")
         
-        from sqlalchemy import create_engine, text
-        engine = create_engine(DATABASE_URL)
-        
-        with engine.connect() as conn:
-            result = conn.execute(
-                text("SELECT favorite_genres, favorite_artists FROM user_profiles WHERE username = :username"),
-                {"username": username}
-            )
-            profile = result.fetchone()
+        # Use injected session (faster in production!)
+        profile = db.query(UserProfile).filter(UserProfile.username == username).first()
         
         if not profile:
             logger.warning(f"No profile found for user: {username}")
@@ -367,9 +363,8 @@ def get_profile_recommendations(username: str, limit: int = 10):
             }
         
         # Parse favorite genres (stored as JSON string)
-        import json
-        favorite_genres = json.loads(profile[0]) if profile[0] else []
-        favorite_artists = json.loads(profile[1]) if profile[1] else []
+        favorite_genres = json.loads(profile.favorite_genres) if profile.favorite_genres else []
+        favorite_artists = json.loads(profile.favorite_artists) if profile.favorite_artists else []
         
         if not favorite_genres and not favorite_artists:
             logger.warning(f"Empty profile for user: {username}")

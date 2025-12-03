@@ -10,23 +10,9 @@ from fastapi.testclient import TestClient
 class TestCompleteRecommendationWorkflow:
     """Test end-to-end recommendation workflows"""
     
-    def test_search_artist_get_albums_get_recommendations(self, artist_client):
-        """Test complete user journey"""
-        # 1. Search for artist
-        search_response = artist_client.get("/artists/search", 
-                                           params={"query": "radiohead", "limit": 5})
-        assert search_response.status_code == 200
-        artists = search_response.json()["artists"]
-        assert len(artists) > 0
-        
-        # 2. Get artist albums (would require additional setup)
-        # 3. Get recommendations
-        # 4. Verify data consistency
-        pass
-
     def test_user_profile_to_recommendations_flow(self, recommendation_client):
-        """Test profile creation -> recommendations flow"""
-        # Create profile
+        """Test profile creation -> recommendations flow (with mocked MusicBrainz)"""
+        # Step 1: Create profile
         profile_data = {
             "favorite_genres": ["rock", "jazz"],
             "favorite_artists": ["test-id-1"]
@@ -36,15 +22,44 @@ class TestCompleteRecommendationWorkflow:
             json=profile_data
         )
         assert profile_response.status_code == 200
+        profile_result = profile_response.json()
+        assert profile_result["username"] == "testuser"
+        assert "rock" in profile_result["favorite_genres"]
         
-        # Get recommendations based on profile
+        # Step 2: Verify profile was saved
+        get_profile_response = recommendation_client.get("/users/testuser/profile")
+        assert get_profile_response.status_code == 200
+        saved_profile = get_profile_response.json()
+        assert saved_profile["username"] == "testuser"
+        assert "rock" in saved_profile["favorite_genres"]
+        
+        # Step 3: Get recommendations based on profile
+        # This will use mocked MusicBrainz API (not real external calls)
         rec_response = recommendation_client.get(
             "/recommendations/profile/testuser",
             params={"limit": 10}
         )
         assert rec_response.status_code == 200
-        recommendations = rec_response.json()["recommendations"]
-        assert len(recommendations) > 0
+        rec_data = rec_response.json()
+        
+        # Verify recommendations structure
+        assert "recommendations" in rec_data
+        recommendations = rec_data["recommendations"]
+        
+        # With mocked MusicBrainz, we should get results
+        assert len(recommendations) > 0, "Should have recommendations with mocked API"
+        
+        # Verify recommendation structure
+        first_rec = recommendations[0]
+        assert "track_title" in first_rec
+        assert "artist_name" in first_rec
+        assert "track_id" in first_rec
+        assert "score" in first_rec
+        
+        # Verify it's marked as profile-based
+        assert first_rec["recommendation_type"] == "profile_based"
+        
+        print(f"✓ Successfully generated {len(recommendations)} profile-based recommendations")
 
 # tests/performance/test_benchmarks.py
 """

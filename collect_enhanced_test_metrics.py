@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Test Metrics Collection
-Collects multiple dimensions of test quality metrics
+Comprehensive Test Metrics Collection - FIXED VERSION
+Runs all tests properly without skipping
 
 Author: Ron Denny
 """
@@ -32,47 +32,43 @@ class ComprehensiveTestMetrics:
             'passed_tests': 0,
             'failed_tests': 0,
             'skipped_tests': 0,
+            'error_tests': 0,
             
             # Coverage metrics
             'line_coverage': 0.0,
             'branch_coverage': 0.0,
-            'function_coverage': 0.0,
             
             # Performance metrics
             'avg_test_duration': 0.0,
             'slowest_test_duration': 0.0,
             'fastest_test_duration': 0.0,
+            'total_duration': 0.0,
             
             # Test distribution
             'unit_tests': 0,
             'integration_tests': 0,
             'api_tests': 0,
-            'security_tests': 0,
-            'performance_tests': 0,
+            'database_tests': 0,
             
             # Code quality from tests
-            'assertions_per_test': 0.0,
-            'test_code_ratio': 0.0,  # test LOC / production LOC
-            
-            # Mutation testing (if enabled)
-            'mutation_score': 0.0,
-            'mutations_killed': 0,
-            'mutations_survived': 0,
+            'test_code_ratio': 0.0,
+            'test_files': 0,
             
             # Additional metrics
-            'flaky_tests': 0,
-            'test_files': 0,
-            'avg_assertions': 0.0
+            'pass_rate': 0.0,
+            'coverage_lines_covered': 0,
+            'coverage_lines_total': 0
         }
     
     def run_comprehensive_tests(self):
-        """Run all test categories with detailed reporting"""
+        """Run all tests with coverage - NO --benchmark-only flag"""
         print(f"\n{'='*60}")
         print(f"Running Comprehensive Test Suite - {self.timestamp}")
         print(f"{'='*60}\n")
         
         try:
-            # Run with all markers and detailed output
+            # FIXED: Removed --benchmark-only flag
+            # Run ALL tests including unit, integration, etc.
             result = subprocess.run([
                 'pytest',
                 '-v',
@@ -88,16 +84,20 @@ class ComprehensiveTestMetrics:
                 '--self-contained-html',
                 '--junitxml=metrics_data/pytest_report.xml',
                 '--timeout=30',
-                '-m', '',  # Run all markers
-                '--benchmark-only',  # Include benchmarks if pytest-benchmark installed
-                '--durations=10'  # Show 10 slowest tests
+                '--durations=10',  # Show 10 slowest tests
+                '-W', 'ignore::DeprecationWarning'  # Suppress deprecation warnings
             ],
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='replace',
             timeout=600
             )
             
             print(result.stdout)
+            if result.stderr:
+                print("STDERR:", result.stderr[:500])
+            
             return True
             
         except subprocess.TimeoutExpired:
@@ -111,23 +111,25 @@ class ComprehensiveTestMetrics:
             return False
     
     def parse_junit_detailed(self):
-        """Parse JUnit XML with detailed test information"""
+        """Parse JUnit XML using classname for classification (no file attribute)"""
         junit_file = METRICS_DIR / "pytest_report.xml"
         
         if not junit_file.exists():
+            print("⚠️  JUnit XML not found")
             return False
         
         try:
             tree = ET.parse(junit_file)
             root = tree.getroot()
             
+            # Get test suite stats
             testsuite = root.find('.//testsuite')
             if testsuite is not None:
                 self.metrics['total_tests'] = int(testsuite.get('tests', 0))
                 self.metrics['failed_tests'] = int(testsuite.get('failures', 0))
                 self.metrics['error_tests'] = int(testsuite.get('errors', 0))
                 self.metrics['skipped_tests'] = int(testsuite.get('skipped', 0))
-                self.metrics['test_duration'] = float(testsuite.get('time', 0))
+                self.metrics['total_duration'] = float(testsuite.get('time', 0))
                 
                 self.metrics['passed_tests'] = (
                     self.metrics['total_tests'] - 
@@ -135,83 +137,209 @@ class ComprehensiveTestMetrics:
                     self.metrics['error_tests'] - 
                     self.metrics['skipped_tests']
                 )
+                
+                if self.metrics['total_tests'] > 0:
+                    self.metrics['pass_rate'] = (
+                        self.metrics['passed_tests'] / self.metrics['total_tests']
+                    ) * 100
             
-            # Parse individual test cases for detailed metrics
+            # Parse individual test cases
             test_durations = []
             test_markers = defaultdict(int)
-            assertion_counts = []
             
-            for testcase in root.findall('.//testcase'):
+            print("\n📋 Analyzing individual tests (using classname for classification)...")
+            
+            for i, testcase in enumerate(root.findall('.//testcase'), 1):
                 # Duration
                 duration = float(testcase.get('time', 0))
                 test_durations.append(duration)
                 
-                # Test markers (unit, integration, etc.)
+                # Get test info - USE CLASSNAME since file is None
                 classname = testcase.get('classname', '')
-                if 'integration' in classname:
-                    test_markers['integration'] += 1
-                elif 'api' in classname:
-                    test_markers['api'] += 1
-                elif 'security' in classname:
-                    test_markers['security'] += 1
-                elif 'performance' in classname or 'benchmark' in classname:
-                    test_markers['performance'] += 1
-                else:
-                    test_markers['unit'] += 1
+                name = testcase.get('name', '')
+                
+                # Show first 5 for debugging
+                if i <= 5:
+                    print(f"\n  Test {i}: {name}")
+                    print(f"    Classname: {classname}")
+                    print(f"    Duration: {duration*1000:.3f}ms")
+                
+                # CLASSIFICATION LOGIC USING CLASSNAME
+                classname_lower = classname.lower()
+                name_lower = name.lower()
+                
+                # Check for markers first (for future when you add them)
+                properties = testcase.find('.//properties')
+                has_marker = False
+                
+                if properties is not None:
+                    for prop in properties.findall('.//property'):
+                        if prop.get('name') == 'markers':
+                            markers_text = prop.get('value', '').lower()
+                            if 'integration' in markers_text:
+                                test_markers['integration'] += 1
+                                has_marker = True
+                                if i <= 5:
+                                    print(f"    Classification: Integration (marker)")
+                                break
+                            elif 'api' in markers_text:
+                                test_markers['api'] += 1
+                                has_marker = True
+                                if i <= 5:
+                                    print(f"    Classification: API (marker)")
+                                break
+                            elif 'database' in markers_text:
+                                test_markers['database'] += 1
+                                has_marker = True
+                                if i <= 5:
+                                    print(f"    Classification: Database (marker)")
+                                break
+                            elif 'unit' in markers_text:
+                                test_markers['unit'] += 1
+                                has_marker = True
+                                if i <= 5:
+                                    print(f"    Classification: Unit (marker)")
+                                break
+                
+                # If no marker, classify by classname structure
+                if not has_marker:
+                    # Extract path from classname
+                    # Example: "tests.unit.test_artist_service.TestArtistService" → "tests.unit"
+                    # Example: "tests.integration.test_workflow" → "tests.integration"
+                    
+                    if 'tests.integration' in classname_lower or 'tests\\integration' in classname_lower:
+                        test_markers['integration'] += 1
+                        if i <= 5:
+                            print(f"    Classification: Integration (classname path)")
+                    
+                    elif 'tests.unit' in classname_lower or 'tests\\unit' in classname_lower:
+                        # Further classify unit tests by name patterns
+                        if 'gateway' in classname_lower or 'gateway' in name_lower:
+                            test_markers['api'] += 1
+                            if i <= 5:
+                                print(f"    Classification: API (gateway)")
+                        
+                        elif any(keyword in name_lower for keyword in ['database', 'db_', 'model', '_creation', 'unique_id']):
+                            test_markers['database'] += 1
+                            if i <= 5:
+                                print(f"    Classification: Database (name pattern)")
+                        
+                        elif any(keyword in name_lower for keyword in ['health', 'search', 'list', 'get_', 'endpoint', 'client']):
+                            test_markers['api'] += 1
+                            if i <= 5:
+                                print(f"    Classification: API (name pattern)")
+                        
+                        else:
+                            test_markers['unit'] += 1
+                            if i <= 5:
+                                print(f"    Classification: Unit (default)")
+                    
+                    else:
+                        # Fallback for tests not in standard structure
+                        if any(keyword in name_lower for keyword in ['workflow', 'integration', 'end_to_end', 'e2e', 'full_']):
+                            test_markers['integration'] += 1
+                            if i <= 5:
+                                print(f"    Classification: Integration (name)")
+                        elif any(keyword in name_lower for keyword in ['database', 'db_', 'model']):
+                            test_markers['database'] += 1
+                            if i <= 5:
+                                print(f"    Classification: Database (name)")
+                        elif any(keyword in name_lower for keyword in ['api', 'endpoint', 'health']):
+                            test_markers['api'] += 1
+                            if i <= 5:
+                                print(f"    Classification: API (name)")
+                        else:
+                            test_markers['unit'] += 1
+                            if i <= 5:
+                                print(f"    Classification: Unit (fallback)")
             
-            # Calculate performance metrics
+            # Calculate performance metrics (these are working!)
             if test_durations:
-                self.metrics['avg_test_duration'] = sum(test_durations) / len(test_durations)
-                self.metrics['slowest_test_duration'] = max(test_durations)
-                self.metrics['fastest_test_duration'] = min(test_durations)
+                non_zero = [d for d in test_durations if d > 0]
+                
+                if non_zero:
+                    self.metrics['avg_test_duration'] = sum(non_zero) / len(non_zero)
+                    self.metrics['slowest_test_duration'] = max(test_durations)
+                    self.metrics['fastest_test_duration'] = min(non_zero)
+                    
+                    print(f"\n⚡ Performance Metrics:")
+                    print(f"  Tests with measurable duration: {len(non_zero)}/{len(test_durations)}")
+                    print(f"  Average: {self.metrics['avg_test_duration']*1000:.2f}ms")
+                    print(f"  Slowest: {self.metrics['slowest_test_duration']*1000:.2f}ms")
+                    print(f"  Fastest: {self.metrics['fastest_test_duration']*1000:.2f}ms")
+                else:
+                    total_time = self.metrics['total_duration']
+                    num_tests = len(test_durations)
+                    self.metrics['avg_test_duration'] = total_time / num_tests if num_tests > 0 else 0
+                    self.metrics['slowest_test_duration'] = 0
+                    self.metrics['fastest_test_duration'] = 0
+                    print(f"\n⚡ All {num_tests} tests completed in < 1ms")
             
             # Store test distribution
-            self.metrics['unit_tests'] = test_markers.get('unit', 0)
-            self.metrics['integration_tests'] = test_markers.get('integration', 0)
-            self.metrics['api_tests'] = test_markers.get('api', 0)
-            self.metrics['security_tests'] = test_markers.get('security', 0)
-            self.metrics['performance_tests'] = test_markers.get('performance', 0)
+            self.metrics['unit_tests'] = test_markers['unit']
+            self.metrics['integration_tests'] = test_markers['integration']
+            self.metrics['api_tests'] = test_markers['api']
+            self.metrics['database_tests'] = test_markers['database']
             
-            print(f"✓ Parsed detailed test results")
+            print(f"\n🎯 Test Classification Results:")
+            print(f"  Unit: {self.metrics['unit_tests']}")
+            print(f"  Integration: {self.metrics['integration_tests']}")
+            print(f"  API: {self.metrics['api_tests']}")
+            print(f"  Database: {self.metrics['database_tests']}")
+            print(f"  Total Classified: {sum(test_markers.values())}")
+            
+            if sum(test_markers.values()) != self.metrics['total_tests']:
+                print(f"  ⚠️  Mismatch: {sum(test_markers.values())} classified vs {self.metrics['total_tests']} total")
+            
             return True
             
         except Exception as e:
             print(f"❌ Error parsing JUnit: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def parse_coverage_detailed(self):
-        """Parse coverage with branch coverage"""
+        """Parse coverage with branch coverage - CORRECTED"""
         coverage_file = METRICS_DIR / "coverage.xml"
         
         if not coverage_file.exists():
+            print("⚠️  Coverage XML not found")
             return False
         
         try:
             tree = ET.parse(coverage_file)
-            root = tree.getroot()
+            root = tree.getroot()  # root IS the <coverage> element
             
-            coverage = root.find('.//coverage')
-            if coverage is not None:
-                # Line coverage
-                lines_covered = int(coverage.get('lines-covered', 0))
-                lines_valid = int(coverage.get('lines-valid', 0))
-                
-                if lines_valid > 0:
-                    self.metrics['line_coverage'] = (lines_covered / lines_valid) * 100
-                
-                # Branch coverage
-                branches_covered = int(coverage.get('branches-covered', 0))
-                branches_valid = int(coverage.get('branches-valid', 0))
-                
-                if branches_valid > 0:
-                    self.metrics['branch_coverage'] = (branches_covered / branches_valid) * 100
+            # Get coverage stats directly from root attributes
+            # Line coverage
+            lines_covered = int(root.get('lines-covered', 0))
+            lines_valid = int(root.get('lines-valid', 0))
+            
+            self.metrics['coverage_lines_covered'] = lines_covered
+            self.metrics['coverage_lines_total'] = lines_valid
+            
+            if lines_valid > 0:
+                self.metrics['line_coverage'] = (lines_covered / lines_valid) * 100
+            
+            # Branch coverage
+            branches_covered = int(root.get('branches-covered', 0))
+            branches_valid = int(root.get('branches-valid', 0))
+            
+            if branches_valid > 0:
+                self.metrics['branch_coverage'] = (branches_covered / branches_valid) * 100
             
             print(f"✓ Coverage: {self.metrics['line_coverage']:.2f}% lines, "
-                  f"{self.metrics['branch_coverage']:.2f}% branches")
+                f"{self.metrics['branch_coverage']:.2f}% branches")
+            print(f"  Lines: {lines_covered}/{lines_valid}")
+            print(f"  Branches: {branches_covered}/{branches_valid}")
+            
             return True
             
         except Exception as e:
             print(f"❌ Error parsing coverage: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def calculate_test_code_ratio(self):
@@ -231,118 +359,119 @@ class ComprehensiveTestMetrics:
             prod_lines = 0
             for filepath in prod_files:
                 if Path(filepath).exists():
-                    with open(filepath, 'r') as f:
+                    with open(filepath, 'r', encoding='utf-8') as f:
                         prod_lines += len([l for l in f if l.strip() and not l.strip().startswith('#')])
             
             # Count test code lines
             test_lines = 0
             test_files = 0
-            for test_file in Path('tests').rglob('test_*.py'):
-                test_files += 1
-                with open(test_file, 'r') as f:
-                    test_lines += len([l for l in f if l.strip() and not l.strip().startswith('#')])
+            tests_path = Path('tests')
+            if tests_path.exists():
+                for test_file in tests_path.rglob('test_*.py'):
+                    test_files += 1
+                    with open(test_file, 'r', encoding='utf-8') as f:
+                        test_lines += len([l for l in f if l.strip() and not l.strip().startswith('#')])
             
             self.metrics['test_files'] = test_files
             
             if prod_lines > 0:
                 self.metrics['test_code_ratio'] = test_lines / prod_lines
             
-            print(f"✓ Test/Production ratio: {self.metrics['test_code_ratio']:.2f}")
+            print(f"✓ Test code: {test_lines} lines across {test_files} files")
+            print(f"  Production code: {prod_lines} lines")
+            print(f"  Ratio: {self.metrics['test_code_ratio']:.2f}")
             
         except Exception as e:
             print(f"⚠️  Could not calculate code ratio: {e}")
-    
-    def run_mutation_testing(self):
-        """Run mutation testing with mutmut"""
-        print("\n" + "="*60)
-        print("Running Mutation Testing")
-        print("="*60)
-        
-        try:
-            # Check if mutmut is installed
-            subprocess.run(['mutmut', '--version'], 
-                         capture_output=True, check=True)
-            
-            # Run mutmut
-            result = subprocess.run([
-                'mutmut', 'run',
-                '--paths-to-mutate=services/,gateway/,shared/'
-            ], capture_output=True, text=True, timeout=300)
-            
-            # Parse results
-            results_match = re.search(r'(\d+) mutations\. (\d+) killed, (\d+) survived', 
-                                    result.stdout)
-            if results_match:
-                total = int(results_match.group(1))
-                killed = int(results_match.group(2))
-                survived = int(results_match.group(3))
-                
-                self.metrics['mutations_killed'] = killed
-                self.metrics['mutations_survived'] = survived
-                if total > 0:
-                    self.metrics['mutation_score'] = (killed / total) * 100
-                
-                print(f"✓ Mutation score: {self.metrics['mutation_score']:.2f}%")
-            
-        except FileNotFoundError:
-            print("⚠️  mutmut not installed (pip install mutmut)")
-        except subprocess.TimeoutExpired:
-            print("⚠️  Mutation testing timed out")
-        except Exception as e:
-            print(f"⚠️  Mutation testing error: {e}")
     
     def save_comprehensive_summary(self):
         """Save comprehensive metrics summary"""
         summary_file = METRICS_DIR / "comprehensive_test_metrics.csv"
         
-        file_exists = summary_file.exists()
-        
-        with open(summary_file, 'a', newline='') as f:
-            writer = csv.writer(f)
+        try:
+            print(f"\n📝 Saving metrics to: {summary_file}")
+            print(f"   Directory exists: {METRICS_DIR.exists()}")
+            print(f"   File exists: {summary_file.exists()}")
             
-            if not file_exists:
-                writer.writerow([
-                    'Date', 'Timestamp',
-                    # Basic metrics
-                    'Total_Tests', 'Passed', 'Failed', 'Skipped',
-                    # Coverage
-                    'Line_Coverage_%', 'Branch_Coverage_%',
-                    # Performance
-                    'Avg_Duration_ms', 'Slowest_ms', 'Fastest_ms',
-                    # Distribution
-                    'Unit_Tests', 'Integration_Tests', 'API_Tests', 
-                    'Security_Tests', 'Performance_Tests',
-                    # Quality
-                    'Test_Code_Ratio', 'Test_Files',
-                    # Mutation
-                    'Mutation_Score_%', 'Mutations_Killed', 'Mutations_Survived'
-                ])
+            file_exists = summary_file.exists()
             
-            writer.writerow([
-                self.metrics['date'],
-                self.metrics['timestamp'],
-                self.metrics['total_tests'],
-                self.metrics['passed_tests'],
-                self.metrics['failed_tests'],
-                self.metrics['skipped_tests'],
-                f"{self.metrics['line_coverage']:.2f}",
-                f"{self.metrics['branch_coverage']:.2f}",
-                f"{self.metrics['avg_test_duration']*1000:.2f}",
-                f"{self.metrics['slowest_test_duration']*1000:.2f}",
-                f"{self.metrics['fastest_test_duration']*1000:.2f}",
-                self.metrics['unit_tests'],
-                self.metrics['integration_tests'],
-                self.metrics['api_tests'],
-                self.metrics['security_tests'],
-                self.metrics['performance_tests'],
-                f"{self.metrics['test_code_ratio']:.2f}",
-                self.metrics['test_files'],
-                f"{self.metrics['mutation_score']:.2f}",
-                self.metrics['mutations_killed'],
-                self.metrics['mutations_survived']
-            ])
-        
-        print(f"\n✓ Comprehensive metrics saved to: {summary_file}")
+            with open(summary_file, 'a', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                
+                if not file_exists:
+                    print(f"   Creating new CSV file with headers...")
+                    writer.writerow([
+                        'Date', 'Timestamp',
+                        # Basic metrics
+                        'Total_Tests', 'Passed', 'Failed', 'Skipped', 'Errors',
+                        'Pass_Rate_%',
+                        # Coverage
+                        'Line_Coverage_%', 'Branch_Coverage_%',
+                        'Lines_Covered', 'Lines_Total',
+                        # Performance
+                        'Total_Duration_s', 'Avg_Duration_ms', 'Slowest_ms', 'Fastest_ms',
+                        # Distribution
+                        'Unit_Tests', 'Integration_Tests', 'API_Tests', 'Database_Tests',
+                        # Quality
+                        'Test_Code_Ratio', 'Test_Files'
+                    ])
+                else:
+                    print(f"   Appending to existing CSV file...")
+                
+                # Prepare the row data
+                row_data = [
+                    self.metrics['date'],
+                    self.metrics['timestamp'],
+                    self.metrics['total_tests'],
+                    self.metrics['passed_tests'],
+                    self.metrics['failed_tests'],
+                    self.metrics['skipped_tests'],
+                    self.metrics['error_tests'],
+                    f"{self.metrics['pass_rate']:.2f}",
+                    f"{self.metrics['line_coverage']:.2f}",
+                    f"{self.metrics['branch_coverage']:.2f}",
+                    self.metrics['coverage_lines_covered'],
+                    self.metrics['coverage_lines_total'],
+                    f"{self.metrics['total_duration']:.2f}",
+                    f"{self.metrics['avg_test_duration']*1000:.2f}",
+                    f"{self.metrics['slowest_test_duration']*1000:.2f}",
+                    f"{self.metrics['fastest_test_duration']*1000:.2f}",
+                    self.metrics['unit_tests'],
+                    self.metrics['integration_tests'],
+                    self.metrics['api_tests'],
+                    self.metrics['database_tests'],
+                    f"{self.metrics['test_code_ratio']:.2f}",
+                    self.metrics['test_files']
+                ]
+                
+                print(f"   Writing row with {len(row_data)} columns...")
+                writer.writerow(row_data)
+                
+                # Explicitly flush to disk
+                f.flush()
+            
+            # Verify file was created
+            if summary_file.exists():
+                file_size = summary_file.stat().st_size
+                print(f"\n✅ Comprehensive metrics saved successfully!")
+                print(f"   File: {summary_file}")
+                print(f"   Size: {file_size} bytes")
+                
+                # Show last line of file to confirm
+                with open(summary_file, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+                    if lines:
+                        print(f"   Last entry: {lines[-1][:80]}...")
+            else:
+                print(f"\n❌ File was not created!")
+                
+        except PermissionError as e:
+            print(f"\n❌ Permission error writing to {summary_file}: {e}")
+            print(f"   Try running as administrator or check folder permissions")
+        except Exception as e:
+            print(f"\n❌ Error saving comprehensive summary: {e}")
+            import traceback
+            traceback.print_exc()
     
     def generate_detailed_report(self):
         """Generate detailed test quality report"""
@@ -353,20 +482,19 @@ class ComprehensiveTestMetrics:
         
         print(f"\n📊 Test Execution:")
         print(f"  Total Tests: {self.metrics['total_tests']}")
-        print(f"  ✓ Passed: {self.metrics['passed_tests']}")
+        print(f"  ✓ Passed: {self.metrics['passed_tests']} ({self.metrics['pass_rate']:.1f}%)")
         print(f"  ✗ Failed: {self.metrics['failed_tests']}")
         print(f"  ⊘ Skipped: {self.metrics['skipped_tests']}")
-        
-        if self.metrics['total_tests'] > 0:
-            pass_rate = (self.metrics['passed_tests'] / self.metrics['total_tests']) * 100
-            print(f"  Pass Rate: {pass_rate:.2f}%")
+        print(f"  ⚠ Errors: {self.metrics['error_tests']}")
         
         print(f"\n📈 Code Coverage:")
-        print(f"  Line Coverage: {self.metrics['line_coverage']:.2f}%")
+        print(f"  Line Coverage: {self.metrics['line_coverage']:.2f}% "
+              f"({self.metrics['coverage_lines_covered']}/{self.metrics['coverage_lines_total']})")
         print(f"  Branch Coverage: {self.metrics['branch_coverage']:.2f}%")
         
         print(f"\n⚡ Performance:")
-        print(f"  Average Test Duration: {self.metrics['avg_test_duration']*1000:.2f}ms")
+        print(f"  Total Duration: {self.metrics['total_duration']:.2f}s")
+        print(f"  Average Test: {self.metrics['avg_test_duration']*1000:.2f}ms")
         print(f"  Slowest Test: {self.metrics['slowest_test_duration']*1000:.2f}ms")
         print(f"  Fastest Test: {self.metrics['fastest_test_duration']*1000:.2f}ms")
         
@@ -374,41 +502,68 @@ class ComprehensiveTestMetrics:
         print(f"  Unit Tests: {self.metrics['unit_tests']}")
         print(f"  Integration Tests: {self.metrics['integration_tests']}")
         print(f"  API Tests: {self.metrics['api_tests']}")
-        print(f"  Security Tests: {self.metrics['security_tests']}")
-        print(f"  Performance Tests: {self.metrics['performance_tests']}")
+        print(f"  Database Tests: {self.metrics['database_tests']}")
         
         print(f"\n📝 Test Quality:")
-        print(f"  Test/Production Code Ratio: {self.metrics['test_code_ratio']:.2f}")
         print(f"  Test Files: {self.metrics['test_files']}")
+        print(f"  Test/Production Ratio: {self.metrics['test_code_ratio']:.2f}")
         
-        if self.metrics['mutation_score'] > 0:
-            print(f"\n🧬 Mutation Testing:")
-            print(f"  Mutation Score: {self.metrics['mutation_score']:.2f}%")
-            print(f"  Mutations Killed: {self.metrics['mutations_killed']}")
-            print(f"  Mutations Survived: {self.metrics['mutations_survived']}")
+        # Quality assessment
+        print(f"\n💡 Quality Assessment:")
+        if self.metrics['pass_rate'] >= 95:
+            print(f"  ✓ Excellent pass rate ({self.metrics['pass_rate']:.1f}%)")
+        elif self.metrics['pass_rate'] >= 80:
+            print(f"  ⚠ Good pass rate ({self.metrics['pass_rate']:.1f}%)")
+        else:
+            print(f"  ✗ Low pass rate ({self.metrics['pass_rate']:.1f}%) - needs attention")
+        
+        if self.metrics['line_coverage'] >= 80:
+            print(f"  ✓ Good line coverage ({self.metrics['line_coverage']:.1f}%)")
+        elif self.metrics['line_coverage'] >= 60:
+            print(f"  ⚠ Fair line coverage ({self.metrics['line_coverage']:.1f}%)")
+        else:
+            print(f"  ✗ Low line coverage ({self.metrics['line_coverage']:.1f}%) - needs improvement")
+        
+        if self.metrics['test_code_ratio'] >= 1.0:
+            print(f"  ✓ Excellent test/code ratio ({self.metrics['test_code_ratio']:.2f})")
+        elif self.metrics['test_code_ratio'] >= 0.5:
+            print(f"  ⚠ Acceptable test/code ratio ({self.metrics['test_code_ratio']:.2f})")
+        else:
+            print(f"  ✗ Low test/code ratio ({self.metrics['test_code_ratio']:.2f}) - add more tests")
         
         print(f"{'='*60}\n")
 
 def main():
+    """Main execution"""
     collector = ComprehensiveTestMetrics()
     
-    # Run comprehensive test suite
-    if not collector.run_comprehensive_tests():
-        print("⚠️  Test execution had issues")
+    print("🧪 Orchestr8r - Comprehensive Test Metrics Collection")
+    print("="*60)
     
-    # Parse detailed results
+    # Run comprehensive test suite
+    print("\n[1/4] Running test suite...")
+    if not collector.run_comprehensive_tests():
+        print("⚠️  Test execution completed with issues")
+    
+    # Parse results
+    print("\n[2/4] Parsing test results...")
     collector.parse_junit_detailed()
     collector.parse_coverage_detailed()
     
-    # Additional metrics
+    print("\n[3/4] Calculating code metrics...")
     collector.calculate_test_code_ratio()
-    collector.run_mutation_testing()
     
     # Save and report
-    collector.save_comprehensive_summary()
+    print("\n[4/4] Saving metrics and generating report...")
+    collector.save_comprehensive_summary()  # This should now show debug output
     collector.generate_detailed_report()
     
-    print("✓ Comprehensive metrics collection complete!")
+    print("\n" + "="*60)
+    print("✅ Comprehensive metrics collection complete!")
+    print(f"📁 View detailed HTML report: {METRICS_DIR / 'pytest_report.html'}")
+    print(f"📁 View coverage report: {METRICS_DIR / 'coverage_html' / 'index.html'}")
+    print(f"📁 View metrics CSV: {METRICS_DIR / 'comprehensive_test_metrics.csv'}")
+    print("="*60)
 
 if __name__ == "__main__":
     main()

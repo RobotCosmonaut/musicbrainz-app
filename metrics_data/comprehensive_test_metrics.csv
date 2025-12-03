@@ -1,2 +1,4 @@
-Date,Timestamp,Total_Tests,Passed,Failed,Skipped,Line_Coverage_%,Branch_Coverage_%,Avg_Duration_ms,Slowest_ms,Fastest_ms,Unit_Tests,Integration_Tests,API_Tests,Security_Tests,Performance_Tests,Test_Code_Ratio,Test_Files,Mutation_Score_%,Mutations_Killed,Mutations_Survived
-2025-12-03,2025-12-03_10-31-01,35,2,0,33,0.00,0.00,700.83,13250.00,1.00,29,6,0,0,0,0.21,5,0.00,0,0
+Date,Timestamp,Total_Tests,Passed,Failed,Skipped,Errors,Pass_Rate_%,Line_Coverage_%,Branch_Coverage_%,Lines_Covered,Lines_Total,Total_Duration_s,Avg_Duration_ms,Slowest_ms,Fastest_ms,Unit_Tests,Integration_Tests,API_Tests,Database_Tests,Test_Code_Ratio,Test_Files
+2025-12-03,2025-12-03_17-21-57,35,34,0,0,1,97.14,0.00,0.00,0,0,18.59,532.15,8693.00,1.00,14,5,13,3,0.22,5
+2025-12-03,2025-12-03_17-33-10,34,34,0,0,0,100.00,53.27,33.89,423,794,19.52,550.82,9871.00,1.00,13,5,13,3,0.22,5
+2025-12-03,2025-12-03_17-39-02,35,34,0,0,1,97.14,53.53,34.44,425,794,18.16,519.26,9672.00,1.00,14,5,13,3,0.22,5
