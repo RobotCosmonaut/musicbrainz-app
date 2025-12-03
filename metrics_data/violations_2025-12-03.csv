@@ -1,0 +1,41 @@
+Error_Code,Count,Description
+B001,6,Other
+B007,2,Other
+B008,11,Other
+B308,1,Other
+C401,2,Other
+C403,6,Other
+C408,18,Other
+C489,3,Other
+C901,15,Complexity warnings
+D100,16,Missing docstrings
+D101,11,Missing docstrings
+D102,2,Missing docstrings
+D103,24,Missing docstrings
+D107,4,Missing docstrings
+D202,4,Docstring whitespace
+D204,4,Docstring whitespace
+D205,5,Docstring whitespace
+D400,53,Docstring content
+E117,2,Indentation errors
+E128,27,Indentation errors
+E226,3,Whitespace errors
+E251,13,Whitespace errors
+E302,68,Blank line errors
+E303,7,Blank line errors
+E305,11,Blank line errors
+E402,2,Import errors
+E501,485,Line length errors
+E722,6,Statement errors
+F401,15,Module import errors
+F444,4,Module import errors
+F541,6,Other
+F811,6,Name errors
+F841,2,Name errors
+I100,43,Other
+I101,11,Other
+I201,51,Other
+W291,65,Whitespace warnings
+W292,6,Whitespace warnings
+W293,475,Whitespace warnings
+W504,3,Line break warnings

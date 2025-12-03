@@ -1,0 +1,128 @@
+File,Error_Code,Count,Description
+gateway/main.py,E501,43,Line too long
+gateway/main.py,E302,13,Expected 2 blank lines
+gateway/main.py,D103,11,D103
+gateway/main.py,W293,7,Blank line contains whitespace
+gateway/main.py,W291,6,Trailing whitespace
+gateway/main.py,I201,5,Missing import order
+gateway/main.py,I100,4,I100
+gateway/main.py,E128,4,Continuation line under-indented
+gateway/main.py,D400,2,First line should end with period
+gateway/main.py,D100,1,Missing module docstring
+gateway/main.py,D204,1,D204
+gateway/main.py,W292,1,W292
+init_db.py,W293,5,Blank line contains whitespace
+init_db.py,D400,2,First line should end with period
+init_db.py,I100,2,I100
+init_db.py,E501,2,Line too long
+init_db.py,D205,1,D205
+init_db.py,I201,1,Missing import order
+init_db.py,E402,1,E402
+init_db.py,E302,1,Expected 2 blank lines
+init_db.py,D202,1,D202
+init_db.py,F841,1,F841
+init_db.py,E305,1,E305
+services/album_service.py,W293,23,Blank line contains whitespace
+services/album_service.py,E501,21,Line too long
+services/album_service.py,I201,6,Missing import order
+services/album_service.py,I100,4,I100
+services/album_service.py,E302,3,Expected 2 blank lines
+services/album_service.py,W291,2,Trailing whitespace
+services/album_service.py,C901,2,Function too complex
+services/album_service.py,B008,2,B008
+services/album_service.py,D400,2,First line should end with period
+services/album_service.py,D100,1,Missing module docstring
+services/album_service.py,I101,1,I101
+services/album_service.py,D103,1,D103
+services/album_service.py,E305,1,E305
+services/album_service.py,W292,1,W292
+services/artist_service.py,E501,10,Line too long
+services/artist_service.py,I201,6,Missing import order
+services/artist_service.py,W293,6,Blank line contains whitespace
+services/artist_service.py,I100,4,I100
+services/artist_service.py,E302,4,Expected 2 blank lines
+services/artist_service.py,B008,3,B008
+services/artist_service.py,D400,3,First line should end with period
+services/artist_service.py,W291,2,Trailing whitespace
+services/artist_service.py,I101,2,I101
+services/artist_service.py,D100,1,Missing module docstring
+services/artist_service.py,F401,1,Module imported but unused
+services/artist_service.py,D103,1,D103
+services/artist_service.py,E305,1,E305
+services/musicbrainz_service.py,W293,14,Blank line contains whitespace
+services/musicbrainz_service.py,E501,10,Line too long
+services/musicbrainz_service.py,D400,8,First line should end with period
+services/musicbrainz_service.py,W291,2,Trailing whitespace
+services/musicbrainz_service.py,I100,2,I100
+services/musicbrainz_service.py,D100,1,Missing module docstring
+services/musicbrainz_service.py,I201,1,Missing import order
+services/musicbrainz_service.py,D101,1,D101
+services/musicbrainz_service.py,E302,1,Expected 2 blank lines
+services/musicbrainz_service.py,D107,1,D107
+services/recommendation_service.py,W293,80,Blank line contains whitespace
+services/recommendation_service.py,E501,70,Line too long
+services/recommendation_service.py,E302,11,Expected 2 blank lines
+services/recommendation_service.py,I201,10,Missing import order
+services/recommendation_service.py,I100,9,I100
+services/recommendation_service.py,W291,8,Trailing whitespace
+services/recommendation_service.py,D400,8,First line should end with period
+services/recommendation_service.py,F401,3,Module imported but unused
+services/recommendation_service.py,C901,3,Function too complex
+services/recommendation_service.py,B008,3,B008
+services/recommendation_service.py,I101,2,I101
+services/recommendation_service.py,E305,2,E305
+services/recommendation_service.py,F811,2,F811
+services/recommendation_service.py,D100,1,Missing module docstring
+services/recommendation_service.py,D103,1,D103
+services/recommendation_service.py,D204,1,D204
+services/recommendation_service.py,D101,1,D101
+services/recommendation_service.py,D107,1,D107
+services/recommendation_service.py,D102,1,D102
+services/recommendation_service.py,W292,1,W292
+shared/database.py,W293,8,Blank line contains whitespace
+shared/database.py,E302,4,Expected 2 blank lines
+shared/database.py,I201,3,Missing import order
+shared/database.py,I100,3,I100
+shared/database.py,E501,2,Line too long
+shared/database.py,D103,2,D103
+shared/database.py,D400,2,First line should end with period
+shared/database.py,D100,1,Missing module docstring
+shared/database.py,F401,1,Module imported but unused
+shared/database.py,W291,1,Trailing whitespace
+shared/models.py,W293,9,Blank line contains whitespace
+shared/models.py,D101,6,D101
+shared/models.py,E302,6,Expected 2 blank lines
+shared/models.py,E501,4,Line too long
+shared/models.py,I101,2,I101
+shared/models.py,F401,2,Module imported but unused
+shared/models.py,D100,1,Missing module docstring
+shared/models.py,I100,1,I100
+shared/models.py,I201,1,Missing import order
+ui/app.py,E501,314,Line too long
+ui/app.py,W293,314,Blank line contains whitespace
+ui/app.py,W291,37,Trailing whitespace
+ui/app.py,E128,21,Continuation line under-indented
+ui/app.py,D400,18,First line should end with period
+ui/app.py,C408,17,C408
+ui/app.py,E302,16,Expected 2 blank lines
+ui/app.py,E251,12,E251
+ui/app.py,I201,9,Missing import order
+ui/app.py,C901,7,Function too complex
+ui/app.py,E303,6,E303
+ui/app.py,I100,5,I100
+ui/app.py,C403,5,C403
+ui/app.py,F541,5,F541
+ui/app.py,B001,5,B001
+ui/app.py,E722,5,E722
+ui/app.py,F401,3,Module imported but unused
+ui/app.py,F811,2,F811
+ui/app.py,D103,2,D103
+ui/app.py,W504,2,W504
+ui/app.py,D205,2,D205
+ui/app.py,E226,2,E226
+ui/app.py,D100,1,Missing module docstring
+ui/app.py,C401,1,C401
+ui/app.py,D202,1,D202
+ui/app.py,E305,1,E305
+ui/app.py,E117,1,E117
+ui/app.py,B007,1,B007
