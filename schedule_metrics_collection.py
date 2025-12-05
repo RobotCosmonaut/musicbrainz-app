@@ -19,7 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration from environment variables
-PROMETHEUS_URL = os.getenv("PROMETHEUS_URL", "http://localhost:9090")
+PROMETHEUS_URL = "http://localhost:9090"
 COLLECTION_INTERVAL = int(os.getenv("COLLECTION_INTERVAL", "60"))  # seconds
 METRICS_DIR = Path(os.getenv("METRICS_DIR", "/app/metrics_data"))
 METRICS_DIR.mkdir(exist_ok=True)
