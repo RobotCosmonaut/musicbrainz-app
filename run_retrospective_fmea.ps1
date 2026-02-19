@@ -216,22 +216,25 @@ Set-Location $CurrentDir
 Write-Host ""
 Write-Host "[6/7] Running FMEA tests against CURRENT commit..." -ForegroundColor Yellow
 
-# Start current services if not already running
-$GatewayRunning = $false
-try {
-    $Response = Invoke-WebRequest -Uri "http://localhost:8000/health" -TimeoutSec 3
-    $GatewayRunning = $Response.StatusCode -eq 200
-} catch {
-    $GatewayRunning = $false
-}
-
-if (-not $GatewayRunning) {
-    Write-Host "   Starting current project services..." -ForegroundColor Gray
+# Check if Minikube is running
+$MinikubeStatus = minikube status --format='{{.Host}}' 2>&1
+if ($MinikubeStatus -eq "Running") {
+    Write-Host "   Using Minikube deployment..." -ForegroundColor Gray
+    
+    # Get Minikube IP
+    $MinikubeIP = minikube ip
+    
+    # Set environment variables for tests to use Minikube endpoints
+    $env:API_GATEWAY_URL = "http://${MinikubeIP}:30000"
+    $env:ARTIST_SERVICE_URL = "http://${MinikubeIP}:30001"
+    
+} else {
+    Write-Host "   Using Docker Compose..." -ForegroundColor Gray
     docker-compose up --build -d
     Start-Sleep -Seconds 30
 }
 
-# Run FMEA tests from current directory
+# Run tests
 python run_fmea_tests.py --label $NewLabel
 
 # ─────────────────────────────────────────────────────────────────────
