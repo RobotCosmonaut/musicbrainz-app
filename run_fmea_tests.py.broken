@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-FMEA Test Runner - Working Version
-Runs FMEA tests and saves metrics with labels for retrospective comparison
+FMEA Test Runner - Fixed Version (No Emoji Syntax Errors)
+Supports --label flag for identifying old vs new commits
 """
 
 import subprocess
@@ -84,18 +84,16 @@ def run_fmea_tests(label=None):
 
     for service, status in availability.items():
         if status["available"]:
-            print(f"  [OK] {service}")
+            print(f"  [OK] {service}: {status}")
         else:
-            print(f"  [FAIL] {service}")
+            print(f"  [FAIL] {service}: {status}")
 
-    # Run pytest (skip database tests to avoid timeouts)
-    print("\nRunning pytest...")
+    # Run pytest
     result = subprocess.run(
         [
             "pytest",
             "tests/fmea/",
             "-v",
-            "-k", "not database",  # Skip database tests
             "--tb=short",
             "--json-report",
             f"--json-report-file={METRICS_DIR}/fmea_report.json"
@@ -105,13 +103,11 @@ def run_fmea_tests(label=None):
         cwd=PROJECT_ROOT
     )
 
-    print(f"Pytest completed with return code: {result.returncode}")
+    print(result.stdout[-3000:])  # Show last 3000 chars
 
     report_file = METRICS_DIR / "fmea_report.json"
     if not report_file.exists():
         print("[ERROR] No test report generated")
-        if result.stderr:
-            print("Stderr:", result.stderr[:500])
         return None
 
     with open(report_file) as f:
@@ -165,10 +161,6 @@ def run_fmea_tests(label=None):
         json.dump(history, f, indent=2)
 
     print(f"\n[SUCCESS] Results saved with label: {metrics['label']}")
-    print(f"Reliability Score: {reliability_score:.1f}%")
-    print(f"Tests Passed: {passed}/{total_tests}")
-    print(f"File: {FMEA_METRICS_FILE}")
-    
     return metrics
 
 
@@ -224,51 +216,68 @@ def _print_comparison(old_metrics, new_metrics):
     print(f"\n[OLD] {old_metrics['label']}")
     print(f"   Commit:      {old_metrics['commit_hash'][:8]}")
     print(f"   Date:        {old_metrics.get('commit_date', 'unknown')[:19]}")
-    print(f"   Reliability: {old_metrics['reliability_score']:.1f}%")
-    print(f"   Passed:      {old_metrics['passed']}/{old_metrics['total_tests']}")
+    print(f"   Message:     {old_metrics['commit_message'][:50]}")
+    print(f"   Tested at:   {old_metrics['timestamp'][:19]}")
 
     print(f"\n[NEW] {new_metrics['label']}")
     print(f"   Commit:      {new_metrics['commit_hash'][:8]}")
     print(f"   Date:        {new_metrics.get('commit_date', 'unknown')[:19]}")
-    print(f"   Reliability: {new_metrics['reliability_score']:.1f}%")
-    print(f"   Passed:      {new_metrics['passed']}/{new_metrics['total_tests']}")
+    print(f"   Message:     {new_metrics['commit_message'][:50]}")
+    print(f"   Tested at:   {new_metrics['timestamp'][:19]}")
 
-    # Overall change
+    # Service availability comparison
+    print(f"\n[SERVICE AVAILABILITY CHANGES]")
+    old_avail = old_metrics.get("service_availability", {})
+    new_avail = new_metrics.get("service_availability", {})
+
+    all_services = set(list(old_avail.keys()) + list(new_avail.keys()))
+    for service in sorted(all_services):
+        old_up = old_avail.get(service, {}).get("available", False)
+        new_up = new_avail.get(service, {}).get("available", False)
+
+        if not old_up and new_up:
+            print(f"  [+] {service:30s}: DOWN -> UP (service added/fixed)")
+        elif old_up and not new_up:
+            print(f"  [-] {service:30s}: UP -> DOWN (regression!)")
+        elif old_up and new_up:
+            print(f"  [=] {service:30s}: UP -> UP (stable)")
+        else:
+            print(f"  [!] {service:30s}: DOWN -> DOWN (still missing)")
+
+    # Overall scores
     score_diff = new_metrics['reliability_score'] - old_metrics['reliability_score']
-    print(f"\n[CHANGE] Reliability: {score_diff:+.1f}%")
-    
-    print("\n" + "=" * 70)
+    tests_diff = new_metrics['total_tests'] - old_metrics['total_tests']
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="FMEA Test Runner with Retrospective Support"
+    print(f"\n[OVERALL RESULTS]")
+    print(f"  {'Metric':<30} {'Old':>10} {'New':>10} {'Change':>10}")
+    print(f"  {'-'*62}")
+    print(
+        f"  {'Reliability Score':<30} "
+        f"{old_metrics['reliability_score']:>9.1f}% "
+        f"{new_metrics['reliability_score']:>9.1f}% "
+        f"{score_diff:>+9.1f}%"
     )
-    parser.add_argument(
-        "--label",
-        type=str,
-        help="Label for this test run (e.g. 'old_v1' or 'current')"
+    print(
+        f"  {'Tests Passed':<30} "
+        f"{old_metrics['passed']:>10} "
+        f"{new_metrics['passed']:>10} "
+        f"{new_metrics['passed'] - old_metrics['passed']:>+10}"
     )
-    parser.add_argument(
-        "--compare",
-        nargs=2,
-        metavar=("OLD_LABEL", "NEW_LABEL"),
-        help="Compare two labeled runs"
-    )
-    parser.add_argument(
-        "--report",
-        action="store_true",
-        help="Show all historical results"
+    print(
+        f"  {'Total Tests':<30} "
+        f"{old_metrics['total_tests']:>10} "
+        f"{new_metrics['total_tests']:>10} "
+        f"{tests_diff:>+10}"
     )
 
-    args = parser.parse_args()
+    # Test-by-test comparison
+    print(f"\n[TEST-BY-TEST COMPARISON]")
+    print(f"  {'Test':<45} {'Old':>8} {'New':>8}")
+    print(f"  {'-'*62}")
 
-    if args.compare:
-        compare_labels(args.compare[0], args.compare[1])
-    elif args.report:
-        if FMEA_METRICS_FILE.exists():
-            with open(FMEA_METRICS_FILE) as f:
-                history = json.load(f)
-            _show_available_labels(history)
-    else:
-        run_fmea_tests(label=args.label)
+    old_results = old_metrics.get("test_results", {})
+    new_results = new_metrics.get("test_results", {})
+    all_tests = set(list(old_results.keys()) + list(new_results.keys()))
+
+    newly_passing = []
+    newly_failing = []

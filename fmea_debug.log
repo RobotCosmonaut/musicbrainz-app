@@ -1,0 +1,67 @@
+======================================================================
+SCRIPT STARTED
+Python version: 3.11.14 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 18:30:03) [MSC v.1929 64 bit (AMD64)]
+Current directory: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app
+======================================================================
+Project root: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app
+Metrics dir: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app\metrics_data
+Metrics file: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app\metrics_data\fmea_test_results.json
+Metrics directory created/verified
+SUCCESS: requests imported
+
+Checking services...
+  artist_service: 200
+  album_service: 200
+
+Running pytest...
+Pytest return code: 4
+Stdout length: 0
+Stderr length: 320
+
+Checking for report file: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app\metrics_data\fmea_report.json
+File exists: False
+FAILED: No report file created
+
+SCRIPT COMPLETED
+======================================================================
+SCRIPT STARTED
+Python version: 3.11.14 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 18:30:03) [MSC v.1929 64 bit (AMD64)]
+Current directory: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app
+======================================================================
+Project root: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app
+Metrics dir: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app\metrics_data
+Metrics file: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app\metrics_data\fmea_test_results.json
+Metrics directory created/verified
+SUCCESS: requests imported
+
+Checking services...
+  artist_service: 200
+  album_service: 200
+
+Running pytest...
+Pytest return code: 1
+Stdout length: 11383
+Stderr length: 0
+Pytest stdout:
+py", line 121, in _multicall
+    res = hook_impl.function(*args)
+  File "C:\Users\dennyr\anaconda3\envs\fmea_env\Lib\site-packages\_pytest\python.py", line 166, in pytest_pyfunc_call
+    result = testfunction(**testargs)
+  File "C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app\tests\fmea\test_fmea_database.py", line 211, in test_database_init_idempotency
+    first_run = create_tables_safe()
+  File "C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app\shared\database.py", line 53, in create_tables_safe
+    if not wait_for_database():
+  File "C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app\shared\database.py", line 41, in wait_for_database
+    time.sleep(delay)
++++++++++++++++++++++++++++++++++++ Timeout +++++++++++++++++++++++++++++++++++
+
+
+Checking for report file: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app\metrics_data\fmea_report.json
+File exists: True
+SUCCESS: Report file created!
+Total tests: 11
+Passed: 10
+Failed: 1
+Metrics saved to: C:\Users\dennyr\Dropbox\Education\Southern Methodist University\Courses\Software Architecture & Design CS7319\Project\musicbrainz-app\metrics_data\fmea_test_results.json
+
+SCRIPT COMPLETED
