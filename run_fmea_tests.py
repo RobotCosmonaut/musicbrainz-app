@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 """
-FMEA Test Runner - Updated for Retrospective Testing
+FMEA Test Runner - Fixed Version (No Emoji Syntax Errors)
 Supports --label flag for identifying old vs new commits
-
-Usage:
-  python run_fmea_tests.py                           # Current commit
-  python run_fmea_tests.py --label "old_commit_abc" # Label results
-  python run_fmea_tests.py --compare HEAD~5          # Compare commits
-  python run_fmea_tests.py --report                  # Show history
 """
 
 import subprocess
@@ -49,11 +43,7 @@ def get_commit_date():
         return "unknown"
 
 def check_service_availability():
-    """
-    Check which services are actually running before tests
-    Critical for retrospective testing - old commits may not have
-    all services implemented
-    """
+    """Check which services are running"""
     import requests
 
     services = {
@@ -89,13 +79,14 @@ def run_fmea_tests(label=None):
     METRICS_DIR.mkdir(exist_ok=True)
 
     # Check which services are available
-    # This is critical for old commits
     print("\nChecking service availability...")
     availability = check_service_availability()
 
     for service, status in availability.items():
-        indicator = "✅" if status["available"] else "❌"
-        print(f"  {indicator} {service}: {status}")
+        if status["available"]:
+            print(f"  [OK] {service}: {status}")
+        else:
+            print(f"  [FAIL] {service}: {status}")
 
     # Run pytest
     result = subprocess.run(
@@ -116,7 +107,7 @@ def run_fmea_tests(label=None):
 
     report_file = METRICS_DIR / "fmea_report.json"
     if not report_file.exists():
-        print("❌ No test report generated")
+        print("[ERROR] No test report generated")
         return None
 
     with open(report_file) as f:
@@ -129,7 +120,6 @@ def run_fmea_tests(label=None):
         test_results[test_name] = {
             "outcome": test["outcome"],
             "duration": test.get("call", {}).get("duration", 0),
-            # Capture what error occurred for comparison
             "error": test.get("call", {}).get("longrepr", "") 
                      if test["outcome"] == "failed" else None
         }
@@ -170,24 +160,20 @@ def run_fmea_tests(label=None):
     with open(FMEA_METRICS_FILE, 'w') as f:
         json.dump(history, f, indent=2)
 
-    print(f"\n✅ Results saved with label: {metrics['label']}")
+    print(f"\n[SUCCESS] Results saved with label: {metrics['label']}")
     return metrics
 
 
 def compare_labels(old_label, new_label):
-    """
-    Compare two labeled test runs
-    This is what makes retrospective testing meaningful
-    """
+    """Compare two labeled test runs"""
 
     if not FMEA_METRICS_FILE.exists():
-        print("❌ No metrics history found")
+        print("[ERROR] No metrics history found")
         return
 
     with open(FMEA_METRICS_FILE) as f:
         history = json.load(f)
 
-    # Find entries by label
     old_metrics = next(
         (h for h in history if h.get("label") == old_label), None
     )
@@ -196,12 +182,12 @@ def compare_labels(old_label, new_label):
     )
 
     if not old_metrics:
-        print(f"❌ Label not found: {old_label}")
+        print(f"[ERROR] Label not found: {old_label}")
         _show_available_labels(history)
         return
 
     if not new_metrics:
-        print(f"❌ Label not found: {new_label}")
+        print(f"[ERROR] Label not found: {new_label}")
         _show_available_labels(history)
         return
 
@@ -227,20 +213,20 @@ def _print_comparison(old_metrics, new_metrics):
     print("=" * 70)
 
     # Header info
-    print(f"\n📅 OLD: {old_metrics['label']}")
+    print(f"\n[OLD] {old_metrics['label']}")
     print(f"   Commit:      {old_metrics['commit_hash'][:8]}")
     print(f"   Date:        {old_metrics.get('commit_date', 'unknown')[:19]}")
     print(f"   Message:     {old_metrics['commit_message'][:50]}")
     print(f"   Tested at:   {old_metrics['timestamp'][:19]}")
 
-    print(f"\n📅 NEW: {new_metrics['label']}")
+    print(f"\n[NEW] {new_metrics['label']}")
     print(f"   Commit:      {new_metrics['commit_hash'][:8]}")
     print(f"   Date:        {new_metrics.get('commit_date', 'unknown')[:19]}")
     print(f"   Message:     {new_metrics['commit_message'][:50]}")
     print(f"   Tested at:   {new_metrics['timestamp'][:19]}")
 
     # Service availability comparison
-    print(f"\n🔌 Service Availability Changes:")
+    print(f"\n[SERVICE AVAILABILITY CHANGES]")
     old_avail = old_metrics.get("service_availability", {})
     new_avail = new_metrics.get("service_availability", {})
 
@@ -250,19 +236,19 @@ def _print_comparison(old_metrics, new_metrics):
         new_up = new_avail.get(service, {}).get("available", False)
 
         if not old_up and new_up:
-            print(f"  ✅ {service:30s}: DOWN → UP (service added/fixed)")
+            print(f"  [+] {service:30s}: DOWN -> UP (service added/fixed)")
         elif old_up and not new_up:
-            print(f"  ❌ {service:30s}: UP → DOWN (regression!)")
+            print(f"  [-] {service:30s}: UP -> DOWN (regression!)")
         elif old_up and new_up:
-            print(f"  ✅ {service:30s}: UP → UP (stable)")
+            print(f"  [=] {service:30s}: UP -> UP (stable)")
         else:
-            print(f"  ⚠️  {service:30s}: DOWN → DOWN (still missing)")
+            print(f"  [!] {service:30s}: DOWN -> DOWN (still missing)")
 
     # Overall scores
     score_diff = new_metrics['reliability_score'] - old_metrics['reliability_score']
     tests_diff = new_metrics['total_tests'] - old_metrics['total_tests']
 
-    print(f"\n📊 Overall Results:")
+    print(f"\n[OVERALL RESULTS]")
     print(f"  {'Metric':<30} {'Old':>10} {'New':>10} {'Change':>10}")
     print(f"  {'-'*62}")
     print(
@@ -285,7 +271,7 @@ def _print_comparison(old_metrics, new_metrics):
     )
 
     # Test-by-test comparison
-    print(f"\n🔍 Test-by-Test Comparison:")
+    print(f"\n[TEST-BY-TEST COMPARISON]")
     print(f"  {'Test':<45} {'Old':>8} {'New':>8}")
     print(f"  {'-'*62}")
 
@@ -295,137 +281,3 @@ def _print_comparison(old_metrics, new_metrics):
 
     newly_passing = []
     newly_failing = []
-    still_failing = []
-
-    for test in sorted(all_tests):
-        old_outcome = old_results.get(test, {}).get("outcome", "missing")
-        new_outcome = new_results.get(test, {}).get("outcome", "missing")
-
-        old_icon = "✅" if old_outcome == "passed" else "❌"
-        new_icon = "✅" if new_outcome == "passed" else "❌"
-
-        # Categorize changes
-        if old_outcome != "passed" and new_outcome == "passed":
-            newly_passing.append(test)
-        elif old_outcome == "passed" and new_outcome != "passed":
-            newly_failing.append(test)
-        elif old_outcome != "passed" and new_outcome != "passed":
-            still_failing.append(test)
-
-        print(
-            f"  {test[:44]:<45} "
-            f"{old_icon} {old_outcome[:6]:>6}  "
-            f"{new_icon} {new_outcome[:6]:>6}"
-        )
-
-    # Summary of changes
-    if newly_passing:
-        print(f"\n✅ Newly Passing ({len(newly_passing)} tests):")
-        for test in newly_passing:
-            print(f"   + {test}")
-
-    if newly_failing:
-        print(f"\n❌ Regressions - Newly Failing ({len(newly_failing)} tests):")
-        for test in newly_failing:
-            print(f"   - {test}")
-
-    if still_failing:
-        print(f"\n⚠️  Still Failing ({len(still_failing)} tests):")
-        for test in still_failing:
-            print(f"   ~ {test}")
-
-    print("\n" + "=" * 70)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="FMEA Test Runner with Retrospective Support"
-    )
-    parser.add_argument(
-        "--label",
-        type=str,
-        help="Label for this test run (e.g. 'old_v1' or 'current')"
-    )
-    parser.add_argument(
-        "--compare",
-        nargs=2,
-        metavar=("OLD_LABEL", "NEW_LABEL"),
-        help="Compare two labeled runs"
-    )
-    parser.add_argument(
-        "--report",
-        action="store_true",
-        help="Show all historical results"
-    )
-
-    args = parser.parse_args()
-
-    if args.compare:
-        compare_labels(args.compare[0], args.compare[1])
-    elif args.report:
-        if FMEA_METRICS_FILE.exists():
-            with open(FMEA_METRICS_FILE) as f:
-                history = json.load(f)
-            _show_available_labels(history)
-    else:
-        run_fmea_tests(label=args.label)
-```
-
----
-
-## What Results Are Actually Compared?
-
-This is the most important part. Here is **exactly** what changes between old and new commits:
-
-### **1. Service Availability**
-```
-Old Commit (e.g., before recommendation service added):
-  ❌ recommendation_service: DOWN (not implemented yet)
-  ✅ artist_service: UP
-  ✅ album_service: UP
-  ❌ api_gateway: DOWN (depended on missing service)
-
-Current Commit:
-  ✅ recommendation_service: UP
-  ✅ artist_service: UP
-  ✅ album_service: UP
-  ✅ api_gateway: UP
-```
-
-### **2. Test Pass/Fail Changes**
-
-| Test | Old Commit | New Commit | Meaning |
-|------|-----------|------------|---------|
-| `test_rate_limit_delay_enforced` | ❌ FAILED | ✅ PASSED | Rate limiting added |
-| `test_timeout_returns_empty` | ❌ FAILED | ✅ PASSED | Error handling added |
-| `test_diversity_filter` | ❌ FAILED | ✅ PASSED | Feature implemented |
-| `test_database_init_idempotency` | ❌ FAILED | ✅ PASSED | Init script fixed |
-| `test_health_endpoint_availability` | ✅ PASSED | ✅ PASSED | Was always stable |
-| `test_genre_detection` | ❌ MISSING | ✅ PASSED | Feature newly added |
-
-### **3. Performance Metrics**
-```
-Old Commit:
-  avg_response_time:  4.2s  (no caching)
-  response_time_cv:   85%   (very inconsistent)
-  
-Current Commit:
-  avg_response_time:  0.8s  (with caching)
-  response_time_cv:   22%   (consistent)
-```
-
-### **4. Error Types Revealed**
-```
-Old Commit Failures:
-  test_timeout_returns_empty:
-    Error: "AttributeError: 'NoneType' has no attribute 'get'"
-    Meaning: No null check on API response
-
-  test_diversity_filter:
-    Error: "AttributeError: module has no 'ensure_artist_diversity'"
-    Meaning: Function not yet implemented
-
-Current Commit:
-  All above tests pass
-  ensure_artist_diversity() exists and works
-  Null checks present
