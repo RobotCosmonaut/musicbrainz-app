@@ -1,0 +1,24 @@
+{
+    "label":  "Initial_Commit",
+    "timestamp":  "2026-02-19T23:16:43.490348",
+    "commit_hash":  "f53abc749ddcd5ff40acebcef2c111e48b7c2e9d",
+    "commit_message":  "Initial commit",
+    "fmea_tests":  {
+                       "total":  22,
+                       "passed":  12,
+                       "failed":  10,
+                       "reliability_score":  54.54545454545454
+                   },
+    "reliability_tests":  {
+                              "total":  14,
+                              "passed":  12,
+                              "failed":  2,
+                              "reliability_score":  85.71428571428571
+                          },
+    "combined":  {
+                     "total":  36,
+                     "passed":  24,
+                     "failed":  12,
+                     "reliability_score":  66.66666666666666
+                 }
+}
