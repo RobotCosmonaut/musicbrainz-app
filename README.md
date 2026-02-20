@@ -178,9 +178,9 @@ Analysis may be ran as follows:
 .\analyze_tests.ps1 -OldLabel "Initial_Commit" -NewLabel "current"
 
 
-### Troubleshooting
+## Troubleshooting
 
-#### When running with Docker (no Minikube)
+### When running with Docker (no Minikube)
 
 Remove any existing containers and images
 ```bash
@@ -197,7 +197,7 @@ And run again with Docker
 ```bash
 docker-compose up
 ```
-#### When running with Minikube
+### When running with Minikube
 
 Verify using Minikube's Docker:
 ```bash
