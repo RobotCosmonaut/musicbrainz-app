@@ -165,6 +165,19 @@ kubectl get svc streamlit-ui-service
 minikube service streamlit-ui-service --url
 ```
 
+
+## Reliability and FMEA Analysis
+Tests for reliability and FMEA analysis are noted below:
+
+### FMEA Analysis
+The FMEA analysis may be ran via the following:  
+.\run_retrospective_fmea.ps1 -OldCommit "Commit ID" -OldLabel "Label for old commit"
+
+### Analysis Review
+Analysis may be ran as follows:  
+.\analyze_tests.ps1 -OldLabel "Initial_Commit" -NewLabel "current"
+
+
 ### Troubleshooting
 
 #### When running with Docker (no Minikube)
