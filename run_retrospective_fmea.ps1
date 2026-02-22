@@ -140,32 +140,33 @@ foreach ($Source in $FilesToCopy.Keys) {
 }
 
 # ─────────────────────────────────────────────────────────────────────
-# STEP 4: START OLD COMMIT SERVICES
+# STEP 4: STOP CURRENT SERVICES, START OLD COMMIT SERVICES
 # ─────────────────────────────────────────────────────────────────────
 
 Write-Host ""
-Write-Host "[4/7] Starting services from OLD commit..." -ForegroundColor Yellow
-Write-Host "      Directory: $WorktreeDir" -ForegroundColor Gray
+Write-Host "[4/7] Stopping current services and starting OLD commit services..." -ForegroundColor Yellow
 
-# Check if old commit has docker-compose
+# CRITICAL: Stop current services first to free up ports
+Write-Host "   Stopping current project services..." -ForegroundColor Gray
+Set-Location $CurrentDir
+docker-compose down
+Start-Sleep -Seconds 5
+
 if (-not (Test-Path "$WorktreeDir\docker-compose.yml")) {
     Write-Host "   ⚠️  No docker-compose.yml in old commit" -ForegroundColor Yellow
-    Write-Host "   ⚠️  Skipping service start - some tests will fail (expected)" -ForegroundColor Yellow
 } else {
-    # Use different port mapping to avoid conflicts with current services
-    # if both are running simultaneously
     Set-Location $WorktreeDir
+    Write-Host "   Starting old commit services..." -ForegroundColor Gray
     docker-compose up --build -d
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "   ⚠️  Services failed to start - some tests will show failures" -ForegroundColor Yellow
     } else {
-        Write-Host "   Waiting 30 seconds for services to initialize..." -ForegroundColor Gray
+        Write-Host "   Waiting 30 seconds for services..." -ForegroundColor Gray
         Start-Sleep -Seconds 30
-        Write-Host "   ✅ Services started" -ForegroundColor Green
+        Write-Host "   ✅ Old commit services started" -ForegroundColor Green
     }
 
-    # Return to original directory (unchanged)
     Set-Location $CurrentDir
 }
 
@@ -187,18 +188,20 @@ $WorktreeMetrics = "$WorktreeDir\metrics_data\fmea_test_results.json"
 $CurrentMetrics  = "$CurrentDir\metrics_data\fmea_test_results.json"
 
 if (Test-Path $WorktreeMetrics) {
-    # Merge worktree metrics into current project metrics
     $WorktreeData = Get-Content $WorktreeMetrics | ConvertFrom-Json
     
     if (Test-Path $CurrentMetrics) {
         $CurrentData = Get-Content $CurrentMetrics | ConvertFrom-Json
-        $MergedData = $CurrentData + $WorktreeData
+        # FIXED: Force array conversion
+        $MergedData = @($CurrentData) + @($WorktreeData)
     } else {
-        $MergedData = $WorktreeData
+        $MergedData = @($WorktreeData)
     }
     
     $MergedData | ConvertTo-Json -Depth 10 | Set-Content $CurrentMetrics
     Write-Host "   ✅ Old commit results saved to current project metrics" -ForegroundColor Green
+} else {
+    Write-Host "   ⚠️  No test results found in worktree" -ForegroundColor Yellow
 }
 
 # Stop old services
@@ -210,31 +213,28 @@ if (Test-Path "$WorktreeDir\docker-compose.yml") {
 Set-Location $CurrentDir
 
 # ─────────────────────────────────────────────────────────────────────
-# STEP 6: RUN FMEA TESTS AGAINST CURRENT COMMIT
+# STEP 6: STOP OLD SERVICES, START CURRENT SERVICES, RUN TESTS
 # ─────────────────────────────────────────────────────────────────────
 
 Write-Host ""
-Write-Host "[6/7] Running FMEA tests against CURRENT commit..." -ForegroundColor Yellow
+Write-Host "[6/7] Stopping old services and running tests against CURRENT commit..." -ForegroundColor Yellow
 
-# Check if Minikube is running
-$MinikubeStatus = minikube status --format='{{.Host}}' 2>&1
-if ($MinikubeStatus -eq "Running") {
-    Write-Host "   Using Minikube deployment..." -ForegroundColor Gray
-    
-    # Get Minikube IP
-    $MinikubeIP = minikube ip
-    
-    # Set environment variables for tests to use Minikube endpoints
-    $env:API_GATEWAY_URL = "http://${MinikubeIP}:30000"
-    $env:ARTIST_SERVICE_URL = "http://${MinikubeIP}:30001"
-    
-} else {
-    Write-Host "   Using Docker Compose..." -ForegroundColor Gray
-    docker-compose up --build -d
-    Start-Sleep -Seconds 30
+# Stop old services if they're running
+if (Test-Path "$WorktreeDir\docker-compose.yml") {
+    Write-Host "   Stopping old commit services..." -ForegroundColor Gray
+    Set-Location $WorktreeDir
+    docker-compose down
+    Set-Location $CurrentDir
+    Start-Sleep -Seconds 5
 }
 
-# Run tests
+# Start current project services
+Write-Host "   Starting current project services..." -ForegroundColor Gray
+docker-compose up --build -d
+Start-Sleep -Seconds 30
+Write-Host "   ✅ Current services started" -ForegroundColor Green
+
+# Run FMEA tests against current commit
 python run_fmea_tests.py --label $NewLabel
 
 # ─────────────────────────────────────────────────────────────────────

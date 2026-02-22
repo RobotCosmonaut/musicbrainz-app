@@ -1,0 +1,577 @@
+[
+    {
+        "label":  "debug_test",
+        "timestamp":  "2026-02-18T22:14:13.844639",
+        "total_tests":  11,
+        "passed":  10,
+        "failed":  1
+    },
+    {
+        "label":  "test_manual",
+        "timestamp":  "2026-02-18T22:18:59.436392",
+        "commit_hash":  "d230afffc9eab0b83f69370e8ca52ac4ec6758ab",
+        "commit_message":  "Uploading runtime_summary.csv",
+        "commit_date":  "2026-02-18 21:17:42 -0600",
+        "service_availability":  {
+                                     "artist_service":  {
+                                                            "available":  true,
+                                                            "status_code":  200
+                                                        },
+                                     "album_service":  {
+                                                           "available":  true,
+                                                           "status_code":  200
+                                                       },
+                                     "recommendation_service":  {
+                                                                    "available":  true,
+                                                                    "status_code":  200
+                                                                },
+                                     "api_gateway":  {
+                                                         "available":  true,
+                                                         "status_code":  200
+                                                     }
+                                 },
+        "total_tests":  22,
+        "passed":  20,
+        "failed":  2,
+        "errors":  0,
+        "reliability_score":  90.9090909090909,
+        "test_results":  {
+                             "test_service_unavailable_returns_503_not_500":  {
+                                                                                  "outcome":  "passed",
+                                                                                  "duration":  3.388544199988246,
+                                                                                  "error":  null
+                                                                              },
+                             "test_correct_http_error_codes":  {
+                                                                   "outcome":  "passed",
+                                                                   "duration":  0.5429441999876872,
+                                                                   "error":  null
+                                                               },
+                             "test_concurrent_routing_reliability":  {
+                                                                         "outcome":  "passed",
+                                                                         "duration":  2.7251943000010215,
+                                                                         "error":  null
+                                                                     },
+                             "test_timeout_configuration_present":  {
+                                                                        "outcome":  "passed",
+                                                                        "duration":  0.0007393999840132892,
+                                                                        "error":  null
+                                                                    },
+                             "test_rate_limit_delay_enforced":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  3.005852300033439,
+                                                                    "error":  null
+                                                                },
+                             "test_rate_limit_429_handling":  {
+                                                                  "outcome":  "passed",
+                                                                  "duration":  0.005238299956545234,
+                                                                  "error":  null
+                                                              },
+                             "test_rapid_request_service_stability":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  14.342624699987937,
+                                                                          "error":  null
+                                                                      },
+                             "test_rate_limit_recovery":  {
+                                                              "outcome":  "passed",
+                                                              "duration":  1.004261999973096,
+                                                              "error":  null
+                                                          },
+                             "test_timeout_returns_empty_not_crash":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.001589899999089539,
+                                                                          "error":  null
+                                                                      },
+                             "test_recommendation_service_timeout_handling":  {
+                                                                                  "outcome":  "passed",
+                                                                                  "duration":  0.9312922999961302,
+                                                                                  "error":  null
+                                                                              },
+                             "test_gateway_timeout_isolation":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  1.7260387999704108,
+                                                                    "error":  null
+                                                                },
+                             "test_genre_detection_known_genres":  {
+                                                                       "outcome":  "passed",
+                                                                       "duration":  0.23058540001511574,
+                                                                       "error":  null
+                                                                   },
+                             "test_genre_detection_none_for_unknown":  {
+                                                                           "outcome":  "passed",
+                                                                           "duration":  0.00042500003473833203,
+                                                                           "error":  null
+                                                                       },
+                             "test_diversity_filter_max_per_artist":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.0010316999978385866,
+                                                                          "error":  null
+                                                                      },
+                             "test_diversity_ratio_in_api_response":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  1.4196725999936461,
+                                                                          "error":  null
+                                                                      },
+                             "test_empty_results_graceful_response":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.18304919998627156,
+                                                                          "error":  null
+                                                                      },
+                             "test_fallback_strategies_activated":  {
+                                                                        "outcome":  "passed",
+                                                                        "duration":  0.7576018000254408,
+                                                                        "error":  null
+                                                                    },
+                             "test_profile_save_and_retrieve":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  0.25161219999426976,
+                                                                    "error":  null
+                                                                },
+                             "test_profile_update_overwrites_correctly":  {
+                                                                              "outcome":  "passed",
+                                                                              "duration":  0.09906740003498271,
+                                                                              "error":  null
+                                                                          },
+                             "test_profile_json_serialization":  {
+                                                                     "outcome":  "failed",
+                                                                     "duration":  0.03728409996256232,
+                                                                     "error":  "C:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   psycopg2.OperationalError: connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\n\nThe above exception was the direct cause of the following exception:\ntests\\fmea\\test_fmea_user_profile.py:140: in test_profile_json_serialization\n    session.commit()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1969: in commit\n    trans.commit(_to_root=True)\n\u003cstring\u003e:2: in commit\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1256: in commit\n    self._prepare_impl()\n\u003cstring\u003e:2: in _prepare_impl\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1231: in _prepare_impl\n    self.session.flush()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4312: in flush\n    self._flush(objects)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4447: in _flush\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4408: in _flush\n    flush_context.execute()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:466: in execute\n    rec.execute(self)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:642: in execute\n    util.preloaded.orm_persistence.save_obj(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:60: in save_obj\n    for (\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:221: in _organize_states_for_save\n    for state, dict_, mapper, connection in _connections_for_states(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:1726: in _connections_for_states\n    connection = uowtransaction.transaction.connection(base_mapper)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\u003cstring\u003e:2: in connection\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:995: in connection\n    return self._connection_for_bind(bind, execution_options)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\u003cstring\u003e:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1129: in _connection_for_bind\n    conn = self._parent._connection_for_bind(\n\u003cstring\u003e:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1143: in _connection_for_bind\n    conn = bind.connect()\n           ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3268: in connect\n    return self._connection_cls(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:147: in __init__\n    Connection._handle_dbapi_exception_noconnection(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:2430: in _handle_dbapi_exception_noconnection\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\nE   \nE   (Background on this error at: https://sqlalche.me/e/20/e3q8)"
+                                                                 },
+                             "test_listening_history_saved_with_verification":  {
+                                                                                    "outcome":  "passed",
+                                                                                    "duration":  0.1568388000014238,
+                                                                                    "error":  null
+                                                                                },
+                             "test_history_without_existing_profile":  {
+                                                                           "outcome":  "failed",
+                                                                           "duration":  0.0006216000183485448,
+                                                                           "error":  "tests\\fmea\\test_fmea_user_profile.py:221: in test_history_without_existing_profile\n    username = f\"fmea_no_profile_user_{int(time.time())}\"\n                                           ^^^^\nE   UnboundLocalError: cannot access local variable \u0027time\u0027 where it is not associated with a value"
+                                                                       }
+                         }
+    },
+    {
+        "label":  "Initial_Commit",
+        "timestamp":  "2026-02-20T00:23:03.206670",
+        "commit_hash":  "f53abc749ddcd5ff40acebcef2c111e48b7c2e9d",
+        "commit_message":  "Initial commit",
+        "commit_date":  "2025-09-27 11:28:00 -0500",
+        "service_availability":  {
+                                     "artist_service":  {
+                                                            "available":  true,
+                                                            "status_code":  200
+                                                        },
+                                     "album_service":  {
+                                                           "available":  true,
+                                                           "status_code":  200
+                                                       },
+                                     "recommendation_service":  {
+                                                                    "available":  true,
+                                                                    "status_code":  200
+                                                                },
+                                     "api_gateway":  {
+                                                         "available":  true,
+                                                         "status_code":  200
+                                                     }
+                                 },
+        "total_tests":  22,
+        "passed":  15,
+        "failed":  7,
+        "errors":  0,
+        "reliability_score":  68.18181818181817,
+        "test_results":  {
+                             "test_profile_save_and_retrieve":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  0.2500997000024654,
+                                                                    "error":  null
+                                                                },
+                             "test_profile_json_serialization":  {
+                                                                     "outcome":  "failed",
+                                                                     "duration":  0.18961370002944022,
+                                                                     "error":  "C:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:143: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3301: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:447: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1264: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:711: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:177: in _do_get\n    with util.safe_reraise():\n         ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:224: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:175: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:388: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:673: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:899: in __connect\n    with util.safe_reraise():\n         ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:224: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:895: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:661: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:629: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   psycopg2.OperationalError: connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\n\nThe above exception was the direct cause of the following exception:\ntests\\fmea\\test_fmea_user_profile.py:140: in test_profile_json_serialization\n    session.commit()\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:2032: in commit\n    trans.commit(_to_root=True)\n\u003cstring\u003e:2: in commit\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:137: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1313: in commit\n    self._prepare_impl()\n\u003cstring\u003e:2: in _prepare_impl\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:137: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1288: in _prepare_impl\n    self.session.flush()\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4345: in flush\n    self._flush(objects)\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4480: in _flush\n    with util.safe_reraise():\n         ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:224: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4441: in _flush\n    flush_context.execute()\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:466: in execute\n    rec.execute(self)\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:642: in execute\n    util.preloaded.orm_persistence.save_obj(\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:68: in save_obj\n    ) in _organize_states_for_save(base_mapper, states, uowtransaction):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:223: in _organize_states_for_save\n    for state, dict_, mapper, connection in _connections_for_states(\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:1759: in _connections_for_states\n    connection = uowtransaction.transaction.connection(base_mapper)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\u003cstring\u003e:2: in connection\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:137: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1039: in connection\n    return self._connection_for_bind(bind, execution_options)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\u003cstring\u003e:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:137: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1175: in _connection_for_bind\n    conn = self._parent._connection_for_bind(\n\u003cstring\u003e:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:137: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1189: in _connection_for_bind\n    conn = bind.connect()\n           ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3277: in connect\n    return self._connection_cls(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    Connection._handle_dbapi_exception_noconnection(\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:2440: in _handle_dbapi_exception_noconnection\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:143: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3301: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:447: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1264: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:711: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:177: in _do_get\n    with util.safe_reraise():\n         ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:224: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:175: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:388: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:673: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:899: in __connect\n    with util.safe_reraise():\n         ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:224: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:895: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:661: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:629: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\recommender_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\nE   \nE   (Background on this error at: https://sqlalche.me/e/20/e3q8)"
+                                                                 },
+                             "test_profile_update_overwrites_correctly":  {
+                                                                              "outcome":  "passed",
+                                                                              "duration":  0.13487130001885816,
+                                                                              "error":  null
+                                                                          },
+                             "test_history_without_existing_profile":  {
+                                                                           "outcome":  "failed",
+                                                                           "duration":  0.0003686999552883208,
+                                                                           "error":  "tests\\fmea\\test_fmea_user_profile.py:221: in test_history_without_existing_profile\n    username = f\"fmea_no_profile_user_{int(time.time())}\"\n                                           ^^^^\nE   UnboundLocalError: cannot access local variable \u0027time\u0027 where it is not associated with a value"
+                                                                       },
+                             "test_listening_history_saved_with_verification":  {
+                                                                                    "outcome":  "passed",
+                                                                                    "duration":  0.07244030002038926,
+                                                                                    "error":  null
+                                                                                },
+                             "test_timeout_configuration_present":  {
+                                                                        "outcome":  "failed",
+                                                                        "duration":  0.0015904000028967857,
+                                                                        "error":  "tests\\fmea\\test_fmea_gateway.py:161: in test_timeout_configuration_present\n    assert \"TIMEOUT_CONFIG\" in content or \"timeout\" in content.lower(), \\\nE   AssertionError: No timeout configuration found in gateway\nE   assert (\u0027TIMEOUT_CONFIG\u0027 in \u0027from fastapi import FastAPI, HTTPException\\nimport httpx\\nimport uvicorn\\nimport os\\n\\napp = FastAPI(title=\"MusicBrainz API Gateway\", version=\"1.0.0\")\\n\\n# Service URLs\\nARTIST_SERVICE_URL = os.getenv(\"ARTIST_SERVICE_URL\", \"http://localhost:8001\")\\nALBUM_SERVICE_URL = os.getenv(\"ALBUM_SERVICE_URL\", \"http://localhost:8002\")\\nRECOMMENDATION_SERVICE_URL = os.getenv(\"RECOMMENDATION_SERVICE_URL\", \"http://localhost:8003\")\\n\\n@app.get(\"/health\")\\ndef health_check():\\n    return {\"status\": \"healthy\", \"service\": \"api-gateway\"}\\n\\n# Artist endpoints\\n@app.get(\"/api/artists/search\")\\nasync def search_artists(query: str, limit: int = 25):\\n    async with httpx.AsyncClient() as client:\\n        response = await client.get(f\"{ARTIST_SERVICE_URL}/artists/search\", params={\"query\": query, \"limit\": limit})\\n        if response.status_code == 200:\\n            return response.json()\\n        raise HTTPException(status_code=response.status_code, detail=\"Service unavailable\")\\n\\n@app.get(\"/api/artists/{artist_id}\")\\nasync def get_artist(artist_id: str):\\n    async with httpx.AsyncClient() as client:\\n        response = await client.get(f\"{ARTIST_SERVICE_URL}/artists/{artist_id}\")\\n        if respons...n()\\n        raise HTTPException(status_code=response.status_code, detail=\"Service unavailable\")\\n\\n@app.get(\"/api/users/{username}/profile\")\\nasync def get_user_profile(username: str):\\n    async with httpx.AsyncClient() as client:\\n        response = await client.get(f\"{RECOMMENDATION_SERVICE_URL}/users/{username}/profile\")\\n        if response.status_code == 200:\\n            return response.json()\\n        raise HTTPException(status_code=response.status_code, detail=\"Profile not found\")\\n\\n@app.post(\"/api/users/{username}/listening-history\")\\nasync def add_listening_history(username: str, track_id: str, artist_id: str, interaction_type: str = \"played\"):\\n    async with httpx.AsyncClient() as client:\\n        response = await client.post(f\"{RECOMMENDATION_SERVICE_URL}/users/{username}/listening-history\",\\n                                   params={\"track_id\": track_id, \"artist_id\": artist_id, \"interaction_type\": interaction_type})\\n        if response.status_code == 200:\\n            return response.json()\\n        raise HTTPException(status_code=response.status_code, detail=\"Service unavailable\")\\n\\nif __name__ == \"__main__\":\\n    uvicorn.run(app, host=\"0.0.0.0\", port=8000)\\n\u0027 or \u0027timeout\u0027 in \u0027from fastapi import fastapi, httpexception\\nimport httpx\\nimport uvicorn\\nimport os\\n\\napp = fastapi(title=\"musicbrainz api gateway\", version=\"1.0.0\")\\n\\n# service urls\\nartist_service_url = os.getenv(\"artist_service_url\", \"http://localhost:8001\")\\nalbum_service_url = os.getenv(\"album_service_url\", \"http://localhost:8002\")\\nrecommendation_service_url = os.getenv(\"recommendation_service_url\", \"http://localhost:8003\")\\n\\n@app.get(\"/health\")\\ndef health_check():\\n    return {\"status\": \"healthy\", \"service\": \"api-gateway\"}\\n\\n# artist endpoints\\n@app.get(\"/api/artists/search\")\\nasync def search_artists(query: str, limit: int = 25):\\n    async with httpx.asyncclient() as client:\\n        response = await client.get(f\"{artist_service_url}/artists/search\", params={\"query\": query, \"limit\": limit})\\n        if response.status_code == 200:\\n            return response.json()\\n        raise httpexception(status_code=response.status_code, detail=\"service unavailable\")\\n\\n@app.get(\"/api/artists/{artist_id}\")\\nasync def get_artist(artist_id: str):\\n    async with httpx.asyncclient() as client:\\n        response = await client.get(f\"{artist_service_url}/artists/{artist_id}\")\\n        if respons...n()\\n        raise httpexception(status_code=response.status_code, detail=\"service unavailable\")\\n\\n@app.get(\"/api/users/{username}/profile\")\\nasync def get_user_profile(username: str):\\n    async with httpx.asyncclient() as client:\\n        response = await client.get(f\"{recommendation_service_url}/users/{username}/profile\")\\n        if response.status_code == 200:\\n            return response.json()\\n        raise httpexception(status_code=response.status_code, detail=\"profile not found\")\\n\\n@app.post(\"/api/users/{username}/listening-history\")\\nasync def add_listening_history(username: str, track_id: str, artist_id: str, interaction_type: str = \"played\"):\\n    async with httpx.asyncclient() as client:\\n        response = await client.post(f\"{recommendation_service_url}/users/{username}/listening-history\",\\n                                   params={\"track_id\": track_id, \"artist_id\": artist_id, \"interaction_type\": interaction_type})\\n        if response.status_code == 200:\\n            return response.json()\\n        raise httpexception(status_code=response.status_code, detail=\"service unavailable\")\\n\\nif __name__ == \"__main__\":\\n    uvicorn.run(app, host=\"0.0.0.0\", port=8000)\\n\u0027)\nE    +  where \u0027from fastapi import fastapi, httpexception\\nimport httpx\\nimport uvicorn\\nimport os\\n\\napp = fastapi(title=\"musicbrainz api gateway\", version=\"1.0.0\")\\n\\n# service urls\\nartist_service_url = os.getenv(\"artist_service_url\", \"http://localhost:8001\")\\nalbum_service_url = os.getenv(\"album_service_url\", \"http://localhost:8002\")\\nrecommendation_service_url = os.getenv(\"recommendation_service_url\", \"http://localhost:8003\")\\n\\n@app.get(\"/health\")\\ndef health_check():\\n    return {\"status\": \"healthy\", \"service\": \"api-gateway\"}\\n\\n# artist endpoints\\n@app.get(\"/api/artists/search\")\\nasync def search_artists(query: str, limit: int = 25):\\n    async with httpx.asyncclient() as client:\\n        response = await client.get(f\"{artist_service_url}/artists/search\", params={\"query\": query, \"limit\": limit})\\n        if response.status_code == 200:\\n            return response.json()\\n        raise httpexception(status_code=response.status_code, detail=\"service unavailable\")\\n\\n@app.get(\"/api/artists/{artist_id}\")\\nasync def get_artist(artist_id: str):\\n    async with httpx.asyncclient() as client:\\n        response = await client.get(f\"{artist_service_url}/artists/{artist_id}\")\\n        if respons...n()\\n        raise httpexception(status_code=response.status_code, detail=\"service unavailable\")\\n\\n@app.get(\"/api/users/{username}/profile\")\\nasync def get_user_profile(username: str):\\n    async with httpx.asyncclient() as client:\\n        response = await client.get(f\"{recommendation_service_url}/users/{username}/profile\")\\n        if response.status_code == 200:\\n            return response.json()\\n        raise httpexception(status_code=response.status_code, detail=\"profile not found\")\\n\\n@app.post(\"/api/users/{username}/listening-history\")\\nasync def add_listening_history(username: str, track_id: str, artist_id: str, interaction_type: str = \"played\"):\\n    async with httpx.asyncclient() as client:\\n        response = await client.post(f\"{recommendation_service_url}/users/{username}/listening-history\",\\n                                   params={\"track_id\": track_id, \"artist_id\": artist_id, \"interaction_type\": interaction_type})\\n        if response.status_code == 200:\\n            return response.json()\\n        raise httpexception(status_code=response.status_code, detail=\"service unavailable\")\\n\\nif __name__ == \"__main__\":\\n    uvicorn.run(app, host=\"0.0.0.0\", port=8000)\\n\u0027 = \u003cbuilt-in method lower of str object at 0x000001BD9E334900\u003e()\nE    +    where \u003cbuilt-in method lower of str object at 0x000001BD9E334900\u003e = \u0027from fastapi import FastAPI, HTTPException\\nimport httpx\\nimport uvicorn\\nimport os\\n\\napp = FastAPI(title=\"MusicBrainz API Gateway\", version=\"1.0.0\")\\n\\n# Service URLs\\nARTIST_SERVICE_URL = os.getenv(\"ARTIST_SERVICE_URL\", \"http://localhost:8001\")\\nALBUM_SERVICE_URL = os.getenv(\"ALBUM_SERVICE_URL\", \"http://localhost:8002\")\\nRECOMMENDATION_SERVICE_URL = os.getenv(\"RECOMMENDATION_SERVICE_URL\", \"http://localhost:8003\")\\n\\n@app.get(\"/health\")\\ndef health_check():\\n    return {\"status\": \"healthy\", \"service\": \"api-gateway\"}\\n\\n# Artist endpoints\\n@app.get(\"/api/artists/search\")\\nasync def search_artists(query: str, limit: int = 25):\\n    async with httpx.AsyncClient() as client:\\n        response = await client.get(f\"{ARTIST_SERVICE_URL}/artists/search\", params={\"query\": query, \"limit\": limit})\\n        if response.status_code == 200:\\n            return response.json()\\n        raise HTTPException(status_code=response.status_code, detail=\"Service unavailable\")\\n\\n@app.get(\"/api/artists/{artist_id}\")\\nasync def get_artist(artist_id: str):\\n    async with httpx.AsyncClient() as client:\\n        response = await client.get(f\"{ARTIST_SERVICE_URL}/artists/{artist_id}\")\\n        if respons...n()\\n        raise HTTPException(status_code=response.status_code, detail=\"Service unavailable\")\\n\\n@app.get(\"/api/users/{username}/profile\")\\nasync def get_user_profile(username: str):\\n    async with httpx.AsyncClient() as client:\\n        response = await client.get(f\"{RECOMMENDATION_SERVICE_URL}/users/{username}/profile\")\\n        if response.status_code == 200:\\n            return response.json()\\n        raise HTTPException(status_code=response.status_code, detail=\"Profile not found\")\\n\\n@app.post(\"/api/users/{username}/listening-history\")\\nasync def add_listening_history(username: str, track_id: str, artist_id: str, interaction_type: str = \"played\"):\\n    async with httpx.AsyncClient() as client:\\n        response = await client.post(f\"{RECOMMENDATION_SERVICE_URL}/users/{username}/listening-history\",\\n                                   params={\"track_id\": track_id, \"artist_id\": artist_id, \"interaction_type\": interaction_type})\\n        if response.status_code == 200:\\n            return response.json()\\n        raise HTTPException(status_code=response.status_code, detail=\"Service unavailable\")\\n\\nif __name__ == \"__main__\":\\n    uvicorn.run(app, host=\"0.0.0.0\", port=8000)\\n\u0027.lower"
+                                                                    },
+                             "test_service_unavailable_returns_503_not_500":  {
+                                                                                  "outcome":  "passed",
+                                                                                  "duration":  3.4103899000328965,
+                                                                                  "error":  null
+                                                                              },
+                             "test_concurrent_routing_reliability":  {
+                                                                         "outcome":  "passed",
+                                                                         "duration":  2.362215199973434,
+                                                                         "error":  null
+                                                                     },
+                             "test_correct_http_error_codes":  {
+                                                                   "outcome":  "passed",
+                                                                   "duration":  0.5725443999981508,
+                                                                   "error":  null
+                                                               },
+                             "test_recommendation_service_timeout_handling":  {
+                                                                                  "outcome":  "passed",
+                                                                                  "duration":  1.2716707000508904,
+                                                                                  "error":  null
+                                                                              },
+                             "test_gateway_timeout_isolation":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  0.7624147000024095,
+                                                                    "error":  null
+                                                                },
+                             "test_timeout_returns_empty_not_crash":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.001193900010548532,
+                                                                          "error":  null
+                                                                      },
+                             "test_rate_limit_delay_enforced":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  3.004480200004764,
+                                                                    "error":  null
+                                                                },
+                             "test_rapid_request_service_stability":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  15.300189599976875,
+                                                                          "error":  null
+                                                                      },
+                             "test_rate_limit_429_handling":  {
+                                                                  "outcome":  "passed",
+                                                                  "duration":  0.0008275000145658851,
+                                                                  "error":  null
+                                                              },
+                             "test_rate_limit_recovery":  {
+                                                              "outcome":  "passed",
+                                                              "duration":  1.0020030999439768,
+                                                              "error":  null
+                                                          },
+                             "test_empty_results_graceful_response":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.22461470001144335,
+                                                                          "error":  null
+                                                                      },
+                             "test_fallback_strategies_activated":  {
+                                                                        "outcome":  "failed",
+                                                                        "duration":  0.17862229997990653,
+                                                                        "error":  "tests\\fmea\\test_fmea_recommendation_service.py:212: in test_fallback_strategies_activated\n    from services.recommendation_service import get_diverse_recommendations\nE   ImportError: cannot import name \u0027get_diverse_recommendations\u0027 from \u0027services.recommendation_service\u0027 (C:\\Users\\dennyr\\Dropbox\\Education\\Southern Methodist University\\Courses\\Software Architecture \u0026 Design CS7319\\Project\\musicbrainz-app_old_f53abc74\\services\\recommendation_service.py)"
+                                                                    },
+                             "test_diversity_ratio_in_api_response":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  1.5209827000508085,
+                                                                          "error":  null
+                                                                      },
+                             "test_diversity_filter_max_per_artist":  {
+                                                                          "outcome":  "failed",
+                                                                          "duration":  0.000417000032030046,
+                                                                          "error":  "tests\\fmea\\test_fmea_recommendation_service.py:101: in test_diversity_filter_max_per_artist\n    from services.recommendation_service import ensure_artist_diversity\nE   ImportError: cannot import name \u0027ensure_artist_diversity\u0027 from \u0027services.recommendation_service\u0027 (C:\\Users\\dennyr\\Dropbox\\Education\\Southern Methodist University\\Courses\\Software Architecture \u0026 Design CS7319\\Project\\musicbrainz-app_old_f53abc74\\services\\recommendation_service.py)"
+                                                                      },
+                             "test_genre_detection_known_genres":  {
+                                                                       "outcome":  "failed",
+                                                                       "duration":  0.00022170000011101365,
+                                                                       "error":  "tests\\fmea\\test_fmea_recommendation_service.py:36: in test_genre_detection_known_genres\n    from services.recommendation_service import detect_genre_enhanced\nE   ImportError: cannot import name \u0027detect_genre_enhanced\u0027 from \u0027services.recommendation_service\u0027 (C:\\Users\\dennyr\\Dropbox\\Education\\Southern Methodist University\\Courses\\Software Architecture \u0026 Design CS7319\\Project\\musicbrainz-app_old_f53abc74\\services\\recommendation_service.py)"
+                                                                   },
+                             "test_genre_detection_none_for_unknown":  {
+                                                                           "outcome":  "failed",
+                                                                           "duration":  0.00018640002235770226,
+                                                                           "error":  "tests\\fmea\\test_fmea_recommendation_service.py:71: in test_genre_detection_none_for_unknown\n    from services.recommendation_service import detect_genre_enhanced\nE   ImportError: cannot import name \u0027detect_genre_enhanced\u0027 from \u0027services.recommendation_service\u0027 (C:\\Users\\dennyr\\Dropbox\\Education\\Southern Methodist University\\Courses\\Software Architecture \u0026 Design CS7319\\Project\\musicbrainz-app_old_f53abc74\\services\\recommendation_service.py)"
+                                                                       }
+                         }
+    },
+    {
+        "label":  "Commit002",
+        "timestamp":  "2026-02-21T17:26:22.581982",
+        "commit_hash":  "6cf8aee5e05a2befe87b40d1d783937d79485681",
+        "commit_message":  "Updates to recommendation-service and initial addition of TOML file",
+        "commit_date":  "2025-09-27 14:25:46 -0500",
+        "service_availability":  {
+                                     "artist_service":  {
+                                                            "available":  true,
+                                                            "status_code":  200
+                                                        },
+                                     "album_service":  {
+                                                           "available":  true,
+                                                           "status_code":  200
+                                                       },
+                                     "recommendation_service":  {
+                                                                    "available":  true,
+                                                                    "status_code":  200
+                                                                },
+                                     "api_gateway":  {
+                                                         "available":  true,
+                                                         "status_code":  200
+                                                     }
+                                 },
+        "total_tests":  22,
+        "passed":  17,
+        "failed":  5,
+        "errors":  0,
+        "reliability_score":  77.27272727272727,
+        "test_results":  {
+                             "test_service_unavailable_returns_503_not_500":  {
+                                                                                  "outcome":  "passed",
+                                                                                  "duration":  3.636220200001844,
+                                                                                  "error":  null
+                                                                              },
+                             "test_correct_http_error_codes":  {
+                                                                   "outcome":  "passed",
+                                                                   "duration":  0.5128747999988263,
+                                                                   "error":  null
+                                                               },
+                             "test_concurrent_routing_reliability":  {
+                                                                         "outcome":  "passed",
+                                                                         "duration":  2.491901000001235,
+                                                                         "error":  null
+                                                                     },
+                             "test_timeout_configuration_present":  {
+                                                                        "outcome":  "passed",
+                                                                        "duration":  0.0006815000087954104,
+                                                                        "error":  null
+                                                                    },
+                             "test_rate_limit_delay_enforced":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  3.0037482000043383,
+                                                                    "error":  null
+                                                                },
+                             "test_rate_limit_429_handling":  {
+                                                                  "outcome":  "passed",
+                                                                  "duration":  0.0032909000001382083,
+                                                                  "error":  null
+                                                              },
+                             "test_rapid_request_service_stability":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  10.770894299988868,
+                                                                          "error":  null
+                                                                      },
+                             "test_rate_limit_recovery":  {
+                                                              "outcome":  "passed",
+                                                              "duration":  1.0051652999973157,
+                                                              "error":  null
+                                                          },
+                             "test_timeout_returns_empty_not_crash":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.0018475999968359247,
+                                                                          "error":  null
+                                                                      },
+                             "test_recommendation_service_timeout_handling":  {
+                                                                                  "outcome":  "passed",
+                                                                                  "duration":  1.0506930999981705,
+                                                                                  "error":  null
+                                                                              },
+                             "test_gateway_timeout_isolation":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  1.979893899988383,
+                                                                    "error":  null
+                                                                },
+                             "test_genre_detection_known_genres":  {
+                                                                       "outcome":  "passed",
+                                                                       "duration":  0.0712033000017982,
+                                                                       "error":  null
+                                                                   },
+                             "test_genre_detection_none_for_unknown":  {
+                                                                           "outcome":  "passed",
+                                                                           "duration":  0.0002699000033317134,
+                                                                           "error":  null
+                                                                       },
+                             "test_diversity_filter_max_per_artist":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.0005311999993864447,
+                                                                          "error":  null
+                                                                      },
+                             "test_diversity_ratio_in_api_response":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  2.1428273000055924,
+                                                                          "error":  null
+                                                                      },
+                             "test_empty_results_graceful_response":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.21886789999553002,
+                                                                          "error":  null
+                                                                      },
+                             "test_fallback_strategies_activated":  {
+                                                                        "outcome":  "passed",
+                                                                        "duration":  1.012951199998497,
+                                                                        "error":  null
+                                                                    },
+                             "test_profile_save_and_retrieve":  {
+                                                                    "outcome":  "failed",
+                                                                    "duration":  0.058740500011481345,
+                                                                    "error":  "..\\musicbrainz-app\\tests\\fmea\\test_fmea_user_profile.py:61: in test_profile_save_and_retrieve\n    assert data[\"favorite_genres\"] == payload[\"favorite_genres\"], \\\nE   AssertionError: Genres mismatch: saved [\u0027rock\u0027, \u0027jazz\u0027, \u0027blues\u0027], got []\nE   assert [] == [\u0027rock\u0027, \u0027jazz\u0027, \u0027blues\u0027]\nE     \nE     Right contains 3 more items, first extra item: \u0027rock\u0027\nE     \nE     Full diff:\nE     + []\nE     - [\nE     -     \u0027rock\u0027,...\nE     \nE     ...Full output truncated (3 lines hidden), use \u0027-vv\u0027 to show"
+                                                                },
+                             "test_profile_update_overwrites_correctly":  {
+                                                                              "outcome":  "failed",
+                                                                              "duration":  0.0914453000004869,
+                                                                              "error":  "..\\musicbrainz-app\\tests\\fmea\\test_fmea_user_profile.py:109: in test_profile_update_overwrites_correctly\n    assert set(data[\"favorite_genres\"]) == {\"jazz\", \"blues\"}, \\\nE   AssertionError: Expected [\u0027jazz\u0027, \u0027blues\u0027], got []\nE   assert set() == {\u0027blues\u0027, \u0027jazz\u0027}\nE     \nE     Extra items in the right set:\nE     \u0027jazz\u0027\nE     \u0027blues\u0027\nE     \nE     Full diff:\nE     + set()...\nE     \nE     ...Full output truncated (4 lines hidden), use \u0027-vv\u0027 to show"
+                                                                          },
+                             "test_profile_json_serialization":  {
+                                                                     "outcome":  "failed",
+                                                                     "duration":  0.11543890000029933,
+                                                                     "error":  "C:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   psycopg2.OperationalError: connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\n\nThe above exception was the direct cause of the following exception:\n..\\musicbrainz-app\\tests\\fmea\\test_fmea_user_profile.py:140: in test_profile_json_serialization\n    session.commit()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1969: in commit\n    trans.commit(_to_root=True)\n\u003cstring\u003e:2: in commit\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1256: in commit\n    self._prepare_impl()\n\u003cstring\u003e:2: in _prepare_impl\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1231: in _prepare_impl\n    self.session.flush()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4312: in flush\n    self._flush(objects)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4447: in _flush\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4408: in _flush\n    flush_context.execute()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:466: in execute\n    rec.execute(self)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:642: in execute\n    util.preloaded.orm_persistence.save_obj(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:60: in save_obj\n    for (\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:221: in _organize_states_for_save\n    for state, dict_, mapper, connection in _connections_for_states(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:1726: in _connections_for_states\n    connection = uowtransaction.transaction.connection(base_mapper)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\u003cstring\u003e:2: in connection\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:995: in connection\n    return self._connection_for_bind(bind, execution_options)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\u003cstring\u003e:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1129: in _connection_for_bind\n    conn = self._parent._connection_for_bind(\n\u003cstring\u003e:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1143: in _connection_for_bind\n    conn = bind.connect()\n           ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3268: in connect\n    return self._connection_cls(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:147: in __init__\n    Connection._handle_dbapi_exception_noconnection(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:2430: in _handle_dbapi_exception_noconnection\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\nE   \nE   (Background on this error at: https://sqlalche.me/e/20/e3q8)"
+                                                                 },
+                             "test_listening_history_saved_with_verification":  {
+                                                                                    "outcome":  "failed",
+                                                                                    "duration":  0.055361000006087124,
+                                                                                    "error":  "..\\musicbrainz-app\\tests\\fmea\\test_fmea_user_profile.py:202: in test_listening_history_saved_with_verification\n    assert \"verification_count\" in data, \\\nE   AssertionError: Missing verification_count - history may not be saved\nE   assert \u0027verification_count\u0027 in {\u0027message\u0027: \u0027History added\u0027}"
+                                                                                },
+                             "test_history_without_existing_profile":  {
+                                                                           "outcome":  "failed",
+                                                                           "duration":  0.00011239999730605632,
+                                                                           "error":  "..\\musicbrainz-app\\tests\\fmea\\test_fmea_user_profile.py:221: in test_history_without_existing_profile\n    username = f\"fmea_no_profile_user_{int(time.time())}\"\n                                           ^^^^\nE   UnboundLocalError: cannot access local variable \u0027time\u0027 where it is not associated with a value"
+                                                                       }
+                         }
+    },
+    {
+        "label":  "current",
+        "timestamp":  "2026-02-21T17:28:22.508243",
+        "commit_hash":  "2f6bf30bcd1db0a656dd54e28d5eb8aae5085d85",
+        "commit_message":  "Updated README.md with new test details and added PowerShell scripts for analyzing test results and getting test details. Also updated FMEA report, test results, runtime summary, and reliability test for the album service.",
+        "commit_date":  "2026-02-20 17:06:32 -0600",
+        "service_availability":  {
+                                     "artist_service":  {
+                                                            "available":  true,
+                                                            "status_code":  200
+                                                        },
+                                     "album_service":  {
+                                                           "available":  true,
+                                                           "status_code":  200
+                                                       },
+                                     "recommendation_service":  {
+                                                                    "available":  true,
+                                                                    "status_code":  200
+                                                                },
+                                     "api_gateway":  {
+                                                         "available":  true,
+                                                         "status_code":  200
+                                                     }
+                                 },
+        "total_tests":  22,
+        "passed":  20,
+        "failed":  2,
+        "errors":  0,
+        "reliability_score":  90.9090909090909,
+        "test_results":  {
+                             "test_service_unavailable_returns_503_not_500":  {
+                                                                                  "outcome":  "passed",
+                                                                                  "duration":  3.566696400012006,
+                                                                                  "error":  null
+                                                                              },
+                             "test_correct_http_error_codes":  {
+                                                                   "outcome":  "passed",
+                                                                   "duration":  0.5311726000072667,
+                                                                   "error":  null
+                                                               },
+                             "test_concurrent_routing_reliability":  {
+                                                                         "outcome":  "passed",
+                                                                         "duration":  3.1161043000029167,
+                                                                         "error":  null
+                                                                     },
+                             "test_timeout_configuration_present":  {
+                                                                        "outcome":  "passed",
+                                                                        "duration":  0.06084750000445638,
+                                                                        "error":  null
+                                                                    },
+                             "test_rate_limit_delay_enforced":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  3.006682200008072,
+                                                                    "error":  null
+                                                                },
+                             "test_rate_limit_429_handling":  {
+                                                                  "outcome":  "passed",
+                                                                  "duration":  0.0034525000082794577,
+                                                                  "error":  null
+                                                              },
+                             "test_rapid_request_service_stability":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  11.598460599998361,
+                                                                          "error":  null
+                                                                      },
+                             "test_rate_limit_recovery":  {
+                                                              "outcome":  "passed",
+                                                              "duration":  1.002575299993623,
+                                                              "error":  null
+                                                          },
+                             "test_timeout_returns_empty_not_crash":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.0008930000039981678,
+                                                                          "error":  null
+                                                                      },
+                             "test_recommendation_service_timeout_handling":  {
+                                                                                  "outcome":  "passed",
+                                                                                  "duration":  0.9526157000072999,
+                                                                                  "error":  null
+                                                                              },
+                             "test_gateway_timeout_isolation":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  1.748549700001604,
+                                                                    "error":  null
+                                                                },
+                             "test_genre_detection_known_genres":  {
+                                                                       "outcome":  "passed",
+                                                                       "duration":  0.17388439999194816,
+                                                                       "error":  null
+                                                                   },
+                             "test_genre_detection_none_for_unknown":  {
+                                                                           "outcome":  "passed",
+                                                                           "duration":  0.00025260000256821513,
+                                                                           "error":  null
+                                                                       },
+                             "test_diversity_filter_max_per_artist":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.00046440000005532056,
+                                                                          "error":  null
+                                                                      },
+                             "test_diversity_ratio_in_api_response":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  1.5251579000032507,
+                                                                          "error":  null
+                                                                      },
+                             "test_empty_results_graceful_response":  {
+                                                                          "outcome":  "passed",
+                                                                          "duration":  0.17219460000342224,
+                                                                          "error":  null
+                                                                      },
+                             "test_fallback_strategies_activated":  {
+                                                                        "outcome":  "passed",
+                                                                        "duration":  0.3477312000031816,
+                                                                        "error":  null
+                                                                    },
+                             "test_profile_save_and_retrieve":  {
+                                                                    "outcome":  "passed",
+                                                                    "duration":  0.04774889998952858,
+                                                                    "error":  null
+                                                                },
+                             "test_profile_update_overwrites_correctly":  {
+                                                                              "outcome":  "passed",
+                                                                              "duration":  0.10645200000726618,
+                                                                              "error":  null
+                                                                          },
+                             "test_profile_json_serialization":  {
+                                                                     "outcome":  "failed",
+                                                                     "duration":  0.03472390001115855,
+                                                                     "error":  "C:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   psycopg2.OperationalError: connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\n\nThe above exception was the direct cause of the following exception:\ntests\\fmea\\test_fmea_user_profile.py:140: in test_profile_json_serialization\n    session.commit()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1969: in commit\n    trans.commit(_to_root=True)\n\u003cstring\u003e:2: in commit\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1256: in commit\n    self._prepare_impl()\n\u003cstring\u003e:2: in _prepare_impl\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1231: in _prepare_impl\n    self.session.flush()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4312: in flush\n    self._flush(objects)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4447: in _flush\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4408: in _flush\n    flush_context.execute()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:466: in execute\n    rec.execute(self)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:642: in execute\n    util.preloaded.orm_persistence.save_obj(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:60: in save_obj\n    for (\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:221: in _organize_states_for_save\n    for state, dict_, mapper, connection in _connections_for_states(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:1726: in _connections_for_states\n    connection = uowtransaction.transaction.connection(base_mapper)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\u003cstring\u003e:2: in connection\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:995: in connection\n    return self._connection_for_bind(bind, execution_options)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\u003cstring\u003e:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1129: in _connection_for_bind\n    conn = self._parent._connection_for_bind(\n\u003cstring\u003e:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1143: in _connection_for_bind\n    conn = bind.connect()\n           ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3268: in connect\n    return self._connection_cls(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:147: in __init__\n    Connection._handle_dbapi_exception_noconnection(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:2430: in _handle_dbapi_exception_noconnection\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\nE   \nE   (Background on this error at: https://sqlalche.me/e/20/e3q8)"
+                                                                 },
+                             "test_listening_history_saved_with_verification":  {
+                                                                                    "outcome":  "passed",
+                                                                                    "duration":  0.08832909999182448,
+                                                                                    "error":  null
+                                                                                },
+                             "test_history_without_existing_profile":  {
+                                                                           "outcome":  "failed",
+                                                                           "duration":  0.00016110000433400273,
+                                                                           "error":  "tests\\fmea\\test_fmea_user_profile.py:221: in test_history_without_existing_profile\n    username = f\"fmea_no_profile_user_{int(time.time())}\"\n                                           ^^^^\nE   UnboundLocalError: cannot access local variable \u0027time\u0027 where it is not associated with a value"
+                                                                       }
+                         }
+    }
+]
