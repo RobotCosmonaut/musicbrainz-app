@@ -15,12 +15,19 @@ PROJECT_ROOT = Path(__file__).parent
 METRICS_DIR = PROJECT_ROOT / "metrics_data"
 FMEA_METRICS_FILE = METRICS_DIR / "fmea_test_results.json"
 
-def get_commit_hash():
+def get_commit_hash(override_hash=None):
+    """Get commit hash - use override if provided, otherwise detect from git"""
+    if override_hash:
+        print(f"Using provided commit hash: {override_hash}")
+        return override_hash
+    
     try:
-        return subprocess.check_output(
+        hash_value = subprocess.check_output(
             ["git", "rev-parse", "HEAD"],
             cwd=PROJECT_ROOT
         ).decode().strip()
+        print(f"Detected commit hash: {hash_value}")
+        return hash_value
     except:
         return "unknown"
 
@@ -69,8 +76,10 @@ def check_service_availability():
 
     return availability
 
-def run_fmea_tests(label=None):
+def run_fmea_tests(label=None, commit_hash=None):
     """Run FMEA tests and save with optional label"""
+
+    commit_hash_value = get_commit_hash(commit_hash)
 
     print("=" * 70)
     print("Running FMEA Tests")
@@ -137,9 +146,9 @@ def run_fmea_tests(label=None):
     reliability_score = (passed / total_tests * 100) if total_tests > 0 else 0
 
     metrics = {
-        "label": label or f"commit_{get_commit_hash()[:8]}",
+        "label": label or f"commit_{commit_hash_value[:8]}",  # Use stored value
         "timestamp": datetime.now().isoformat(),
-        "commit_hash": get_commit_hash(),
+        "commit_hash": commit_hash_value,  # Use stored value
         "commit_message": get_commit_message(),
         "commit_date": get_commit_date(),
         "service_availability": availability,
@@ -150,6 +159,7 @@ def run_fmea_tests(label=None):
         "reliability_score": reliability_score,
         "test_results": test_results
     }
+    
 
     # Save to history
     history = []
@@ -250,6 +260,12 @@ if __name__ == "__main__":
         help="Label for this test run (e.g. 'old_v1' or 'current')"
     )
     parser.add_argument(
+        "--commit-hash",
+        type=str,
+        default=None,
+        help="Commit hash to record (overrides git detection)"
+    )  # ← ADD THIS
+    parser.add_argument(
         "--compare",
         nargs=2,
         metavar=("OLD_LABEL", "NEW_LABEL"),
@@ -271,4 +287,4 @@ if __name__ == "__main__":
                 history = json.load(f)
             _show_available_labels(history)
     else:
-        run_fmea_tests(label=args.label)
+        run_fmea_tests(label=args.label, commit_hash=args.commit_hash)

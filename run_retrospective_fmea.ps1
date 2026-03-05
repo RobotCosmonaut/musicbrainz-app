@@ -77,7 +77,9 @@ Write-Host "   ✅ Found commit: $($FullOldHash.Substring(0,8))" -ForegroundColo
 # ─────────────────────────────────────────────────────────────────────
 
 Write-Host ""
-Write-Host "[2/7] Creating isolated worktree..." -ForegroundColor Yellow
+Write-Host "[2/7] Creating isolated worktree for old commit..." -ForegroundColor Yellow
+
+$WorktreeDir = "..\musicbrainz-app_old_$($OldCommit.Substring(0,8))"
 Write-Host "      Location: $WorktreeDir" -ForegroundColor Gray
 
 # Remove existing worktree if it exists from a previous run
@@ -87,130 +89,111 @@ if (Test-Path $WorktreeDir) {
     Remove-Item -Path $WorktreeDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-# Create the worktree - this is the key command
-# It checks out the old commit into $WorktreeDir WITHOUT touching $CurrentDir
+# Create the worktree
 git worktree add $WorktreeDir $OldCommit
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Failed to create worktree" -ForegroundColor Red
+    Write-Host "   ❌ Failed to create worktree" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "   ✅ Worktree created at: $WorktreeDir" -ForegroundColor Green
+Write-Host "   ✅ Worktree created" -ForegroundColor Green
+
+# CAPTURE COMMIT HASH IMMEDIATELY (worktree exists now!)
+Push-Location $WorktreeDir
+$OldCommitHash = git rev-parse HEAD
+Pop-Location
+
+Write-Host "   Old commit hash: $OldCommitHash" -ForegroundColor Cyan
 
 # ─────────────────────────────────────────────────────────────────────
-# STEP 3: INJECT FMEA SCRIPTS INTO WORKTREE
-# ─────────────────────────────────────────────────────────────────────
-
-Write-Host ""
-Write-Host "[3/7] Injecting FMEA test scripts into worktree..." -ForegroundColor Yellow
-Write-Host "      (These scripts don't exist in the old commit)" -ForegroundColor Gray
-
-# Create test structure in worktree
-New-Item -ItemType Directory -Path "$WorktreeDir\tests\fmea" -Force | Out-Null
-New-Item -ItemType Directory -Path "$WorktreeDir\metrics_data" -Force | Out-Null
-
-# Copy FMEA test files from current project into worktree
-$FilesToCopy = @{
-    # Test files
-    "$CurrentDir\tests\fmea"                    = "$WorktreeDir\tests\fmea"
-    "$CurrentDir\tests\__init__.py"             = "$WorktreeDir\tests\__init__.py"
-    "$CurrentDir\tests\conftest.py"             = "$WorktreeDir\tests\conftest.py"
-
-    # Utility scripts
-    "$CurrentDir\run_fmea_tests.py"             = "$WorktreeDir\run_fmea_tests.py"
-}
-
-foreach ($Source in $FilesToCopy.Keys) {
-    $Dest = $FilesToCopy[$Source]
-
-    if (Test-Path $Source) {
-        if ((Get-Item $Source).PSIsContainer) {
-            # It's a directory
-            Copy-Item -Path "$Source\*" -Destination $Dest -Recurse -Force
-            Write-Host "   ✅ Copied directory: $(Split-Path $Source -Leaf)" -ForegroundColor Green
-        } else {
-            # It's a file
-            Copy-Item -Path $Source -Destination $Dest -Force
-            Write-Host "   ✅ Copied file: $(Split-Path $Source -Leaf)" -ForegroundColor Green
-        }
-    } else {
-        Write-Host "   ⚠️  Not found (skipping): $Source" -ForegroundColor Yellow
-    }
-}
-
-# ─────────────────────────────────────────────────────────────────────
-# STEP 4: STOP CURRENT SERVICES, START OLD COMMIT SERVICES
+# STEP 3: START OLD SERVICES (NO FILE COPYING!)
 # ─────────────────────────────────────────────────────────────────────
 
 Write-Host ""
-Write-Host "[4/7] Stopping current services and starting OLD commit services..." -ForegroundColor Yellow
+Write-Host "[3/7] Starting OLD commit services..." -ForegroundColor Yellow
+Write-Host "      (Tests will run from current directory)" -ForegroundColor Gray
 
-# CRITICAL: Stop current services first to free up ports
-Write-Host "   Stopping current project services..." -ForegroundColor Gray
+# Stop current services first
+Write-Host "   Stopping current services to free ports..." -ForegroundColor Gray
 Set-Location $CurrentDir
-docker-compose down
+docker-compose down 2>&1 | Out-Null
 Start-Sleep -Seconds 5
 
 if (-not (Test-Path "$WorktreeDir\docker-compose.yml")) {
     Write-Host "   ⚠️  No docker-compose.yml in old commit" -ForegroundColor Yellow
 } else {
+    # Build and start in worktree (NO test files copied, so Docker builds cleanly)
     Set-Location $WorktreeDir
-    Write-Host "   Starting old commit services..." -ForegroundColor Gray
-    docker-compose up --build -d
-
+    
+    Write-Host "   Building old commit services..." -ForegroundColor Gray
+    docker-compose build 2>&1 | Out-Null
+    
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "   ⚠️  Services failed to start - some tests will show failures" -ForegroundColor Yellow
+        Write-Host "   ❌ Build failed" -ForegroundColor Red
     } else {
-        Write-Host "   Waiting 30 seconds for services..." -ForegroundColor Gray
+        Write-Host "   Starting old commit services..." -ForegroundColor Gray
+        docker-compose up -d 2>&1 | Out-Null
+        
+        Write-Host "   Waiting 30 seconds..." -ForegroundColor Gray
         Start-Sleep -Seconds 30
-        Write-Host "   ✅ Old commit services started" -ForegroundColor Green
+        
+        # Verify
+        try {
+            $response = Invoke-WebRequest -Uri "http://localhost:8000/health" -TimeoutSec 5 -ErrorAction Stop
+            Write-Host "   ✅ Old commit services running on localhost:8000-8003" -ForegroundColor Green
+        } catch {
+            Write-Host "   ⚠️  Services not responding (tests will fail)" -ForegroundColor Yellow
+        }
     }
-
+    
     Set-Location $CurrentDir
 }
 
 # ─────────────────────────────────────────────────────────────────────
-# STEP 5: RUN FMEA TESTS AGAINST OLD COMMIT
+# STEP 4: RUN TESTS FROM CURRENT DIR AGAINST OLD SERVICES
 # ─────────────────────────────────────────────────────────────────────
 
 Write-Host ""
-Write-Host "[5/7] Running FMEA tests against OLD commit..." -ForegroundColor Yellow
+Write-Host "[4/7] Running FMEA tests against OLD commit services..." -ForegroundColor Yellow
+Write-Host "      Testing commit: $OldCommitHash" -ForegroundColor Gray
 
-# Run from the WORKTREE directory but save metrics to CURRENT project
-Set-Location $WorktreeDir
+# CRITICAL: Stay in current directory where test files exist
+Set-Location $CurrentDir
 
-python run_fmea_tests.py --label $OldLabel
+# Run tests with the hash we captured in Step 2
+python run_fmea_tests.py --label $OldLabel --commit-hash $OldCommitHash
 
-# Copy metrics back to current project's metrics_data
-# So both old and new results are in the same file for comparison
-$WorktreeMetrics = "$WorktreeDir\metrics_data\fmea_test_results.json"
-$CurrentMetrics  = "$CurrentDir\metrics_data\fmea_test_results.json"
+Write-Host "   Old commit test results saved" -ForegroundColor Green
 
-if (Test-Path $WorktreeMetrics) {
-    $WorktreeData = Get-Content $WorktreeMetrics | ConvertFrom-Json
-    
-    if (Test-Path $CurrentMetrics) {
-        $CurrentData = Get-Content $CurrentMetrics | ConvertFrom-Json
-        # FIXED: Force array conversion
-        $MergedData = @($CurrentData) + @($WorktreeData)
-    } else {
-        $MergedData = @($WorktreeData)
-    }
-    
-    $MergedData | ConvertTo-Json -Depth 10 | Set-Content $CurrentMetrics
-    Write-Host "   ✅ Old commit results saved to current project metrics" -ForegroundColor Green
-} else {
-    Write-Host "   ⚠️  No test results found in worktree" -ForegroundColor Yellow
-}
+# ─────────────────────────────────────────────────────────────────────
+# STEP 5: STOP OLD SERVICES, START CURRENT SERVICES
+# ─────────────────────────────────────────────────────────────────────
+
+Write-Host ""
+Write-Host "[5/7] Switching to current commit services..." -ForegroundColor Yellow
 
 # Stop old services
 if (Test-Path "$WorktreeDir\docker-compose.yml") {
-    docker-compose down
+    Write-Host "   Stopping old commit services..." -ForegroundColor Gray
+    Set-Location $WorktreeDir
+    docker-compose down 2>&1 | Out-Null
+    Set-Location $CurrentDir
 }
 
-# Return to current directory
-Set-Location $CurrentDir
+Start-Sleep -Seconds 5
+
+# Start current services
+Write-Host "   Starting current commit services..." -ForegroundColor Gray
+docker-compose up -d 2>&1 | Out-Null
+Start-Sleep -Seconds 30
+
+try {
+    $response = Invoke-WebRequest -Uri "http://localhost:8000/health" -TimeoutSec 5 -ErrorAction Stop
+    Write-Host "   ✅ Current services running" -ForegroundColor Green
+} catch {
+    Write-Host "   ⚠️  Services not responding" -ForegroundColor Yellow
+}
 
 # ─────────────────────────────────────────────────────────────────────
 # STEP 6: STOP OLD SERVICES, START CURRENT SERVICES, RUN TESTS
@@ -233,6 +216,10 @@ Write-Host "   Starting current project services..." -ForegroundColor Gray
 docker-compose up --build -d
 Start-Sleep -Seconds 30
 Write-Host "   ✅ Current services started" -ForegroundColor Green
+
+# Get current commit hash
+$CurrentCommitHash = git rev-parse HEAD
+Write-Host "      Testing commit: $CurrentCommitHash" -ForegroundColor Gray
 
 # Run FMEA tests against current commit
 python run_fmea_tests.py --label $NewLabel

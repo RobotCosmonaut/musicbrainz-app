@@ -1,0 +1,428 @@
+[
+  {
+    "label": "Commit001",
+    "timestamp": "2026-03-04T00:47:58.421726",
+    "commit_hash": "f53abc749ddcd5ff40acebcef2c111e48b7c2e9d",
+    "commit_message": "Updated runtime summary data for the latest performance tests.",
+    "commit_date": "2026-03-03 23:09:48 -0600",
+    "service_availability": {
+      "artist_service": {
+        "available": true,
+        "status_code": 200
+      },
+      "album_service": {
+        "available": true,
+        "status_code": 200
+      },
+      "recommendation_service": {
+        "available": true,
+        "status_code": 200
+      },
+      "api_gateway": {
+        "available": true,
+        "status_code": 200
+      }
+    },
+    "total_tests": 22,
+    "passed": 17,
+    "failed": 5,
+    "errors": 0,
+    "reliability_score": 77.27272727272727,
+    "test_results": {
+      "test_service_unavailable_returns_503_not_500": {
+        "outcome": "passed",
+        "duration": 3.271324000088498,
+        "error": null
+      },
+      "test_correct_http_error_codes": {
+        "outcome": "passed",
+        "duration": 0.3284640000201762,
+        "error": null
+      },
+      "test_concurrent_routing_reliability": {
+        "outcome": "passed",
+        "duration": 3.656110299983993,
+        "error": null
+      },
+      "test_timeout_configuration_present": {
+        "outcome": "passed",
+        "duration": 0.0010766000486910343,
+        "error": null
+      },
+      "test_rate_limit_delay_enforced": {
+        "outcome": "passed",
+        "duration": 3.003757100086659,
+        "error": null
+      },
+      "test_rate_limit_429_handling": {
+        "outcome": "passed",
+        "duration": 0.001853700028732419,
+        "error": null
+      },
+      "test_rapid_request_service_stability": {
+        "outcome": "passed",
+        "duration": 15.442164100008085,
+        "error": null
+      },
+      "test_rate_limit_recovery": {
+        "outcome": "passed",
+        "duration": 1.0023581000277773,
+        "error": null
+      },
+      "test_timeout_returns_empty_not_crash": {
+        "outcome": "passed",
+        "duration": 0.0005050000036135316,
+        "error": null
+      },
+      "test_recommendation_service_timeout_handling": {
+        "outcome": "passed",
+        "duration": 3.0636900999816135,
+        "error": null
+      },
+      "test_gateway_timeout_isolation": {
+        "outcome": "passed",
+        "duration": 2.5730535000329837,
+        "error": null
+      },
+      "test_genre_detection_known_genres": {
+        "outcome": "passed",
+        "duration": 0.05958980007562786,
+        "error": null
+      },
+      "test_genre_detection_none_for_unknown": {
+        "outcome": "passed",
+        "duration": 0.00023290002718567848,
+        "error": null
+      },
+      "test_diversity_filter_max_per_artist": {
+        "outcome": "passed",
+        "duration": 0.00046390003990381956,
+        "error": null
+      },
+      "test_diversity_ratio_in_api_response": {
+        "outcome": "passed",
+        "duration": 4.049711199942976,
+        "error": null
+      },
+      "test_empty_results_graceful_response": {
+        "outcome": "passed",
+        "duration": 1.5608436999609694,
+        "error": null
+      },
+      "test_fallback_strategies_activated": {
+        "outcome": "passed",
+        "duration": 0.902066900045611,
+        "error": null
+      },
+      "test_profile_save_and_retrieve": {
+        "outcome": "failed",
+        "duration": 0.0718541000969708,
+        "error": "tests\\fmea\\test_fmea_user_profile.py:61: in test_profile_save_and_retrieve\n    assert data[\"favorite_genres\"] == payload[\"favorite_genres\"], \\\nE   AssertionError: Genres mismatch: saved ['rock', 'jazz', 'blues'], got []\nE   assert [] == ['rock', 'jazz', 'blues']\nE     \nE     Right contains 3 more items, first extra item: 'rock'\nE     \nE     Full diff:\nE     + []\nE     - [\nE     -     'rock',\nE     -     'jazz',\nE     -     'blues',\nE     - ]"
+      },
+      "test_profile_update_overwrites_correctly": {
+        "outcome": "failed",
+        "duration": 0.13978109997697175,
+        "error": "tests\\fmea\\test_fmea_user_profile.py:109: in test_profile_update_overwrites_correctly\n    assert set(data[\"favorite_genres\"]) == {\"jazz\", \"blues\"}, \\\nE   AssertionError: Expected ['jazz', 'blues'], got []\nE   assert set() == {'jazz', 'blues'}\nE     \nE     Extra items in the right set:\nE     'jazz'\nE     'blues'\nE     \nE     Full diff:\nE     + set()\nE     - {\nE     -     'blues',\nE     -     'jazz',\nE     - }"
+      },
+      "test_profile_json_serialization": {
+        "outcome": "failed",
+        "duration": 0.045963000040501356,
+        "error": "C:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   psycopg2.OperationalError: connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\n\nThe above exception was the direct cause of the following exception:\ntests\\fmea\\test_fmea_user_profile.py:140: in test_profile_json_serialization\n    session.commit()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1969: in commit\n    trans.commit(_to_root=True)\n<string>:2: in commit\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1256: in commit\n    self._prepare_impl()\n<string>:2: in _prepare_impl\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1231: in _prepare_impl\n    self.session.flush()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4312: in flush\n    self._flush(objects)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4447: in _flush\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4408: in _flush\n    flush_context.execute()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:466: in execute\n    rec.execute(self)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:642: in execute\n    util.preloaded.orm_persistence.save_obj(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:60: in save_obj\n    for (\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:221: in _organize_states_for_save\n    for state, dict_, mapper, connection in _connections_for_states(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:1726: in _connections_for_states\n    connection = uowtransaction.transaction.connection(base_mapper)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<string>:2: in connection\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:995: in connection\n    return self._connection_for_bind(bind, execution_options)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<string>:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1129: in _connection_for_bind\n    conn = self._parent._connection_for_bind(\n<string>:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1143: in _connection_for_bind\n    conn = bind.connect()\n           ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3268: in connect\n    return self._connection_cls(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:147: in __init__\n    Connection._handle_dbapi_exception_noconnection(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:2430: in _handle_dbapi_exception_noconnection\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\nE   \nE   (Background on this error at: https://sqlalche.me/e/20/e3q8)"
+      },
+      "test_listening_history_saved_with_verification": {
+        "outcome": "failed",
+        "duration": 0.09055379999335855,
+        "error": "tests\\fmea\\test_fmea_user_profile.py:202: in test_listening_history_saved_with_verification\n    assert \"verification_count\" in data, \\\nE   AssertionError: Missing verification_count - history may not be saved\nE   assert 'verification_count' in {'message': 'Listening history added'}"
+      },
+      "test_history_without_existing_profile": {
+        "outcome": "failed",
+        "duration": 0.0004092000890523195,
+        "error": "tests\\fmea\\test_fmea_user_profile.py:221: in test_history_without_existing_profile\n    username = f\"fmea_no_profile_user_{int(time.time())}\"\n                                           ^^^^\nE   UnboundLocalError: cannot access local variable 'time' where it is not associated with a value"
+      }
+    }
+  },
+  {
+    "label": "Commit002",
+    "timestamp": "2026-03-04T01:04:00.677043",
+    "commit_hash": "cf96478a46ff67dae10543dcb20b051a34711272",
+    "commit_message": "Updated runtime summary data for the latest performance tests.",
+    "commit_date": "2026-03-03 23:09:48 -0600",
+    "service_availability": {
+      "artist_service": {
+        "available": true,
+        "status_code": 200
+      },
+      "album_service": {
+        "available": true,
+        "status_code": 200
+      },
+      "recommendation_service": {
+        "available": true,
+        "status_code": 200
+      },
+      "api_gateway": {
+        "available": true,
+        "status_code": 200
+      }
+    },
+    "total_tests": 22,
+    "passed": 17,
+    "failed": 5,
+    "errors": 0,
+    "reliability_score": 77.27272727272727,
+    "test_results": {
+      "test_service_unavailable_returns_503_not_500": {
+        "outcome": "passed",
+        "duration": 3.672090599895455,
+        "error": null
+      },
+      "test_correct_http_error_codes": {
+        "outcome": "passed",
+        "duration": 0.5182177000679076,
+        "error": null
+      },
+      "test_concurrent_routing_reliability": {
+        "outcome": "passed",
+        "duration": 2.5925551999825984,
+        "error": null
+      },
+      "test_timeout_configuration_present": {
+        "outcome": "passed",
+        "duration": 0.0006429000059142709,
+        "error": null
+      },
+      "test_rate_limit_delay_enforced": {
+        "outcome": "passed",
+        "duration": 3.002429599990137,
+        "error": null
+      },
+      "test_rate_limit_429_handling": {
+        "outcome": "passed",
+        "duration": 0.0014676999999210238,
+        "error": null
+      },
+      "test_rapid_request_service_stability": {
+        "outcome": "passed",
+        "duration": 14.297581000020728,
+        "error": null
+      },
+      "test_rate_limit_recovery": {
+        "outcome": "passed",
+        "duration": 1.002732599969022,
+        "error": null
+      },
+      "test_timeout_returns_empty_not_crash": {
+        "outcome": "passed",
+        "duration": 0.0014793999725952744,
+        "error": null
+      },
+      "test_recommendation_service_timeout_handling": {
+        "outcome": "passed",
+        "duration": 0.8256302999798208,
+        "error": null
+      },
+      "test_gateway_timeout_isolation": {
+        "outcome": "passed",
+        "duration": 1.8689388999482617,
+        "error": null
+      },
+      "test_genre_detection_known_genres": {
+        "outcome": "passed",
+        "duration": 0.048385299975052476,
+        "error": null
+      },
+      "test_genre_detection_none_for_unknown": {
+        "outcome": "passed",
+        "duration": 0.0002191999228671193,
+        "error": null
+      },
+      "test_diversity_filter_max_per_artist": {
+        "outcome": "passed",
+        "duration": 0.0004376999568194151,
+        "error": null
+      },
+      "test_diversity_ratio_in_api_response": {
+        "outcome": "passed",
+        "duration": 1.2193372999317944,
+        "error": null
+      },
+      "test_empty_results_graceful_response": {
+        "outcome": "passed",
+        "duration": 0.17852670000866055,
+        "error": null
+      },
+      "test_fallback_strategies_activated": {
+        "outcome": "passed",
+        "duration": 0.6693884000414982,
+        "error": null
+      },
+      "test_profile_save_and_retrieve": {
+        "outcome": "failed",
+        "duration": 0.06334340001922101,
+        "error": "tests\\fmea\\test_fmea_user_profile.py:61: in test_profile_save_and_retrieve\n    assert data[\"favorite_genres\"] == payload[\"favorite_genres\"], \\\nE   AssertionError: Genres mismatch: saved ['rock', 'jazz', 'blues'], got []\nE   assert [] == ['rock', 'jazz', 'blues']\nE     \nE     Right contains 3 more items, first extra item: 'rock'\nE     \nE     Full diff:\nE     + []\nE     - [\nE     -     'rock',\nE     -     'jazz',\nE     -     'blues',\nE     - ]"
+      },
+      "test_profile_update_overwrites_correctly": {
+        "outcome": "failed",
+        "duration": 0.08899059996474534,
+        "error": "tests\\fmea\\test_fmea_user_profile.py:109: in test_profile_update_overwrites_correctly\n    assert set(data[\"favorite_genres\"]) == {\"jazz\", \"blues\"}, \\\nE   AssertionError: Expected ['jazz', 'blues'], got []\nE   assert set() == {'jazz', 'blues'}\nE     \nE     Extra items in the right set:\nE     'jazz'\nE     'blues'\nE     \nE     Full diff:\nE     + set()\nE     - {\nE     -     'blues',\nE     -     'jazz',\nE     - }"
+      },
+      "test_profile_json_serialization": {
+        "outcome": "failed",
+        "duration": 0.16131830005906522,
+        "error": "C:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   psycopg2.OperationalError: connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\n\nThe above exception was the direct cause of the following exception:\ntests\\fmea\\test_fmea_user_profile.py:140: in test_profile_json_serialization\n    session.commit()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1969: in commit\n    trans.commit(_to_root=True)\n<string>:2: in commit\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1256: in commit\n    self._prepare_impl()\n<string>:2: in _prepare_impl\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1231: in _prepare_impl\n    self.session.flush()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4312: in flush\n    self._flush(objects)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4447: in _flush\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4408: in _flush\n    flush_context.execute()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:466: in execute\n    rec.execute(self)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:642: in execute\n    util.preloaded.orm_persistence.save_obj(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:60: in save_obj\n    for (\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:221: in _organize_states_for_save\n    for state, dict_, mapper, connection in _connections_for_states(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:1726: in _connections_for_states\n    connection = uowtransaction.transaction.connection(base_mapper)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<string>:2: in connection\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:995: in connection\n    return self._connection_for_bind(bind, execution_options)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<string>:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1129: in _connection_for_bind\n    conn = self._parent._connection_for_bind(\n<string>:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1143: in _connection_for_bind\n    conn = bind.connect()\n           ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3268: in connect\n    return self._connection_cls(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:147: in __init__\n    Connection._handle_dbapi_exception_noconnection(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:2430: in _handle_dbapi_exception_noconnection\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\nE   \nE   (Background on this error at: https://sqlalche.me/e/20/e3q8)"
+      },
+      "test_listening_history_saved_with_verification": {
+        "outcome": "failed",
+        "duration": 0.02403749991208315,
+        "error": "tests\\fmea\\test_fmea_user_profile.py:202: in test_listening_history_saved_with_verification\n    assert \"verification_count\" in data, \\\nE   AssertionError: Missing verification_count - history may not be saved\nE   assert 'verification_count' in {'message': 'History added'}"
+      },
+      "test_history_without_existing_profile": {
+        "outcome": "failed",
+        "duration": 0.00013840000610798597,
+        "error": "tests\\fmea\\test_fmea_user_profile.py:221: in test_history_without_existing_profile\n    username = f\"fmea_no_profile_user_{int(time.time())}\"\n                                           ^^^^\nE   UnboundLocalError: cannot access local variable 'time' where it is not associated with a value"
+      }
+    }
+  },
+  {
+    "label": "current",
+    "timestamp": "2026-03-04T01:07:25.930310",
+    "commit_hash": "f6a61de71c68426d648f6c9c53560adcdb96ba95",
+    "commit_message": "Updated runtime summary data for the latest performance tests.",
+    "commit_date": "2026-03-03 23:09:48 -0600",
+    "service_availability": {
+      "artist_service": {
+        "available": true,
+        "status_code": 200
+      },
+      "album_service": {
+        "available": true,
+        "status_code": 200
+      },
+      "recommendation_service": {
+        "available": true,
+        "status_code": 200
+      },
+      "api_gateway": {
+        "available": true,
+        "status_code": 200
+      }
+    },
+    "total_tests": 22,
+    "passed": 20,
+    "failed": 2,
+    "errors": 0,
+    "reliability_score": 90.9090909090909,
+    "test_results": {
+      "test_service_unavailable_returns_503_not_500": {
+        "outcome": "passed",
+        "duration": 3.413412500056438,
+        "error": null
+      },
+      "test_correct_http_error_codes": {
+        "outcome": "passed",
+        "duration": 0.515537399915047,
+        "error": null
+      },
+      "test_concurrent_routing_reliability": {
+        "outcome": "passed",
+        "duration": 2.144921600003727,
+        "error": null
+      },
+      "test_timeout_configuration_present": {
+        "outcome": "passed",
+        "duration": 0.0006486999336630106,
+        "error": null
+      },
+      "test_rate_limit_delay_enforced": {
+        "outcome": "passed",
+        "duration": 3.0030537000857294,
+        "error": null
+      },
+      "test_rate_limit_429_handling": {
+        "outcome": "passed",
+        "duration": 0.0014777000760659575,
+        "error": null
+      },
+      "test_rapid_request_service_stability": {
+        "outcome": "passed",
+        "duration": 11.983049999922514,
+        "error": null
+      },
+      "test_rate_limit_recovery": {
+        "outcome": "passed",
+        "duration": 1.0052796000381932,
+        "error": null
+      },
+      "test_timeout_returns_empty_not_crash": {
+        "outcome": "passed",
+        "duration": 0.0006599000189453363,
+        "error": null
+      },
+      "test_recommendation_service_timeout_handling": {
+        "outcome": "passed",
+        "duration": 0.8412786999251693,
+        "error": null
+      },
+      "test_gateway_timeout_isolation": {
+        "outcome": "passed",
+        "duration": 1.7479199999943376,
+        "error": null
+      },
+      "test_genre_detection_known_genres": {
+        "outcome": "passed",
+        "duration": 0.048812300083227456,
+        "error": null
+      },
+      "test_genre_detection_none_for_unknown": {
+        "outcome": "passed",
+        "duration": 0.0002180000301450491,
+        "error": null
+      },
+      "test_diversity_filter_max_per_artist": {
+        "outcome": "passed",
+        "duration": 0.0004290000069886446,
+        "error": null
+      },
+      "test_diversity_ratio_in_api_response": {
+        "outcome": "passed",
+        "duration": 1.506151800043881,
+        "error": null
+      },
+      "test_empty_results_graceful_response": {
+        "outcome": "passed",
+        "duration": 0.22069099999498576,
+        "error": null
+      },
+      "test_fallback_strategies_activated": {
+        "outcome": "passed",
+        "duration": 0.6970331999473274,
+        "error": null
+      },
+      "test_profile_save_and_retrieve": {
+        "outcome": "passed",
+        "duration": 0.13469049998093396,
+        "error": null
+      },
+      "test_profile_update_overwrites_correctly": {
+        "outcome": "passed",
+        "duration": 0.09261870000045747,
+        "error": null
+      },
+      "test_profile_json_serialization": {
+        "outcome": "failed",
+        "duration": 0.04148060001898557,
+        "error": "C:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   psycopg2.OperationalError: connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\n\nThe above exception was the direct cause of the following exception:\ntests\\fmea\\test_fmea_user_profile.py:140: in test_profile_json_serialization\n    session.commit()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1969: in commit\n    trans.commit(_to_root=True)\n<string>:2: in commit\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1256: in commit\n    self._prepare_impl()\n<string>:2: in _prepare_impl\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1231: in _prepare_impl\n    self.session.flush()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4312: in flush\n    self._flush(objects)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4447: in _flush\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:4408: in _flush\n    flush_context.execute()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:466: in execute\n    rec.execute(self)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\unitofwork.py:642: in execute\n    util.preloaded.orm_persistence.save_obj(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:60: in save_obj\n    for (\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:221: in _organize_states_for_save\n    for state, dict_, mapper, connection in _connections_for_states(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\persistence.py:1726: in _connections_for_states\n    connection = uowtransaction.transaction.connection(base_mapper)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<string>:2: in connection\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:995: in connection\n    return self._connection_for_bind(bind, execution_options)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<string>:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1129: in _connection_for_bind\n    conn = self._parent._connection_for_bind(\n<string>:2: in _connection_for_bind\n    ???\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\state_changes.py:139: in _go\n    ret_value = fn(self, *arg, **kw)\n                ^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\orm\\session.py:1143: in _connection_for_bind\n    conn = bind.connect()\n           ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3268: in connect\n    return self._connection_cls(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:147: in __init__\n    Connection._handle_dbapi_exception_noconnection(\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:2430: in _handle_dbapi_exception_noconnection\n    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:145: in __init__\n    self._dbapi_connection = engine.raw_connection()\n                             ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\base.py:3292: in raw_connection\n    return self.pool.connect()\n           ^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:452: in connect\n    return _ConnectionFairy._checkout(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:1269: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:716: in checkout\n    rec = pool._do_get()\n          ^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:169: in _do_get\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\impl.py:167: in _do_get\n    return self._create_connection()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:393: in _create_connection\n    return _ConnectionRecord(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:678: in __init__\n    self.__connect()\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:902: in __connect\n    with util.safe_reraise():\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\util\\langhelpers.py:146: in __exit__\n    raise exc_value.with_traceback(exc_tb)\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\pool\\base.py:898: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\create.py:637: in connect\n    return dialect.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\sqlalchemy\\engine\\default.py:616: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\dennyr\\anaconda3\\envs\\fmea_env\\Lib\\site-packages\\psycopg2\\__init__.py:122: in connect\n    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  password authentication failed for user \"user\"\nE   \nE   (Background on this error at: https://sqlalche.me/e/20/e3q8)"
+      },
+      "test_listening_history_saved_with_verification": {
+        "outcome": "passed",
+        "duration": 0.04007450002245605,
+        "error": null
+      },
+      "test_history_without_existing_profile": {
+        "outcome": "failed",
+        "duration": 0.00025589996948838234,
+        "error": "tests\\fmea\\test_fmea_user_profile.py:221: in test_history_without_existing_profile\n    username = f\"fmea_no_profile_user_{int(time.time())}\"\n                                           ^^^^\nE   UnboundLocalError: cannot access local variable 'time' where it is not associated with a value"
+      }
+    }
+  }
+]
